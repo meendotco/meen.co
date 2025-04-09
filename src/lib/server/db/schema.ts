@@ -14,7 +14,11 @@ import {
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import { DATABASE_URL } from '$env/static/private';
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+	throw new Error('DATABASE_URL is not set');
+}
 
 const pool = postgres(DATABASE_URL, { max: 1 });
 
@@ -136,11 +140,15 @@ export const candidate = pgTable(
 		jobPostId: text('jobPostId')
 			.notNull()
 			.references(() => jobPost.id, { onDelete: 'cascade' }),
+		linkedInProfileId: text('linkedInProfileId').notNull(),
 		vector: vector('vector', { dimensions: 1536 }).notNull(),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
 	},
-	(table) => [index('candidate_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))]
+	(table) => [
+		index('candidate_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops')),
+		index('candidate_linkedInProfileId_idx').using('hash', table.linkedInProfileId)
+	]
 );
 
 export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
@@ -151,7 +159,7 @@ export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
 	candidates: many(candidate)
 }));
 
-export const proxyCurlCache = pgTable('proxyCurlCache', {
+export const linkedInProfile = pgTable('linkedInProfile', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
@@ -161,3 +169,7 @@ export const proxyCurlCache = pgTable('proxyCurlCache', {
 	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
 	expiresAt: timestamp('expiresAt', { mode: 'date' }).notNull()
 });
+
+export const linkedInProfileRelations = relations(linkedInProfile, ({ many }) => ({
+	candidates: many(candidate)
+}));

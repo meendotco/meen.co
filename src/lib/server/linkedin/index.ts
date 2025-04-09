@@ -4,7 +4,7 @@ import ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
 import { PROXYCURL_API_KEY } from '$env/static/private';
 import { db } from '$lib/server/db';
 
-import { proxyCurlCache } from '../db/schema';
+import { linkedInProfile } from '../db/schema';
 
 const defaultClient = ProxycurlApi.ApiClient.instance;
 const BearerAuth = defaultClient.authentications['BearerAuth'];
@@ -28,8 +28,8 @@ export async function getFullLinkedinProfile(
 			extra: 'include'
 		};
 
-		const cache = await db.query.proxyCurlCache.findFirst({
-			where: eq(proxyCurlCache.url, url)
+		const cache = await db.query.linkedInProfile.findFirst({
+			where: eq(linkedInProfile.url, url)
 		});
 
 		if (cache) {
@@ -46,7 +46,7 @@ export async function getFullLinkedinProfile(
 			});
 		});
 
-		await db.insert(proxyCurlCache).values({
+		await db.insert(linkedInProfile).values({
 			url,
 			data: profile,
 			expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
