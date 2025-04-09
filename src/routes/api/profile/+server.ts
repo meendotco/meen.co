@@ -2,9 +2,9 @@ import { getFullLinkedinProfile } from '$lib/server/linkedin';
 // import { getLinkedinProfile } from '$lib/server/linkedin';
 
 export async function GET({ locals }) {
-	const auth = await locals.auth();
+	const user = locals.user;
 
-	if (!auth || !auth.user || !auth.user.id) {
+	if (!user) {
 		return new Response('Unauthorized', { status: 401 });
 	}
 

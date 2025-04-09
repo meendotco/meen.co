@@ -33,7 +33,7 @@ importers:
         specifier: ^1.8.4
         version: 1.8.4
       drizzle-orm:
-        specifier: ^0.40.1
+        specifier: ^0.40.0
         version: 0.40.1(@opentelemetry/api@1.9.0)(gel@2.0.2)(kysely@0.27.6)(postgres@3.4.5)
       postgres:
         specifier: ^3.4.5
@@ -73,7 +73,7 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       drizzle-kit:
-        specifier: ^0.30.6
+        specifier: ^0.30.2
         version: 0.30.6
       eslint:
         specifier: ^9.18.0

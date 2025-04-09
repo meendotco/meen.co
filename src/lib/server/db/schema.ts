@@ -4,6 +4,7 @@ import {
 	boolean,
 	index,
 	integer,
+	jsonb,
 	pgTable,
 	primaryKey,
 	text,
@@ -148,3 +149,14 @@ export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
 	}),
 	candidates: many(candidate)
 }));
+
+export const proxyCurlCache = pgTable('proxyCurlCache', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	url: text('url').notNull(),
+	data: jsonb('data').notNull(),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
+	expiresAt: timestamp('expiresAt', { mode: 'date' }).notNull()
+});
