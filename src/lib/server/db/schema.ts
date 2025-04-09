@@ -14,8 +14,9 @@ import {
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-const connectionString = 'postgres://postgres:postgres@localhost:5432/meen';
-const pool = postgres(connectionString, { max: 1 });
+import { DATABASE_URL } from '$env/static/private';
+
+const pool = postgres(DATABASE_URL, { max: 1 });
 
 export const db = drizzle(pool);
 
