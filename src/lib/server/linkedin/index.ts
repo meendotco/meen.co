@@ -7,7 +7,6 @@ import { db } from '$lib/server/db';
 import { proxyCurlCache } from '../db/schema';
 
 const defaultClient = ProxycurlApi.ApiClient.instance;
-// Configure Bearer access token for authorization: BearerAuth
 const BearerAuth = defaultClient.authentications['BearerAuth'];
 BearerAuth.accessToken = PROXYCURL_API_KEY;
 
@@ -37,7 +36,6 @@ export async function getFullLinkedinProfile(
 			return cache.data;
 		}
 
-		// Use promise-based approach without calling .end()
 		const profile = await new Promise((resolve, reject) => {
 			apiInstance.personProfileEndpoint(url, fallbackToCache, opts, (error, data) => {
 				if (error) {
