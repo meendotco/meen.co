@@ -27,3 +27,4 @@ vite.config.ts.timestamp-*
 src/lib/paraglide
 
 .infisical.json
+pnpm-lock.yaml
