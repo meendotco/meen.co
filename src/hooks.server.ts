@@ -22,9 +22,14 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 	});
 
 const authorizationHandle: Handle = async ({ event, resolve }) => {
+	/*/
+	//Currently we disable cache. Probably won't be needed for an mvp
+	// Doesn't effect performance too badly. only 3ms latency
 	if (!event.url.pathname.startsWith('/api') && !event.url.pathname.startsWith('/dashboard')) {
 		return resolve(event);
 	}
+	/*/
+	//const start = performance.now();
 	const auth = await event.locals.auth();
 	if (!auth || !auth.user || !auth.user.email) {
 		return new Response('Unauthorized', { status: 401 });
@@ -38,6 +43,7 @@ const authorizationHandle: Handle = async ({ event, resolve }) => {
 	}
 	event.locals.user = user;
 	event.locals.session = auth;
+	//console.log(`Authorization took ${performance.now() - start}ms`);
 	return resolve(event);
 };
 
