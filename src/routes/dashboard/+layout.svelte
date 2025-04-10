@@ -1,5 +1,15 @@
 <script lang="ts">
-	const { children } = $props();
+	import Sidebar from '$lib/components/Sidebar.svelte';
+
+	const { data, children } = $props();
 </script>
 
-{@render children()}
+<div class="flex min-h-screen">
+	<Sidebar user={data.user} />
+
+	<div class="flex flex-1 flex-col lg:pl-14">
+		<main class="flex-1 p-6">
+			{@render children()}
+		</main>
+	</div>
+</div>

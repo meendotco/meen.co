@@ -28,7 +28,9 @@ export default ts.config(
 			'.env',
 			'.env.*',
 			'!.env.example',
-			'vite.config.js.timestamp-*'
+			'vite.config.js.timestamp-*',
+			'src/lib/components/ui/**',
+			'drizzle/**'
 		],
 		languageOptions: {
 			globals: { ...globals.browser, ...globals.node }
@@ -55,6 +57,18 @@ export default ts.config(
 				parser: ts.parser,
 				svelteConfig
 			}
+		}
+	},
+	{
+		files: ['src/lib/components/ui/**/*.svelte'],
+		rules: {
+			'@typescript-eslint/no-unused-vars': 'off'
+		}
+	},
+	{
+		files: ['src/routes/+page.svelte'],
+		rules: {
+			'max-lines': 'off'
 		}
 	}
 );
