@@ -11,6 +11,8 @@
 	}
 </script>
 
+<h1>Home</h1>
+
 <div>
 	<SignIn provider="linkedin" signInPage="signin" />
 	{data.session?.user?.email}

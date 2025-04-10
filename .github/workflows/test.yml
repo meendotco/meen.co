@@ -1,0 +1,48 @@
+name: Test
+env:
+  AUTH_SECRET: mock
+  AUTH_LINKEDIN_ID: mock
+  AUTH_LINKEDIN_SECRET: mock
+  AUTH_DRIZZLE_URL: mock
+  DATABASE_URL: mock
+  OPENAI_API_KEY: mock
+  PROXYCURL_API_KEY: mock
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Lint the project
+        run: pnpm ci:lint
+
+      - name: Build the project
+        run: pnpm ci:build

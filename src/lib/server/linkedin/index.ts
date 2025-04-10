@@ -13,48 +13,43 @@ BearerAuth.accessToken = PROXYCURL_API_KEY;
 export async function getFullLinkedinProfile(
 	url: string = 'https://www.linkedin.com/in/makkadotgg/'
 ) {
-	try {
-		const apiInstance = new ProxycurlApi.PeopleAPIApi();
-		const fallbackToCache = 'on-error';
-		const opts = {
-			useCache: 'if-present',
-			skills: 'include',
-			inferredSalary: 'include',
-			personalEmail: 'include',
-			personalContactNumber: 'include',
-			twitterProfileId: 'include',
-			facebookProfileId: 'include',
-			githubProfileId: 'include',
-			extra: 'include'
-		};
+	const apiInstance = new ProxycurlApi.PeopleAPIApi();
+	const fallbackToCache = 'on-error';
+	const opts = {
+		useCache: 'if-present',
+		skills: 'include',
+		inferredSalary: 'include',
+		personalEmail: 'include',
+		personalContactNumber: 'include',
+		twitterProfileId: 'include',
+		facebookProfileId: 'include',
+		githubProfileId: 'include',
+		extra: 'include'
+	};
 
-		const cache = await db.query.linkedInProfile.findFirst({
-			where: eq(linkedInProfile.url, url)
-		});
+	const cache = await db.query.linkedInProfile.findFirst({
+		where: eq(linkedInProfile.url, url)
+	});
 
-		if (cache) {
-			return cache.data;
-		}
-
-		const profile = await new Promise((resolve, reject) => {
-			apiInstance.personProfileEndpoint(url, fallbackToCache, opts, (error, data) => {
-				if (error) {
-					reject(error);
-				} else {
-					resolve(data);
-				}
-			});
-		});
-
-		await db.insert(linkedInProfile).values({
-			url,
-			data: profile,
-			expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
-		});
-
-		return profile;
-	} catch (error) {
-		console.error('Error in getFullLinkedinProfile:', error);
-		throw error;
+	if (cache) {
+		return cache.data;
 	}
+
+	const profile = await new Promise((resolve, reject) => {
+		apiInstance.personProfileEndpoint(url, fallbackToCache, opts, (error, data) => {
+			if (error) {
+				reject(error);
+			} else {
+				resolve(data);
+			}
+		});
+	});
+
+	await db.insert(linkedInProfile).values({
+		url,
+		data: profile,
+		expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
+	});
+
+	return profile;
 }

@@ -19,7 +19,10 @@
 		"db:migrate": "infisical run -- drizzle-kit migrate",
 		"db:studio": "infisical run -- drizzle-kit studio",
 		"db:reset": "infisical run -- drizzle-kit reset",
-		"db:start": "infisical run -- docker compose up"
+		"db:start": "infisical run -- docker compose up",
+		"db:stop": "infisical run -- docker compose down",
+		"ci:build": "pnpm build",
+		"ci:lint": "prettier --check . && eslint ."
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
