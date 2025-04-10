@@ -21,7 +21,7 @@
 		"db:reset": "infisical run -- drizzle-kit reset",
 		"db:start": "infisical run -- docker compose up",
 		"db:stop": "infisical run -- docker compose down",
-		"ci:build": "pnpm build",
+		"ci:build": "vite build",
 		"ci:lint": "prettier --check . && eslint ."
 	},
 	"devDependencies": {
