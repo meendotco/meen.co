@@ -16,9 +16,9 @@
 	</div>
 	<nav class="flex flex-col items-center gap-4 pt-6">
 		<a
-			href="/dashboard/job-post/create"
+			href="/dashboard/jobs"
 			class="group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all {page.url.pathname.startsWith(
-				'/dashboard/job-post/create'
+				'/dashboard/jobs'
 			)
 				? 'bg-primary/20 text-primary'
 				: 'text-sidebar-foreground hover:text-primary'}"
