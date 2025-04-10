@@ -4,7 +4,7 @@
 	import { page } from '$app/state';
 	import Topbar from '$lib/components/Topbar.svelte';
 
-	let { children, data } = $props();
+	let { data, children } = $props();
 
 	import { ModeWatcher } from 'mode-watcher';
 </script>
@@ -15,7 +15,7 @@
 	{#if !page.url.pathname.startsWith('/dashboard')}
 		<Topbar user={data.user} />
 	{/if}
-	{@render children()}
+	{@render children?.()}
 </div>
 
 <footer class="w-full border-t border-white/10 bg-black/40 pb-8 backdrop-blur-sm">

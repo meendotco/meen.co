@@ -31,18 +31,28 @@ const authorizationHandle: Handle = async ({ event, resolve }) => {
 	/*/
 	//const start = performance.now();
 	const auth = await event.locals.auth();
-	if (!auth || !auth.user || !auth.user.email) {
-		return new Response('Unauthorized', { status: 401 });
+	if (!auth) {
+		if (event.url.pathname.startsWith('/api') || event.url.pathname.startsWith('/dashboard')) {
+			return new Response('Unauthorized', { status: 401 });
+		}
 	}
 
 	const user = await db.query.users.findFirst({
-		where: eq(users.email, auth.user.email)
+		where: eq(users.email, auth?.user?.email || 'NOT AN EMAIL')
 	});
-	if (!user) {
-		return new Response('Unauthorized', { status: 401 });
-	}
 	event.locals.user = user;
 	event.locals.session = auth;
+
+	if (event.url.pathname.startsWith('/api') || event.url.pathname.startsWith('/dashboard')) {
+		if (!auth || !auth.user || !auth.user.email) {
+			return new Response('Unauthorized', { status: 401 });
+		}
+
+		if (!user) {
+			return new Response('Unauthorized', { status: 401 });
+		}
+	}
+
 	//console.log(`Authorization took ${performance.now() - start}ms`);
 	return resolve(event);
 };

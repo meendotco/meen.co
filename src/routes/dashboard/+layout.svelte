@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Sidebar from '$lib/components/Sidebar.svelte';
 
-	const { data, children } = $props();
+	let { data, children } = $props();
 </script>
 
 <div class="flex min-h-screen">
@@ -9,7 +9,7 @@
 
 	<div class="flex flex-1 flex-col lg:pl-14">
 		<main class="flex-1 p-6">
-			{@render children()}
+			{@render children?.()}
 		</main>
 	</div>
 </div>
