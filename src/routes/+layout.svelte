@@ -18,7 +18,9 @@
 	{@render children?.()}
 </div>
 
-<footer class="w-full border-t border-white/10 bg-black/40 pb-8 backdrop-blur-sm">
+<footer
+	class="w-full border-t border-border bg-card/40 pb-8 backdrop-blur-sm dark:border-white/10 dark:bg-black/40"
+>
 	<div class="mx-auto max-w-screen-lg px-4">
 		<div class="grid grid-cols-1 gap-8 pt-8 md:grid-cols-3">
 			<div>
@@ -33,28 +35,42 @@
 						>Meen AI</span
 					>
 				</div>
-				<p class="mt-2 text-sm text-white/70">
+				<p class="mt-2 text-sm text-foreground/70 dark:text-white/70">
 					Empowering the future through intelligent solutions.
 				</p>
 			</div>
 
 			<div>
-				<h4 class="mb-3 font-medium text-white">Company</h4>
+				<h4 class="mb-3 font-medium text-foreground dark:text-white">Company</h4>
 				<ul class="space-y-2 text-sm">
-					<li><a href="/about" class="text-white/70 hover:text-primary">About</a></li>
-					<li><a href="/contact" class="text-white/70 hover:text-primary">Contact us</a></li>
+					<li>
+						<a href="/about" class="text-foreground/70 hover:text-primary dark:text-white/70"
+							>About</a
+						>
+					</li>
+					<li>
+						<a href="/contact" class="text-foreground/70 hover:text-primary dark:text-white/70"
+							>Contact us</a
+						>
+					</li>
 				</ul>
 			</div>
 
 			<div>
-				<h4 class="mb-3 font-medium text-white">Resources</h4>
+				<h4 class="mb-3 font-medium text-foreground dark:text-white">Resources</h4>
 				<ul class="space-y-2 text-sm">
-					<li><a href="/privacy" class="text-white/70 hover:text-primary">Privacy policy</a></li>
+					<li>
+						<a href="/privacy" class="text-foreground/70 hover:text-primary dark:text-white/70"
+							>Privacy policy</a
+						>
+					</li>
 				</ul>
 			</div>
 		</div>
 
-		<div class="mt-8 border-t border-white/10 pt-8 text-center text-sm text-white/70">
+		<div
+			class="mt-8 border-t border-border pt-8 text-center text-sm text-foreground/70 dark:border-white/10 dark:text-white/70"
+		>
 			&copy; 2024 Meen AI. All rights reserved.
 		</div>
 	</div>

@@ -5,7 +5,7 @@
 </script>
 
 <section
-	class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden py-10"
+	class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background py-10"
 >
 	<!-- Animated background gradient elements -->
 
@@ -26,10 +26,10 @@
 					Meen AI
 				</span>
 			</h1>
-			<p class="relative z-10 mx-auto max-w-[42rem] text-xl text-white/90 sm:text-2xl">
+			<p class="relative z-10 mx-auto max-w-[42rem] text-xl text-foreground/90 sm:text-2xl">
 				Empowering the future through intelligent solutions.
 			</p>
-			<p class="relative z-10 mx-auto max-w-[42rem] text-lg text-white/70">
+			<p class="relative z-10 mx-auto max-w-[42rem] text-lg text-foreground/70">
 				Experience the next generation of AI technology.
 			</p>
 		</div>
@@ -57,9 +57,11 @@
 
 	<!-- Search section -->
 	<div class="relative z-10 mt-32 w-full max-w-screen-lg px-4">
-		<div class="overflow-hidden rounded-xl border border-white/10 bg-black/30 backdrop-blur-md">
+		<div
+			class="overflow-hidden rounded-xl border border-border bg-card/30 backdrop-blur-md dark:border-white/10 dark:bg-black/30"
+		>
 			<div class="p-6 md:p-10">
-				<h2 class="mb-8 text-center text-2xl font-semibold text-white md:text-3xl">
+				<h2 class="mb-8 text-center text-2xl font-semibold text-foreground md:text-3xl">
 					Find the Perfect Match
 				</h2>
 
@@ -67,11 +69,13 @@
 					<div
 						class="absolute -inset-1 rounded-lg bg-gradient-to-r from-purple-500 via-primary to-indigo-500 opacity-70 blur-sm"
 					></div>
-					<div class="relative flex overflow-hidden rounded-lg bg-black/50 backdrop-blur-sm">
+					<div
+						class="relative flex overflow-hidden rounded-lg bg-card/50 backdrop-blur-sm dark:bg-black/50"
+					>
 						<input
 							type="text"
 							placeholder="Senior Product Manager with 5+ years SaaS exp"
-							class="flex-1 border-none bg-transparent px-4 py-3 text-white placeholder-white/50 outline-none"
+							class="flex-1 border-none bg-transparent px-4 py-3 text-foreground placeholder-foreground/50 outline-none dark:text-white dark:placeholder-white/50"
 						/>
 						<button
 							class="bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary/90"
@@ -83,7 +87,7 @@
 
 				<div class="mt-10 grid gap-6 sm:grid-cols-2">
 					<div
-						class="flex items-center rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm"
+						class="flex items-center rounded-lg border border-border bg-card/5 p-4 backdrop-blur-sm dark:border-white/10 dark:bg-white/5"
 					>
 						<div class="mr-4 h-12 w-12 overflow-hidden rounded-full">
 							<img
@@ -93,13 +97,15 @@
 							/>
 						</div>
 						<div>
-							<h3 class="font-semibold text-white">Sarah Chen</h3>
-							<p class="text-sm text-white/70">Senior Product Manager at Stripe</p>
+							<h3 class="font-semibold text-foreground dark:text-white">Sarah Chen</h3>
+							<p class="text-sm text-foreground/70 dark:text-white/70">
+								Senior Product Manager at Stripe
+							</p>
 						</div>
 					</div>
 
 					<div
-						class="flex items-center rounded-lg border border-white/10 bg-white/5 p-4 backdrop-blur-sm"
+						class="flex items-center rounded-lg border border-border bg-card/5 p-4 backdrop-blur-sm dark:border-white/10 dark:bg-white/5"
 					>
 						<div class="mr-4 h-12 w-12 overflow-hidden rounded-full">
 							<img
@@ -109,8 +115,10 @@
 							/>
 						</div>
 						<div>
-							<h3 class="font-semibold text-white">Michael Ross</h3>
-							<p class="text-sm text-white/70">Product Manager at Salesforce</p>
+							<h3 class="font-semibold text-foreground dark:text-white">Michael Ross</h3>
+							<p class="text-sm text-foreground/70 dark:text-white/70">
+								Product Manager at Salesforce
+							</p>
 						</div>
 					</div>
 				</div>
@@ -120,13 +128,17 @@
 
 	<!-- Features section -->
 	<div class="relative z-10 mt-32 w-full max-w-screen-lg px-4">
-		<h2 class="mb-16 text-center text-4xl font-bold text-purple-400 md:text-5xl">Our Features</h2>
+		<h2 class="mb-16 text-center text-4xl font-bold text-primary dark:text-purple-400 md:text-5xl">
+			Our Features
+		</h2>
 
 		<div class="grid gap-6 md:grid-cols-3">
 			<div
-				class="overflow-hidden rounded-xl border border-indigo-900/30 bg-black/20 p-6 backdrop-blur"
+				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-6 backdrop-blur dark:border-indigo-900/30 dark:bg-black/20"
 			>
-				<div class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-indigo-900/50">
+				<div
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 dark:bg-indigo-900/50"
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -137,22 +149,26 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="h-8 w-8 text-purple-400"
+						class="h-8 w-8 text-primary dark:text-purple-400"
 					>
 						<circle cx="11" cy="11" r="8"></circle>
 						<path d="m21 21-4.3-4.3"></path>
 					</svg>
 				</div>
-				<h3 class="mb-3 text-xl font-semibold text-purple-400">AI-Powered Search</h3>
-				<p class="text-white/70">
+				<h3 class="mb-3 text-xl font-semibold text-primary dark:text-purple-400">
+					AI-Powered Search
+				</h3>
+				<p class="text-foreground/70 dark:text-white/70">
 					Natural language search that understands context and intent to find the perfect candidates
 				</p>
 			</div>
 
 			<div
-				class="overflow-hidden rounded-xl border border-indigo-900/30 bg-black/20 p-6 backdrop-blur"
+				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-6 backdrop-blur dark:border-indigo-900/30 dark:bg-black/20"
 			>
-				<div class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-indigo-900/50">
+				<div
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 dark:bg-indigo-900/50"
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -163,7 +179,7 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="h-8 w-8 text-white"
+						class="h-8 w-8 text-foreground dark:text-white"
 					>
 						<path d="M3 3v18h18"></path>
 						<path d="M18 14v4h4"></path>
@@ -171,16 +187,18 @@
 						<path d="M12 6v12"></path>
 					</svg>
 				</div>
-				<h3 class="mb-3 text-xl font-semibold text-white">Smart Ranking</h3>
-				<p class="text-white/70">
+				<h3 class="mb-3 text-xl font-semibold text-foreground dark:text-white">Smart Ranking</h3>
+				<p class="text-foreground/70 dark:text-white/70">
 					Automatically rank and score candidates based on your specific requirements and criteria
 				</p>
 			</div>
 
 			<div
-				class="overflow-hidden rounded-xl border border-indigo-900/30 bg-black/20 p-6 backdrop-blur"
+				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-6 backdrop-blur dark:border-indigo-900/30 dark:bg-black/20"
 			>
-				<div class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-indigo-900/50">
+				<div
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 dark:bg-indigo-900/50"
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -191,15 +209,15 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
-						class="h-8 w-8 text-white"
+						class="h-8 w-8 text-foreground dark:text-white"
 					>
 						<rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
 						<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
 						></path>
 					</svg>
 				</div>
-				<h3 class="mb-3 text-xl font-semibold text-white">ATS Integration</h3>
-				<p class="text-white/70">
+				<h3 class="mb-3 text-xl font-semibold text-foreground dark:text-white">ATS Integration</h3>
+				<p class="text-foreground/70 dark:text-white/70">
 					Seamlessly connect with your existing ATS to enrich candidate data and streamline workflow
 				</p>
 			</div>
@@ -209,26 +227,26 @@
 	<!-- What we solve for section -->
 	<div class="relative z-10 mt-32 w-full max-w-screen-lg px-4">
 		<div class="mb-10 text-center">
-			<h2 class="text-xl font-medium text-purple-400">What we solve for</h2>
-			<h3 class="mt-2 text-4xl font-bold text-white sm:text-5xl md:text-6xl">
+			<h2 class="text-xl font-medium text-primary dark:text-purple-400">What we solve for</h2>
+			<h3 class="mt-2 text-4xl font-bold text-foreground dark:text-white sm:text-5xl md:text-6xl">
 				Efficiently identifying<br />best-fit solutions.
 			</h3>
 		</div>
 
 		<div class="grid gap-6 md:grid-cols-2">
 			<!-- Inbound Card -->
-			<div class="overflow-hidden rounded-xl bg-black/20 p-8 backdrop-blur">
-				<h3 class="mb-6 text-2xl font-semibold text-white">For Inbound</h3>
-				<p class="text-lg text-white/70">
+			<div class="overflow-hidden rounded-xl bg-card/20 p-8 backdrop-blur dark:bg-black/20">
+				<h3 class="mb-6 text-2xl font-semibold text-foreground dark:text-white">For Inbound</h3>
+				<p class="text-lg text-foreground/70 dark:text-white/70">
 					Connect your systems and immediately identify the most qualified solutions. Enrich your
 					data with external sources and AI-powered insights.
 				</p>
 			</div>
 
 			<!-- Outbound Card -->
-			<div class="overflow-hidden rounded-xl bg-black/20 p-8 backdrop-blur">
-				<h3 class="mb-6 text-2xl font-semibold text-purple-400">For Outbound</h3>
-				<p class="text-lg text-white/70">
+			<div class="overflow-hidden rounded-xl bg-card/20 p-8 backdrop-blur dark:bg-black/20">
+				<h3 class="mb-6 text-2xl font-semibold text-primary dark:text-purple-400">For Outbound</h3>
+				<p class="text-lg text-foreground/70 dark:text-white/70">
 					Proactively search and identify potential solutions using our advanced AI technology and
 					comprehensive database.
 				</p>

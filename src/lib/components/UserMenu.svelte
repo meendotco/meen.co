@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { signOut } from '@auth/sveltekit/client';
+	import Moon from '@lucide/svelte/icons/moon';
+	import Sun from '@lucide/svelte/icons/sun';
 	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
 	import { LogOut, User } from 'lucide-svelte';
+	import { toggleMode } from 'mode-watcher';
 
 	import { Button } from '@/components/ui/button';
 	import { page } from '$app/state';
@@ -15,7 +18,7 @@
 			<Button
 				variant="ghost"
 				size="icon"
-				class="avatar-button transition-all duration-200 hover:bg-white/5"
+				class="avatar-button transition-all duration-200 hover:bg-foreground/5"
 			>
 				<div class="avatar">
 					<User class="avatar-icon" strokeWidth={1.5} />
@@ -26,12 +29,24 @@
 		<DropdownMenuPrimitive.Portal>
 			<DropdownMenuPrimitive.Content class="dropdown-content" sideOffset={8}>
 				<div class="px-3 py-2">
-					<p class="text-base font-medium text-white">My Profile</p>
+					<p class="text-base font-medium text-foreground dark:text-white">My Profile</p>
 				</div>
 				<DropdownMenuPrimitive.Separator class="separator" />
 				<div class="px-3 py-2">
-					<p class="truncate text-sm text-neutral-400">{user?.email || 'No email'}</p>
+					<p class="truncate text-sm text-muted-foreground dark:text-neutral-400">
+						{user?.email || 'No email'}
+					</p>
 				</div>
+				<DropdownMenuPrimitive.Separator class="separator" />
+				<DropdownMenuPrimitive.Item onclick={() => toggleMode()} class="menu-item">
+					<div class="mr-2 flex h-4 w-4 items-center justify-center">
+						<Sun class="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+						<Moon
+							class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+						/>
+					</div>
+					<span>Toggle theme</span>
+				</DropdownMenuPrimitive.Item>
 				<DropdownMenuPrimitive.Separator class="separator" />
 				<DropdownMenuPrimitive.Item
 					onclick={() => signOut({ redirectTo: page.url.pathname })}
@@ -51,26 +66,26 @@
 	}
 
 	.avatar {
-		@apply flex h-10 w-10 items-center justify-center rounded-full bg-white/5;
+		@apply flex h-10 w-10 items-center justify-center rounded-full bg-foreground/5 dark:bg-white/5;
 	}
 
 	.avatar-icon {
-		@apply h-5 w-5 stroke-white/80;
+		@apply h-5 w-5 stroke-foreground/80 dark:stroke-white/80;
 	}
 
 	:global(.dropdown-content) {
-		@apply w-64 rounded-xl border border-white/10 bg-black/95 shadow-2xl backdrop-blur-xl;
+		@apply w-64 rounded-xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-black/95;
 		animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 		transform-origin: var(--radix-dropdown-menu-content-transform-origin);
 		z-index: 9999;
 	}
 
 	:global(.separator) {
-		@apply my-1 h-px bg-white/10;
+		@apply my-1 h-px bg-border dark:bg-white/10;
 	}
 
 	:global(.menu-item) {
-		@apply flex cursor-default items-center px-3 py-2.5 text-sm outline-none transition-colors duration-200 hover:bg-white/5 active:bg-white/10;
+		@apply flex cursor-default items-center px-3 py-2.5 text-sm text-foreground outline-none transition-colors duration-200 hover:bg-foreground/5 active:bg-foreground/10 dark:text-white dark:hover:bg-white/5 dark:active:bg-white/10;
 	}
 
 	@keyframes contentShow {

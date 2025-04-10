@@ -71,10 +71,13 @@
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 		{#if data?.jobs.length > 0}
 			{#each data.jobs as job (job.id)}
-				<div class="flex flex-col gap-2 rounded-lg border border-white/10 p-4">
+				<a
+					href={`/dashboard/jobs/${job.id}`}
+					class="flex flex-col gap-2 rounded-lg border border-white/10 p-4"
+				>
 					<h2 class="text-lg font-bold">{job.name}</h2>
 					<p class="text-sm text-gray-500">{job.description}</p>
-				</div>
+				</a>
 			{/each}
 		{:else}
 			<p class="text-sm text-gray-500">No jobs yet. Create one!</p>
