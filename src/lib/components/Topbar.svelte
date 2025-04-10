@@ -1,16 +1,30 @@
 <script lang="ts">
-	import { LogOut, User } from 'lucide-svelte';
-
 	import { Button } from '@/components/ui/button';
 	import { page } from '$app/state';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 
 	import Logo from './Logo.svelte';
 	import UserMenu from './UserMenu.svelte';
 	let { user } = $props();
+
+	let scrollY = $state(0);
+
+	$effect(() => {
+		const handleScroll = () => {
+			scrollY = window.scrollY;
+		};
+
+		window.addEventListener('scroll', handleScroll);
+		return () => window.removeEventListener('scroll', handleScroll);
+	});
+
+	const showTopbar = $derived(scrollY > 100 || user?.email);
 </script>
 
-<header class="sticky top-0 z-50 flex w-full justify-center py-4 backdrop-blur-lg">
+<header
+	class="sticky top-0 z-50 flex w-full justify-center py-4 backdrop-blur-lg transition-opacity duration-300"
+	class:opacity-0={!showTopbar}
+	class:opacity-100={showTopbar}
+>
 	<div
 		class="flex w-[95%] max-w-5xl items-center justify-between rounded-full border border-white/10 bg-background/80 px-4 py-2 shadow-lg supports-[backdrop-filter]:bg-background/60"
 	>
@@ -28,9 +42,13 @@
 						Dashboard
 					</a>
 				{:else}
-					<a href="/signin" class="text-foreground/70 transition-colors hover:text-primary">
+					<Button
+						variant="link"
+						onclick={() => signIn()}
+						class="text-foreground/70 transition-colors hover:text-primary"
+					>
 						Sign In
-					</a>
+					</Button>
 				{/if}
 			</nav>
 

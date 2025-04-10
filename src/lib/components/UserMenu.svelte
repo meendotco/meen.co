@@ -9,39 +9,41 @@
 	let { user } = $props();
 </script>
 
-<DropdownMenuPrimitive.Root>
-	<DropdownMenuPrimitive.Trigger>
-		<Button
-			variant="ghost"
-			size="icon"
-			class="avatar-button transition-all duration-200 hover:bg-white/5"
-		>
-			<div class="avatar">
-				<User class="avatar-icon" strokeWidth={1.5} />
-			</div>
-		</Button>
-	</DropdownMenuPrimitive.Trigger>
-
-	<DropdownMenuPrimitive.Portal>
-		<DropdownMenuPrimitive.Content class="dropdown-content" sideOffset={8}>
-			<div class="px-3 py-2">
-				<p class="text-base font-medium text-white">My Profile</p>
-			</div>
-			<DropdownMenuPrimitive.Separator class="separator" />
-			<div class="px-3 py-2">
-				<p class="truncate text-sm text-neutral-400">{user?.email || 'No email'}</p>
-			</div>
-			<DropdownMenuPrimitive.Separator class="separator" />
-			<DropdownMenuPrimitive.Item
-				onclick={() => signOut({ callbackUrl: page.url.pathname })}
-				class="menu-item text-red-500"
+{#if user?.email}
+	<DropdownMenuPrimitive.Root>
+		<DropdownMenuPrimitive.Trigger>
+			<Button
+				variant="ghost"
+				size="icon"
+				class="avatar-button transition-all duration-200 hover:bg-white/5"
 			>
-				<LogOut class="mr-2 h-4 w-4" />
-				<span>Log out</span>
-			</DropdownMenuPrimitive.Item>
-		</DropdownMenuPrimitive.Content>
-	</DropdownMenuPrimitive.Portal>
-</DropdownMenuPrimitive.Root>
+				<div class="avatar">
+					<User class="avatar-icon" strokeWidth={1.5} />
+				</div>
+			</Button>
+		</DropdownMenuPrimitive.Trigger>
+
+		<DropdownMenuPrimitive.Portal>
+			<DropdownMenuPrimitive.Content class="dropdown-content" sideOffset={8}>
+				<div class="px-3 py-2">
+					<p class="text-base font-medium text-white">My Profile</p>
+				</div>
+				<DropdownMenuPrimitive.Separator class="separator" />
+				<div class="px-3 py-2">
+					<p class="truncate text-sm text-neutral-400">{user?.email || 'No email'}</p>
+				</div>
+				<DropdownMenuPrimitive.Separator class="separator" />
+				<DropdownMenuPrimitive.Item
+					onclick={() => signOut({ redirectTo: page.url.pathname })}
+					class="menu-item text-red-500"
+				>
+					<LogOut class="mr-2 h-4 w-4" />
+					<span>Log out</span>
+				</DropdownMenuPrimitive.Item>
+			</DropdownMenuPrimitive.Content>
+		</DropdownMenuPrimitive.Portal>
+	</DropdownMenuPrimitive.Root>
+{/if}
 
 <style>
 	.avatar-button {
