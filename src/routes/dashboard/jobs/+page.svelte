@@ -27,11 +27,7 @@
 			if (response.ok) {
 				// Refresh the page to show the new job
 				window.location.reload();
-			} else {
-				console.error('Failed to create job');
 			}
-		} catch (error) {
-			console.error('Error creating job:', error);
 		} finally {
 			isSubmitting = false;
 		}

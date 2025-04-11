@@ -11,30 +11,24 @@
 	let searchQuery = $state('');
 
 	async function manuallyAddCandidate(query: string) {
-		const response = await fetch(`/api/candidate/add`, {
+		await fetch(`/api/candidate/add`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ linkedinUrl: query })
 		});
-		const data = await response.json();
-		console.log(data);
 		window.location.reload();
 	}
 
 	async function searchCandidates(query: string) {
-		const response = await fetch(`/api/candidate/search`, {
+		await fetch(`/api/candidate/search`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ query })
 		});
-		const data = await response.json();
-		console.log(data);
-		// Consider updating the state instead of reloading
-		// For now, reloading to see results
 		window.location.reload();
 	}
 </script>
@@ -95,65 +89,64 @@
 		{#each data.candidates as candidate (candidate.id)}
 			<div class="rounded-lg border bg-card p-6 shadow-sm">
 				<div class="flex items-start gap-4">
-					{#if (candidate.data as any).profile_pic_url}
+					{#if candidate.data.profile_pic_url}
 						<img
-							src={(candidate.data as any).profile_pic_url}
-							alt={(candidate.data as any).full_name}
+							src={candidate.data.profile_pic_url}
+							alt={candidate.data.full_name}
 							class="h-16 w-16 rounded-full object-cover"
 						/>
 					{:else}
 						<div class="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
 							<span class="text-xl font-semibold"
-								>{(candidate.data as any).first_name?.[0]}{(candidate.data as any)
-									.last_name?.[0]}</span
+								>{candidate.data.first_name?.[0]}{candidate.data.last_name?.[0]}</span
 							>
 						</div>
 					{/if}
 
 					<div class="flex-1 space-y-2">
 						<div>
-							<h3 class="text-xl font-semibold">{(candidate.data as any).full_name}</h3>
-							<p class="text-sm text-muted-foreground">{(candidate.data as any).headline}</p>
+							<h3 class="text-xl font-semibold">{candidate.data.full_name}</h3>
+							<p class="text-sm text-muted-foreground">{candidate.data.headline}</p>
 						</div>
 
 						<div class="flex flex-wrap gap-1">
-							{#if (candidate.data as any).location}
+							{#if candidate.data.location}
 								<span class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
-									{(candidate.data as any).city}, {(candidate.data as any).country_full_name}
+									{candidate.data.city}, {candidate.data.country_full_name}
 								</span>
 							{/if}
-							{#if (candidate.data as any).connections}
+							{#if candidate.data.connections}
 								<span class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
-									{(candidate.data as any).connections} connections
+									{candidate.data.connections} connections
 								</span>
 							{/if}
 						</div>
 
-						{#if (candidate.data as any).skills && (candidate.data as any).skills.length > 0}
+						{#if candidate.data.skills && candidate.data.skills.length > 0}
 							<div>
 								<h4 class="text-sm font-medium">Skills</h4>
 								<div class="mt-1 flex flex-wrap gap-1">
-									{#each (candidate.data as any).skills.slice(0, 8) as skill (skill)}
+									{#each candidate.data.skills.slice(0, 8) as skill (skill)}
 										<span
 											class="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs text-primary"
 										>
 											{skill}
 										</span>
 									{/each}
-									{#if (candidate.data as any).skills.length > 8}
+									{#if candidate.data.skills.length > 8}
 										<span class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
-											+{(candidate.data as any).skills.length - 8} more
+											+{candidate.data.skills.length - 8} more
 										</span>
 									{/if}
 								</div>
 							</div>
 						{/if}
 
-						{#if (candidate.data as any).people_also_viewed}
+						{#if candidate.data.people_also_viewed}
 							<div>
 								<h4 class="text-sm font-medium">People also viewed</h4>
 								<div class="mt-1 space-y-1">
-									{#each (candidate.data as any).people_also_viewed.slice(0, 2) as person (person.link)}
+									{#each candidate.data.people_also_viewed.slice(0, 2) as person (person.link)}
 										<p class="text-sm font-medium">{person.name}</p>
 										<p class="text-xs text-muted-foreground">
 											{person.link}
@@ -162,11 +155,11 @@
 								</div>
 							</div>
 						{/if}
-						{#if (candidate.data as any).experiences && (candidate.data as any).experiences.length > 0}
+						{#if candidate.data.experiences && candidate.data.experiences.length > 0}
 							<div>
 								<h4 class="text-sm font-medium">Experience</h4>
 								<div class="mt-1 space-y-1">
-									{#each (candidate.data as any).experiences.slice(0, 2) as experience (experience.company + experience.title)}
+									{#each candidate.data.experiences.slice(0, 2) as experience (experience.company + experience.title)}
 										<div>
 											<p class="text-sm font-medium">{experience.title} at {experience.company}</p>
 											{#if experience.starts_at}

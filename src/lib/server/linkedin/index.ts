@@ -1,5 +1,6 @@
+import { Buffer } from 'buffer';
 import { eq } from 'drizzle-orm';
-import ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
+import ProxycurlApi, { type PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 import { PROXYCURL_API_KEY } from '$env/static/private';
 import { embedText } from '$lib/server/ai';
@@ -36,25 +37,56 @@ export async function getFullLinkedinProfile(
 		return cache.data;
 	}
 
-	const profile = await new Promise((resolve, reject) => {
-		apiInstance.personProfileEndpoint(url, fallbackToCache, opts, (error, data) => {
-			if (error) {
-				reject(error);
-			} else {
-				resolve(data);
+	const profile = await new Promise<PersonEndpointResponse>((resolve, reject) => {
+		apiInstance.personProfileEndpoint(
+			url,
+			fallbackToCache,
+			opts,
+			(error: unknown, data: PersonEndpointResponse | null) => {
+				if (error) {
+					reject(error);
+				} else if (data) {
+					resolve(data);
+				} else {
+					reject(new Error('No data received from Proxycurl API'));
+				}
 			}
-		});
+		);
 	});
 
-	const textToEmbed = `${profile.data.firstName} ${profile.data.lastName} ${profile.data.headline || ''} ${profile.data.summary || ''} ${profile.data.skills?.join(', ') || ''}`;
+	const textToEmbed = `${profile.first_name} ${profile.last_name} ${profile.headline || ''} ${profile.summary || ''} ${profile.skills?.join(', ') || ''}`;
 	const vector = await embedText(textToEmbed);
 
-	await db.insert(linkedInProfile).values({
-		url,
-		data: profile,
-		vector,
-		expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
-	});
+	let profileImageB64: string | null = null;
+	if (profile.profile_pic_url) {
+		const response = await fetch(profile.profile_pic_url);
+		if (response.ok) {
+			const imageBuffer = await response.arrayBuffer();
+			profileImageB64 = Buffer.from(imageBuffer).toString('base64');
+		}
+	}
+
+	const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
+
+	await db
+		.insert(linkedInProfile)
+		.values({
+			url,
+			data: profile,
+			profileImageB64,
+			vector,
+			expiresAt
+		})
+		.onConflictDoUpdate({
+			target: linkedInProfile.url,
+			set: {
+				data: profile,
+				profileImageB64,
+				vector: vector,
+				expiresAt: expiresAt,
+				updatedAt: new Date()
+			}
+		});
 
 	return profile;
 }
