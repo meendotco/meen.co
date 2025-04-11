@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import ProxycurlApi from 'proxycurl-js-linkedin-profile-scraper';
 
 import { PROXYCURL_API_KEY } from '$env/static/private';
+import { embedText } from '$lib/server/ai';
 import { db } from '$lib/server/db';
 
 import { linkedInProfile } from '../db/schema';
@@ -45,9 +46,13 @@ export async function getFullLinkedinProfile(
 		});
 	});
 
+	const textToEmbed = `${profile.data.firstName} ${profile.data.lastName} ${profile.data.headline || ''} ${profile.data.summary || ''} ${profile.data.skills?.join(', ') || ''}`;
+	const vector = await embedText(textToEmbed);
+
 	await db.insert(linkedInProfile).values({
 		url,
 		data: profile,
+		vector,
 		expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
 	});
 

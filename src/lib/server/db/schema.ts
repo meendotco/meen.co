@@ -128,48 +128,27 @@ export const jobPost = pgTable(
 	(table) => [index('jobPost_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))]
 );
 
-export const candidate = pgTable(
-	'candidate',
+export const jobPostRelations = relations(jobPost, ({ one }) => ({
+	owner: one(users, {
+		fields: [jobPost.ownerId],
+		references: [users.id]
+	})
+}));
+
+export const linkedInProfile = pgTable(
+	'linkedInProfile',
 	{
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
-		firstName: text('firstName').notNull(),
-		lastName: text('lastName').notNull(),
-		linkedinUrl: text('linkedinUrl').notNull(),
-		jobPostId: text('jobPostId')
-			.notNull()
-			.references(() => jobPost.id, { onDelete: 'cascade' }),
-		linkedInProfileId: text('linkedInProfileId').notNull(),
-		vector: vector('vector', { dimensions: 1536 }).notNull(),
+		url: text('url').notNull(),
+		data: jsonb('data').notNull(),
+		vector: vector('vector', { dimensions: 1536 }),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
-		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
+		expiresAt: timestamp('expiresAt', { mode: 'date' }).notNull()
 	},
 	(table) => [
-		index('candidate_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops')),
-		index('candidate_linkedInProfileId_idx').using('hash', table.linkedInProfileId)
+		index('linkedInProfile_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))
 	]
 );
-
-export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
-	owner: one(users, {
-		fields: [jobPost.ownerId],
-		references: [users.id]
-	}),
-	candidates: many(candidate)
-}));
-
-export const linkedInProfile = pgTable('linkedInProfile', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	url: text('url').notNull(),
-	data: jsonb('data').notNull(),
-	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
-	expiresAt: timestamp('expiresAt', { mode: 'date' }).notNull()
-});
-
-export const linkedInProfileRelations = relations(linkedInProfile, ({ many }) => ({
-	candidates: many(candidate)
-}));
