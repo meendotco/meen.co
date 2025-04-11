@@ -39,7 +39,7 @@ const searchLinkedin = async (query: string) => {
 		.from(linkedInProfile)
 		.where(gt(similarity, 0.0))
 		.orderBy((t) => desc(t.similarity))
-		.limit(4);
+		.limit(10);
 
 	const data = candidates.map((candidate) => {
 		return candidate.data as PersonEndpointResponse;

@@ -1,11 +1,15 @@
+import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
-
 const embeddingModel = openai.embedding('text-embedding-3-large', {
 	dimensions: 1536 // for the index to work correctly
 });
 
-export const o3Mini = openai('gpt-4o');
+export const o3Mini = openai('o3-mini');
+export const gpt4o = openai('gpt-4o');
 
+export const gpt4omini = openai('gpt-4o-mini');
+export const claude37Sonnet = anthropic('claude-3-7-sonnet-20250219');
+export const claude35Sonnet = anthropic('claude-3-5-sonnet-20240620');
 export async function embedText(text: string) {
 	const content = text.replace(/\n/g, ' ');
 	const embedding = await embeddingModel.doEmbed({ values: [content] });

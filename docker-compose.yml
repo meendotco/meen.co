@@ -10,5 +10,12 @@ services:
       POSTGRES_DB: meen
     volumes:
       - pgdata:/var/lib/postgresql/data
+  crawler:
+    image: unclecode/crawl4ai:latest
+    restart: always
+    ports:
+      - 11235:11235
+    environment:
+      CRAWL4AI_API_TOKEN: secret
 volumes:
   pgdata:

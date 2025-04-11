@@ -5,7 +5,7 @@ import { uuid } from 'drizzle-orm/pg-core';
 import { findCandidates } from '@/server/ai/mastra/agents/linkedin';
 import { db } from '@/server/db';
 import { jobPost } from '@/server/db/schema';
-import { broadcastToUsers, broadcastToUsersWithoutLocals } from '@/websocket/server.svelte.js';
+import { broadcastToUsers } from '@/websocket/server.svelte.js';
 export const POST = async ({ locals, params }) => {
 	let fullResponse = '';
 	const jobId = params.jobId;
@@ -24,10 +24,9 @@ export const POST = async ({ locals, params }) => {
 
 	const agent = await findCandidates(job);
 	const agentStream = await agent.stream(
-		`Find the Ideal candidates for this Job: ${job.description}`
+		`Find the Ideal candidates for this Job: ${job.description}. Please try to find at least 3 candidates. Help me find them! Search the internet for candidates.`
 	);
 	for await (const chunk of agentStream.textStream) {
-		console.log(chunk);
 		fullResponse += chunk;
 		broadcastToUsers(locals.wss, [user.id], {
 			messageType: 'chunk',
