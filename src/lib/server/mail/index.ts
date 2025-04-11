@@ -15,9 +15,14 @@ async function notifyAndSaveWaitlist(
 ) {
 	await resend.emails.send({
 		from: 'Meen <onboarding@meen.co>',
-		to: ['markus@meen.co', 'hash@meen.co'],
+		to: ['markus@meen.co', 'hash@meen.co', 'lead-aaaap5b2bjt2ebl5vwhwgfuwne@meenai.slack.com'],
 		subject: 'Meen - Waitlist',
-		html: `<p>New waitlist signup: ${email}</p>`
+		html: `<p>New waitlist signup:</p>
+		<p>Email: ${email}</p>
+		<p>Name: ${name}</p>
+		<p>Company: ${company}</p>
+		<p>Company Size: ${companySize}</p>
+		<p>Role: ${role}</p>`
 	});
 
 	await db.insert(waitlist).values({ email, name, company, companySize, role });
