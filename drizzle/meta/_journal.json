@@ -71,6 +71,20 @@
       "when": 1744371124312,
       "tag": "0009_gorgeous_blindfold",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1744379732120,
+      "tag": "0010_black_zombie",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1744379972683,
+      "tag": "0011_flaky_hardball",
+      "breakpoints": true
     }
   ]
 }

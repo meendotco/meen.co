@@ -49,7 +49,6 @@
 
 	onMount(() => {
 		socket.on('chunk', (data) => {
-			console.log(data);
 			agentResponse += data.chunk;
 		});
 	});

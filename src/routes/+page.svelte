@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Logo from '$lib/components/Logo.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import WaitList from '$lib/components/WaitList.svelte';
 	let { data } = $props();
 </script>
 
@@ -77,11 +78,7 @@
 							placeholder="Senior Product Manager with 5+ years SaaS exp"
 							class="flex-1 border-none bg-transparent px-4 py-3 text-foreground placeholder-foreground/50 outline-none dark:text-white dark:placeholder-white/50"
 						/>
-						<button
-							class="bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary/90"
-						>
-							Search
-						</button>
+						<WaitList />
 					</div>
 				</div>
 

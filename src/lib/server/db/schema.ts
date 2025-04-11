@@ -192,3 +192,13 @@ export const candidateRelations = relations(candidates, ({ one }) => ({
 		references: [linkedInProfile.id]
 	})
 }));
+
+export const waitlist = pgTable('waitlist', {
+	email: text('email').primaryKey(),
+	name: text('name'),
+	company: text('company'),
+	companySize: text('companySize'),
+	role: text('role'),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+});
