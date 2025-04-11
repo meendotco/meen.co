@@ -10,6 +10,7 @@ services:
       POSTGRES_DB: meen
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
   crawler:
     image: unclecode/crawl4ai:latest
     restart: always
