@@ -44,7 +44,7 @@
 				{:else}
 					<Button
 						variant="link"
-						onclick={() => signIn()}
+						href="/signin"
 						class="text-foreground/70 transition-colors hover:text-primary"
 					>
 						Sign In

@@ -54,6 +54,7 @@ export async function getFullLinkedinProfile(
 		);
 	});
 
+	console.log('got profile: ' + url);
 	const textToEmbed = `${profile.first_name} ${profile.last_name} ${profile.headline || ''} ${profile.summary || ''} ${profile.skills?.join(', ') || ''}`;
 	const vector = await embedText(textToEmbed);
 

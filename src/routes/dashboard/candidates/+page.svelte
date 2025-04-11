@@ -115,7 +115,7 @@
 
 	<div class="grid gap-6">
 		{#each data.candidates as candidate (candidate.id)}
-			<CandidateCard candidateData={candidate.data}>
+			<CandidateCard candidateData={candidate.data} b64={candidate.profileImageB64}>
 				<div slot="actions" class="flex flex-col gap-2">
 					<Button variant="outline" size="sm">View Profile</Button>
 					<Button size="sm">Contact</Button>

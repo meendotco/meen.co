@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { CandidateData } from '$lib/types/candidate';
 
-	let { candidateData }: { candidateData: CandidateData } = $props();
+	let { candidateData, b64 }: { candidateData: CandidateData; b64: string } = $props();
 
 	// Helper to get initials
 	function getInitials(firstName?: string, lastName?: string): string {
@@ -19,9 +19,9 @@
 
 <div class="rounded-lg border bg-card p-6 shadow-sm">
 	<div class="flex items-start gap-4">
-		{#if candidateData.profile_pic_url}
+		{#if b64}
 			<img
-				src={candidateData.profile_pic_url}
+				src={`data:image/png;base64,${b64}`}
 				alt={candidateData.full_name ?? 'Profile picture'}
 				class="h-16 w-16 rounded-full object-cover"
 			/>

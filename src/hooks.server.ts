@@ -86,6 +86,7 @@ const webSocketHandle: Handle = async ({ event, resolve }) => {
 
 	return response;
 };
+
 export const handle: Handle = sequence(
 	handleParaglide,
 	AuthHandle,

@@ -6,22 +6,26 @@ import { z } from 'zod';
 import { embedText } from '@/server/ai';
 import { db } from '@/server/db';
 import { linkedInProfile } from '@/server/db/schema';
-export const searchLinkedinTool = createTool({
-	id: 'search-linkedin',
-	description: 'Search for candidates on LinkedIn',
-	inputSchema: z.object({
-		query: z.string().describe('Search query')
-	}),
-	outputSchema: z.object({
-		results: z.array(z.string())
-	}),
-	execute: async ({ context }) => {
-		return await searchLinkedin(context.query);
-	}
-});
+
+export async function createSearchLinkedinTool() {
+	return createTool({
+		id: 'search-linkedin',
+		description: 'Search for candidates on LinkedIn',
+		inputSchema: z.object({
+			query: z.string().describe('Search query')
+		}),
+		outputSchema: z.object({
+			results: z.array(z.string())
+		}),
+		execute: async ({ context }) => {
+			return await searchLinkedin(context.query);
+		}
+	});
+}
 
 const searchLinkedin = async (query: string) => {
 	const embedding = await embedText(query);
+	console.log('searching for: ' + query);
 
 	const similarity = sql<number>`1 - (${cosineDistance(linkedInProfile.vector, embedding)})`;
 
@@ -46,6 +50,8 @@ const searchLinkedin = async (query: string) => {
 Position: ${candidate.headline || 'N/A'}
 Location: ${candidate.country || 'N/A'}
 Handle: ${candidate.public_identifier || 'N/A'}
+Experience: ${candidate.experiences?.join(', ') || 'N/A'}
+Skills: ${candidate.skills?.join(', ') || 'N/A'}
 URL: https://www.linkedin.com/in/${candidate.public_identifier}
 People also search for: ${candidate.people_also_viewed?.join(', ') || 'N/A'}
 `;

@@ -57,8 +57,9 @@ class socketState extends EventEmitter {
 			const newmessage = JSON.parse(
 				typeof event.data === 'string' ? event.data : event.data.toString()
 			);
+			console.log('WebSocket: Parsed message', newmessage);
 			this.messages.push(newmessage);
-			this.emit(newmessage.type, newmessage.data);
+			this.emit(newmessage.messageType, newmessage.data);
 			this.emit('message', newmessage); // global broadcast
 		}
 	}
