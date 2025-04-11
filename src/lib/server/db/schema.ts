@@ -128,13 +128,6 @@ export const jobPost = pgTable(
 	(table) => [index('jobPost_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))]
 );
 
-export const jobPostRelations = relations(jobPost, ({ one }) => ({
-	owner: one(users, {
-		fields: [jobPost.ownerId],
-		references: [users.id]
-	})
-}));
-
 export const linkedInProfile = pgTable(
 	'linkedInProfile',
 	{
@@ -153,3 +146,47 @@ export const linkedInProfile = pgTable(
 		index('linkedInProfile_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))
 	]
 );
+
+export const candidates = pgTable(
+	'candidate',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		jobPostId: text('jobPostId')
+			.notNull()
+			.references(() => jobPost.id, { onDelete: 'cascade' }),
+		linkedInProfileId: text('linkedInProfileId')
+			.notNull()
+			.references(() => linkedInProfile.id, { onDelete: 'cascade' }),
+		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+	},
+	(table) => [
+		index('candidate_jobPostId_idx').on(table.jobPostId),
+		index('candidate_linkedInProfileId_idx').on(table.linkedInProfileId)
+	]
+);
+
+export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
+	owner: one(users, {
+		fields: [jobPost.ownerId],
+		references: [users.id]
+	}),
+	candidates: many(candidates)
+}));
+
+export const linkedInProfileRelations = relations(linkedInProfile, ({ many }) => ({
+	candidates: many(candidates)
+}));
+
+export const candidateRelations = relations(candidates, ({ one }) => ({
+	jobPost: one(jobPost, {
+		fields: [candidates.jobPostId],
+		references: [jobPost.id]
+	}),
+	linkedInProfile: one(linkedInProfile, {
+		fields: [candidates.linkedInProfileId],
+		references: [linkedInProfile.id]
+	})
+}));

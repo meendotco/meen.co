@@ -57,6 +57,13 @@
       "when": 1744359856550,
       "tag": "0007_serious_madrox",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1744362260635,
+      "tag": "0008_slippery_odin",
+      "breakpoints": true
     }
   ]
 }

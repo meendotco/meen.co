@@ -14,7 +14,7 @@ BearerAuth.accessToken = PROXYCURL_API_KEY;
 
 export async function getFullLinkedinProfile(
 	url: string = 'https://www.linkedin.com/in/makkadotgg/'
-) {
+): Promise<PersonEndpointResponse> {
 	const apiInstance = new ProxycurlApi.PeopleAPIApi();
 	const fallbackToCache = 'on-error';
 	const opts = {
@@ -34,7 +34,7 @@ export async function getFullLinkedinProfile(
 	});
 
 	if (cache) {
-		return cache.data;
+		return cache.data as PersonEndpointResponse;
 	}
 
 	const profile = await new Promise<PersonEndpointResponse>((resolve, reject) => {

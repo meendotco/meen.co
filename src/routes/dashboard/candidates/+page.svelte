@@ -4,11 +4,15 @@
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 	import { Input } from '@/components/ui/input';
+	import CandidateCard from '$lib/components/dashboard/CandidateCard.svelte';
+	import type { Candidate, SearchResultItem } from '$lib/types/candidate';
 
-	let { data } = $props();
+	let { data }: { data: { candidates: Candidate[] } } = $props();
 
 	let addUrlQuery = $state('');
 	let searchQuery = $state('');
+	let searchResults = $state<SearchResultItem[]>([]);
+	let isSearching = $state(false);
 
 	async function manuallyAddCandidate(query: string) {
 		await fetch(`/api/candidate/add`, {
@@ -22,14 +26,22 @@
 	}
 
 	async function searchCandidates(query: string) {
-		await fetch(`/api/candidate/search`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ query })
-		});
-		window.location.reload();
+		if (!query.trim()) return;
+
+		isSearching = true;
+		try {
+			const response = await fetch(`/api/candidate/search`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ query })
+			});
+			const data = await response.json();
+			searchResults = data;
+		} finally {
+			isSearching = false;
+		}
 	}
 </script>
 
@@ -59,7 +71,9 @@
 							class="pl-10"
 						/>
 					</div>
-					<Button onclick={() => searchCandidates(searchQuery)}>Search</Button>
+					<Button disabled={isSearching} onclick={() => searchCandidates(searchQuery)}>
+						{isSearching ? 'Searching...' : 'Search'}
+					</Button>
 				</div>
 			</CardContent>
 		</Card>
@@ -84,104 +98,29 @@
 			</CardContent>
 		</Card>
 	</div>
-
-	<div class="grid gap-6">
-		{#each data.candidates as candidate (candidate.id)}
-			<div class="rounded-lg border bg-card p-6 shadow-sm">
-				<div class="flex items-start gap-4">
-					{#if candidate.data.profile_pic_url}
-						<img
-							src={candidate.data.profile_pic_url}
-							alt={candidate.data.full_name}
-							class="h-16 w-16 rounded-full object-cover"
-						/>
-					{:else}
-						<div class="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-							<span class="text-xl font-semibold"
-								>{candidate.data.first_name?.[0]}{candidate.data.last_name?.[0]}</span
-							>
-						</div>
-					{/if}
-
-					<div class="flex-1 space-y-2">
-						<div>
-							<h3 class="text-xl font-semibold">{candidate.data.full_name}</h3>
-							<p class="text-sm text-muted-foreground">{candidate.data.headline}</p>
-						</div>
-
-						<div class="flex flex-wrap gap-1">
-							{#if candidate.data.location}
-								<span class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
-									{candidate.data.city}, {candidate.data.country_full_name}
-								</span>
-							{/if}
-							{#if candidate.data.connections}
-								<span class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
-									{candidate.data.connections} connections
-								</span>
-							{/if}
-						</div>
-
-						{#if candidate.data.skills && candidate.data.skills.length > 0}
-							<div>
-								<h4 class="text-sm font-medium">Skills</h4>
-								<div class="mt-1 flex flex-wrap gap-1">
-									{#each candidate.data.skills.slice(0, 8) as skill (skill)}
-										<span
-											class="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs text-primary"
-										>
-											{skill}
-										</span>
-									{/each}
-									{#if candidate.data.skills.length > 8}
-										<span class="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs">
-											+{candidate.data.skills.length - 8} more
-										</span>
-									{/if}
-								</div>
-							</div>
-						{/if}
-
-						{#if candidate.data.people_also_viewed}
-							<div>
-								<h4 class="text-sm font-medium">People also viewed</h4>
-								<div class="mt-1 space-y-1">
-									{#each candidate.data.people_also_viewed.slice(0, 2) as person (person.link)}
-										<p class="text-sm font-medium">{person.name}</p>
-										<p class="text-xs text-muted-foreground">
-											{person.link}
-										</p>
-									{/each}
-								</div>
-							</div>
-						{/if}
-						{#if candidate.data.experiences && candidate.data.experiences.length > 0}
-							<div>
-								<h4 class="text-sm font-medium">Experience</h4>
-								<div class="mt-1 space-y-1">
-									{#each candidate.data.experiences.slice(0, 2) as experience (experience.company + experience.title)}
-										<div>
-											<p class="text-sm font-medium">{experience.title} at {experience.company}</p>
-											{#if experience.starts_at}
-												<p class="text-xs text-muted-foreground">
-													{experience.starts_at.year} - {experience.ends_at
-														? experience.ends_at.year
-														: 'Present'}
-												</p>
-											{/if}
-										</div>
-									{/each}
-								</div>
-							</div>
-						{/if}
-					</div>
-
-					<div class="flex flex-col gap-2">
+	{#if searchResults.length > 0}
+		<h1 class="text-2xl font-bold">Search Results</h1>
+		<div class="grid gap-6">
+			{#each searchResults as result (result.data.public_identifier)}
+				<CandidateCard candidateData={result.data}>
+					<div slot="actions" class="flex flex-col gap-2">
 						<Button variant="outline" size="sm">View Profile</Button>
 						<Button size="sm">Contact</Button>
 					</div>
+				</CandidateCard>
+			{/each}
+		</div>
+		<h1 class="text-2xl font-bold">All Profiles</h1>
+	{/if}
+
+	<div class="grid gap-6">
+		{#each data.candidates as candidate (candidate.id)}
+			<CandidateCard candidateData={candidate.data}>
+				<div slot="actions" class="flex flex-col gap-2">
+					<Button variant="outline" size="sm">View Profile</Button>
+					<Button size="sm">Contact</Button>
 				</div>
-			</div>
+			</CandidateCard>
 		{:else}
 			<div class="rounded-lg border bg-card p-8 text-center">
 				<p class="text-muted-foreground">No candidates found</p>
