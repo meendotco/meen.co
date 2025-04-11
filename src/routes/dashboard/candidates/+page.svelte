@@ -30,7 +30,7 @@
 
 		isSearching = true;
 		try {
-			const response = await fetch(`/api/candidate/search`, {
+			const response = await fetch(`/api/candidate/scan`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -53,10 +53,8 @@
 	<div class="grid gap-6 md:grid-cols-2">
 		<Card>
 			<CardHeader>
-				<CardTitle>Find Candidates</CardTitle>
-				<CardDescription>
-					Search for candidates based on skills, experience, or job post
-				</CardDescription>
+				<CardTitle>Start a candidate scan</CardTitle>
+				<CardDescription>Let an agent scan candidates for you based on your needs</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<div class="flex space-x-2">
