@@ -73,15 +73,6 @@
 				};
 
 				assessmentHistory = [...assessmentHistory, newHistory];
-
-				// Save history to server
-				await fetch(`/api/jobs/${job.id}/saveChat`, {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						chatHistory: assessmentHistory
-					})
-				});
 			} else {
 				console.error(result);
 			}

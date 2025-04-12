@@ -1,23 +1,22 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import {
 		Select,
 		SelectContent,
 		SelectItem,
 		SelectTrigger
 	} from '$lib/components/ui/select/index.js';
-
-	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import type {
 		CreateStep,
-		Job,
-		JobType,
-		JobStatus,
-		JobPriority,
 		Currency,
+		Job,
+		JobPriority,
+		JobStatus,
+		JobType,
 		Requirement,
 		RequirementType
 	} from '$lib/types/job.js';

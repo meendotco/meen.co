@@ -106,7 +106,6 @@ export const authenticators = pgTable(
 		}
 	]
 );
-
 export const jobPost = pgTable(
 	'jobPost',
 	{
@@ -121,18 +120,18 @@ export const jobPost = pgTable(
 			.references(() => users.id, { onDelete: 'cascade' }),
 		title: text('title').notNull(),
 		description: text('description').notNull(),
-		department: text('department').notNull(),
-		location: text('location').notNull(),
-		type: text('type').notNull(),
-		status: text('status').notNull(),
-		priority: text('priority').notNull(),
-		salary: jsonb('salary').notNull(),
-		responsibilities: jsonb('responsibilities').notNull(),
-		requirements: jsonb('requirements').notNull(),
-		benefits: jsonb('benefits').notNull(),
-		tech_stack: jsonb('tech_stack').notNull(),
-		remote_policy: text('remote_policy').notNull(),
-		vector: vector('vector', { dimensions: 1536 }).notNull(),
+		department: text('department'),
+		location: text('location'),
+		type: text('type'),
+		status: text('status'),
+		priority: text('priority'),
+		salary: jsonb('salary'),
+		responsibilities: jsonb('responsibilities'),
+		requirements: jsonb('requirements'),
+		benefits: jsonb('benefits'),
+		tech_stack: jsonb('tech_stack'),
+		remote_policy: text('remote_policy'),
+		vector: vector('vector', { dimensions: 1536 }),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
 	},

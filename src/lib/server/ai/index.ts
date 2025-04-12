@@ -1,5 +1,6 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
+
 const embeddingModel = openai.embedding('text-embedding-3-large', {
 	dimensions: 1536 // for the index to work correctly
 });

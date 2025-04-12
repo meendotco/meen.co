@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Briefcase, PlusCircle } from 'lucide-svelte';
+
 	import { goto } from '$app/navigation';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Card } from '$lib/components/ui/card/index.js';
@@ -13,18 +14,52 @@
 	let jobDescription = $state('Software Engineer at Google specializing in React and TypeScript');
 	let isSubmitting = $state(false);
 
+	let jobURL = $state('');
 	function createJob() {
 		return goto('/dashboard/jobs/create');
+	}
+
+	async function createJobByURL() {
+		await fetch('/api/jobs/create/url', {
+			method: 'POST',
+			body: JSON.stringify({
+				url: jobURL
+			})
+		});
 	}
 </script>
 
 <div class="container mx-auto flex flex-col gap-6 py-6">
 	<div class="flex items-center justify-between">
 		<h1 class="text-3xl font-bold tracking-tight">All Jobs</h1>
-		<Button onclick={createJob}>
-			<PlusCircle class="mr-2 h-4 w-4" />
-			Create Job
-		</Button>
+		<div class="flex items-center gap-2">
+			<Dialog.Root>
+				<Dialog.Trigger>
+					<Button>
+						<PlusCircle class="mr-2 h-4 w-4" />
+						Add existing job
+					</Button>
+				</Dialog.Trigger>
+				<Dialog.Content>
+					<Dialog.Title>Create Job</Dialog.Title>
+					<Dialog.Description
+						>Please enter the URL of the job you want to create.</Dialog.Description
+					>
+					<Dialog.Footer>
+						<Input
+							type="url"
+							placeholder="https://www.linkedin.com/jobs/view/3724600000"
+							bind:value={jobURL}
+						/>
+						<Button onclick={createJobByURL}>Create Job</Button>
+					</Dialog.Footer>
+				</Dialog.Content>
+			</Dialog.Root>
+			<Button onclick={createJob}>
+				<PlusCircle class="mr-2 h-4 w-4" />
+				Create Job
+			</Button>
+		</div>
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

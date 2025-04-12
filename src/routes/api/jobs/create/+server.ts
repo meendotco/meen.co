@@ -1,5 +1,5 @@
-import { and, eq } from 'drizzle-orm';
 import type { RequestEvent } from '@sveltejs/kit';
+import { and, eq } from 'drizzle-orm';
 
 import { embedText } from '@/server/ai';
 import { db } from '@/server/db';
