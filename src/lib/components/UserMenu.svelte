@@ -2,7 +2,7 @@
 	import { signOut } from '@auth/sveltekit/client';
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sun from '@lucide/svelte/icons/sun';
-	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+	import { DropdownMenu } from 'bits-ui';
 	import { LogOut, User } from 'lucide-svelte';
 	import { toggleMode } from 'mode-watcher';
 
@@ -13,8 +13,8 @@
 </script>
 
 {#if user?.email}
-	<DropdownMenuPrimitive.Root>
-		<DropdownMenuPrimitive.Trigger>
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger>
 			<Button
 				variant="ghost"
 				size="icon"
@@ -24,40 +24,38 @@
 					<User class="avatar-icon" strokeWidth={1.5} />
 				</div>
 			</Button>
-		</DropdownMenuPrimitive.Trigger>
+		</DropdownMenu.Trigger>
 
-		<DropdownMenuPrimitive.Portal>
-			<DropdownMenuPrimitive.Content class="dropdown-content" sideOffset={8}>
-				<div class="px-3 py-2">
-					<p class="text-base font-medium text-foreground dark:text-white">My Profile</p>
+		<DropdownMenu.Content class="dropdown-content" sideOffset={8}>
+			<div class="px-3 py-2">
+				<p class="text-base font-medium text-foreground dark:text-white">My Profile</p>
+			</div>
+			<DropdownMenu.Separator class="separator" />
+			<div class="px-3 py-2">
+				<p class="truncate text-sm text-muted-foreground dark:text-neutral-400">
+					{user?.email || 'No email'}
+				</p>
+			</div>
+			<DropdownMenu.Separator class="separator" />
+			<DropdownMenu.Item onclick={() => toggleMode()} class="menu-item">
+				<div class="mr-2 flex h-4 w-4 items-center justify-center">
+					<Sun class="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+					<Moon
+						class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+					/>
 				</div>
-				<DropdownMenuPrimitive.Separator class="separator" />
-				<div class="px-3 py-2">
-					<p class="truncate text-sm text-muted-foreground dark:text-neutral-400">
-						{user?.email || 'No email'}
-					</p>
-				</div>
-				<DropdownMenuPrimitive.Separator class="separator" />
-				<DropdownMenuPrimitive.Item onclick={() => toggleMode()} class="menu-item">
-					<div class="mr-2 flex h-4 w-4 items-center justify-center">
-						<Sun class="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-						<Moon
-							class="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
-						/>
-					</div>
-					<span>Toggle theme</span>
-				</DropdownMenuPrimitive.Item>
-				<DropdownMenuPrimitive.Separator class="separator" />
-				<DropdownMenuPrimitive.Item
-					onclick={() => signOut({ redirectTo: page.url.pathname })}
-					class="menu-item text-red-500"
-				>
-					<LogOut class="mr-2 h-4 w-4" />
-					<span>Log out</span>
-				</DropdownMenuPrimitive.Item>
-			</DropdownMenuPrimitive.Content>
-		</DropdownMenuPrimitive.Portal>
-	</DropdownMenuPrimitive.Root>
+				<span>Toggle theme</span>
+			</DropdownMenu.Item>
+			<DropdownMenu.Separator class="separator" />
+			<DropdownMenu.Item
+				onclick={() => signOut({ redirectTo: page.url.pathname })}
+				class="menu-item text-red-500"
+			>
+				<LogOut class="mr-2 h-4 w-4" />
+				<span>Log out</span>
+			</DropdownMenu.Item>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
 {/if}
 
 <style>
@@ -74,7 +72,7 @@
 	}
 
 	:global(.dropdown-content) {
-		@apply w-64 rounded-xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-black/95;
+		@apply fixed w-64 rounded-xl border border-border bg-card/95 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-black/95;
 		animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 		transform-origin: var(--radix-dropdown-menu-content-transform-origin);
 		z-index: 9999;

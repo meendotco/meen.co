@@ -71,7 +71,7 @@
 		<div
 			class="mt-8 border-t border-border pt-8 text-center text-sm text-foreground/70 dark:border-white/10 dark:text-white/70"
 		>
-			&copy; 2024 Meen AI. All rights reserved.
+			&copy; {new Date().getFullYear()} Meen AI. All rights reserved.
 		</div>
 	</div>
 </footer>

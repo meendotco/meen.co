@@ -39,7 +39,7 @@ You are an expert LinkedIn recruiter tasked with finding the most suitable candi
 </output>
 
 <job>
-	Name: ${job.name}
+	Name: ${job.title}
 	Description: ${job.description}
 </job>
 `,

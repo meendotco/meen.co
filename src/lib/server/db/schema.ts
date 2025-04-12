@@ -119,8 +119,19 @@ export const jobPost = pgTable(
 		userId: text('userId')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
-		name: text('name').notNull(),
+		title: text('title').notNull(),
 		description: text('description').notNull(),
+		department: text('department').notNull(),
+		location: text('location').notNull(),
+		type: text('type').notNull(),
+		status: text('status').notNull(),
+		priority: text('priority').notNull(),
+		salary: jsonb('salary').notNull(),
+		responsibilities: jsonb('responsibilities').notNull(),
+		requirements: jsonb('requirements').notNull(),
+		benefits: jsonb('benefits').notNull(),
+		tech_stack: jsonb('tech_stack').notNull(),
+		remote_policy: text('remote_policy').notNull(),
 		vector: vector('vector', { dimensions: 1536 }).notNull(),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
