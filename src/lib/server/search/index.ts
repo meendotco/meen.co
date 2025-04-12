@@ -2,7 +2,15 @@ import axios from 'axios';
 
 import { GOOGLE_CSE_ID, GOOGLE_SEARCH_API_KEY } from '$env/static/private';
 
-export async function searchGoogle(query: string) {
+type GoogleSearchResult = {
+	items: {
+		link: string;
+		title: string;
+		snippet: string;
+	}[];
+};
+
+export async function searchGoogle(query: string): Promise<GoogleSearchResult> {
 	// Read the API key and Custom Search Engine (CSE) ID from environment variables
 	const apiKey = GOOGLE_SEARCH_API_KEY;
 	const cx = GOOGLE_CSE_ID;
@@ -15,5 +23,6 @@ export async function searchGoogle(query: string) {
 	const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}`;
 
 	const response = await axios.get(url);
+	console.log('response', response.data);
 	return response.data;
 }

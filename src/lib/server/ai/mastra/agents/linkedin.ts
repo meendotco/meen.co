@@ -43,7 +43,7 @@ You are an expert LinkedIn recruiter tasked with finding the most suitable candi
 	Description: ${job.description}
 </job>
 `,
-		model: gpt4o,
+		model: gpt4omini,
 		tools: {
 			searchLinkedinTool,
 			addCandidateTool,

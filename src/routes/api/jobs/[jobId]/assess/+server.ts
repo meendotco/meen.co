@@ -7,8 +7,6 @@ import { db } from '@/server/db';
 import { jobPost } from '@/server/db/schema';
 import { broadcastToUsers } from '@/websocket/server.svelte.js';
 
-import { saveAssessmentHistory } from '../../../../dashboard/jobs/[jobId]/+page.server';
-
 export const POST = async ({ locals, params }) => {
 	let fullResponse = '';
 	const jobId = params.jobId;
@@ -40,9 +38,6 @@ export const POST = async ({ locals, params }) => {
 			}
 		});
 	}
-
-	// Save this assessment to history
-	saveAssessmentHistory(jobId, fullResponse);
 
 	return json({ message: 'Job found', data: fullResponse });
 };
