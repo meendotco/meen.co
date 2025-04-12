@@ -64,6 +64,11 @@
 							>Privacy policy</a
 						>
 					</li>
+					<li>
+						<a href="/terms" class="text-foreground/70 hover:text-primary dark:text-white/70"
+							>Terms of service</a
+						>
+					</li>
 				</ul>
 			</div>
 		</div>

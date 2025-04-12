@@ -6,13 +6,8 @@
 	import { Card } from '$lib/components/ui/card/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	let { data } = $props();
 
-	let jobName = $state('Software Engineer');
-	let jobDescription = $state('Software Engineer at Google specializing in React and TypeScript');
-	let isSubmitting = $state(false);
+	let { data } = $props();
 
 	let jobURL = $state('');
 	function createJob() {
