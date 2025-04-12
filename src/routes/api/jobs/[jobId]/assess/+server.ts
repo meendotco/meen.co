@@ -24,9 +24,13 @@ export const POST = async ({ locals, params }) => {
 	}
 
 	const agent = await findCandidates(job);
-	const agentStream = await agent.stream(
-		`Find the Ideal candidates for this Job: ${job.description}. Please try to find at least 3 candidates. Help me find them! Search the internet for candidates.`
-	);
+	const agentStream = await agent.stream(`Hello!
+		
+		Please find the ideal candidates for this job: ${job.description}. Please try to find at least 3 candidates.
+		
+		Only tell me your thought process and don't ask anything. be fully autonomous until you have found the candidates.
+		
+		`);
 	for await (const chunk of agentStream.textStream) {
 		fullResponse += chunk;
 		broadcastToUsers(locals.wss, [user.id], {
