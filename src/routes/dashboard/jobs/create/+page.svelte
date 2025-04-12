@@ -62,23 +62,19 @@
 		};
 	}
 
-	function handleInputChange(event: Event) {
-		const target = event.target as HTMLSelectElement;
-		const name = target.name;
-		const value = target.value;
-
+	function handleSelectChange(name: string, value: { value: string; label: string }) {
 		let updates: Partial<Job> = {};
 		if (name.includes('.')) {
 			const [parent, child] = name.split('.');
 			updates = {
 				[parent]: {
 					...(formData[parent as keyof Job] as Record<string, any>),
-					[child]: value
+					[child]: value.value
 				}
 			};
 		} else {
 			updates = {
-				[name]: value
+				[name]: value.value
 			};
 		}
 
@@ -316,49 +312,55 @@
 
 						<div>
 							<Label for="type">Type</Label>
-							<select
-								name="type"
-								bind:value={formData.type}
-								on:change={handleInputChange}
-								class="w-full rounded-md border border-input bg-background p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							<Select
+								selected={formData.type}
+								onSelectedChange={(e) => handleSelectChange('type', e)}
 							>
-								<option value="">Select job type</option>
-								<option value="full-time">Full-time</option>
-								<option value="part-time">Part-time</option>
-								<option value="contract">Contract</option>
-								<option value="internship">Internship</option>
-							</select>
+								<SelectTrigger class="mt-1">
+									{formData.type || 'Select job type'}
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="full-time">Full-time</SelectItem>
+									<SelectItem value="part-time">Part-time</SelectItem>
+									<SelectItem value="contract">Contract</SelectItem>
+									<SelectItem value="internship">Internship</SelectItem>
+								</SelectContent>
+							</Select>
 						</div>
 
 						<div>
 							<Label for="remote_policy">Remote Policy</Label>
-							<select
-								name="remote_policy"
-								bind:value={formData.remote_policy}
-								on:change={handleInputChange}
-								class="w-full rounded-md border border-input bg-background p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							<Select
+								selected={formData.remote_policy}
+								onSelectedChange={(e) => handleSelectChange('remote_policy', e)}
 							>
-								<option value="">Select work policy</option>
-								{#each Object.entries(REMOTE_POLICY_OPTIONS) as [value, label]}
-									<option {value}>{label}</option>
-								{/each}
-							</select>
+								<SelectTrigger class="mt-1">
+									{formData.remote_policy || 'Select work policy'}
+								</SelectTrigger>
+								<SelectContent>
+									{#each Object.entries(REMOTE_POLICY_OPTIONS) as [value, label]}
+										<SelectItem {value}>{label}</SelectItem>
+									{/each}
+								</SelectContent>
+							</Select>
 						</div>
 
 						<div>
 							<Label for="priority">Priority</Label>
-							<select
-								name="priority"
-								bind:value={formData.priority}
-								on:change={handleInputChange}
-								class="w-full rounded-md border border-input bg-background p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							<Select
+								selected={formData.priority}
+								onSelectedChange={(e) => handleSelectChange('priority', e)}
 							>
-								<option value="">Select priority</option>
-								<option value="low">Low</option>
-								<option value="medium">Medium</option>
-								<option value="high">High</option>
-								<option value="urgent">Urgent</option>
-							</select>
+								<SelectTrigger class="mt-1">
+									{formData.priority || 'Select priority'}
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="low">Low</SelectItem>
+									<SelectItem value="medium">Medium</SelectItem>
+									<SelectItem value="high">High</SelectItem>
+									<SelectItem value="urgent">Urgent</SelectItem>
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
 
@@ -366,17 +368,19 @@
 						<h2 class="col-span-full text-xl font-semibold text-foreground">Salary Information</h2>
 						<div>
 							<Label for="currency">Currency</Label>
-							<select
-								name="salary.currency"
-								bind:value={formData.salary.currency}
-								on:change={handleInputChange}
-								class="w-full rounded-md border border-input bg-background p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+							<Select
+								selected={formData.salary.currency}
+								onSelectedChange={(e) => handleSelectChange('salary.currency', e)}
 							>
-								<option value="">Select currency</option>
-								<option value="USD">USD</option>
-								<option value="EUR">EUR</option>
-								<option value="GBP">GBP</option>
-							</select>
+								<SelectTrigger class="mt-1">
+									{formData.salary.currency || 'Select currency'}
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="USD">USD</SelectItem>
+									<SelectItem value="EUR">EUR</SelectItem>
+									<SelectItem value="GBP">GBP</SelectItem>
+								</SelectContent>
+							</Select>
 						</div>
 						<div>
 							<Label for="salaryMin">Salary Min</Label>
@@ -470,16 +474,18 @@
 								<div class="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div>
 										<Label for={`req-type-${index}`}>Type</Label>
-										<select
-											name={`requirements.${index}.type`}
-											bind:value={req.type}
-											on:change={handleInputChange}
-											class="w-full rounded-md border border-input bg-background p-2 text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+										<Select
+											selected={req.type}
+											onSelectedChange={(e) => handleRequirementChange(`${index}.type`, e)}
 										>
-											<option value="">Select type</option>
-											<option value="must-have">Must Have</option>
-											<option value="nice-to-have">Nice to Have</option>
-										</select>
+											<SelectTrigger class="mt-1">
+												{req.type || 'Select type'}
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="must-have">Must Have</SelectItem>
+												<SelectItem value="nice-to-have">Nice to Have</SelectItem>
+											</SelectContent>
+										</Select>
 									</div>
 
 									<div>
@@ -633,8 +639,8 @@
 
 							<div>
 								<div class="mb-4">
-									<p class="mb-1 text-sm text-muted-foreground">Status</p>
-									<p class="capitalize text-foreground">{formData.status}</p>
+									<p class="mb-1 text-sm text-muted-foreground">Work Policy</p>
+									<p class="capitalize text-foreground">{formData.remote_policy}</p>
 								</div>
 
 								<div class="mb-4">
