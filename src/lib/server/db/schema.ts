@@ -170,6 +170,7 @@ export const candidates = pgTable(
 			.notNull()
 			.references(() => linkedInProfile.id, { onDelete: 'cascade' }),
 		reasoning: text('reasoning'),
+		eagerlyAdded: boolean('eagerlyAdded').notNull().default(false),
 		matchScore: integer('matchScore'),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()

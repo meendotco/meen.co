@@ -1,85 +1,102 @@
 import type { RequestEvent } from '@sveltejs/kit';
-import { generateObject } from 'ai';
 import { and, eq } from 'drizzle-orm';
-import { z } from 'zod';
 
-import { gpt4o, o3Mini } from '@/server/ai';
-import { embedText } from '@/server/ai';
-import { db } from '@/server/db';
-import { jobPost } from '@/server/db/schema';
+import { embedText } from '$lib/server/ai';
+import { generateJobPostEmbeddingInput } from '$lib/server/ai/format';
+import { db } from '$lib/server/db';
+import { jobPost } from '$lib/server/db/schema';
+import { addCandidate } from '$lib/server/job';
+import { insertJob } from '$lib/server/job';
+import { searchLinkedinForObject } from '$lib/server/linkedin';
 import { getJobDataFromURL } from '$lib/server/search/index';
 
 export const POST = async ({ request, locals }: RequestEvent) => {
 	try {
+		console.log('Starting job creation from URL');
 		const { url } = await request.json();
-		console.log(url);
+		console.log(`Processing URL: ${url}`);
+
 		const jobData = await getJobDataFromURL(url);
-
-		console.log(jobData);
-		const { object } = await generateObject({
-			model: gpt4o,
-			schema: z.object({
-				title: z.string(),
-				description: z.string(),
-				department: z.string().optional(),
-				location: z.string().optional(),
-				type: z.string().optional(),
-				priority: z.string().optional(),
-				salary: z.string().optional(),
-				remote_policy: z.string().optional(),
-				responsibilities: z.string().optional(),
-				requirements: z.string().optional(),
-				benefits: z.string().optional(),
-				tech_stack: z.string().optional()
-			}),
-			prompt: `Extract the following information from the job description: ${jobData}`
-		});
-
-		console.log(object);
-		const user = locals.user;
-		const stringForVector = `${object.title} ${object.description}`;
-		const vector = await embedText(stringForVector);
-
-		try {
-			const post = await db.insert(jobPost).values({
-				userId: user.id,
-				ownerId: user.id,
-				title: object.title,
-				department: object.department,
-				location: object.location,
-				type: object.type,
-				status: 'draft',
-				priority: object.priority,
-				salary: object.salary,
-				vector: vector,
-				description: object.description,
-				responsibilities: object.responsibilities,
-				requirements: object.requirements,
-				benefits: object.benefits,
-				tech_stack: object.tech_stack,
-				remote_policy: object.remote_policy
-			});
-
-			console.log(post);
-			return new Response(JSON.stringify(post), { status: 201 });
-		} catch (dbError: any) {
-			return new Response(JSON.stringify({ error: 'Database error', details: dbError.message }), {
-				status: 500
-			});
+		if (!jobData) {
+			console.log('No job data found from URL');
+			return new Response(
+				JSON.stringify({ error: 'Failed to create job', details: 'No job data found' }),
+				{
+					status: 400
+				}
+			);
 		}
-	} catch (error: any) {
-		return new Response(JSON.stringify({ error: 'Failed to create job', details: error.message }), {
+		console.log('Job data extracted successfully');
+
+		console.log(`Inserting job for user: ${locals.user.id}`);
+		const job = await insertJob(jobData, locals.user.id);
+		console.log(`Job created with ID: ${job.id}`);
+
+		const formattedJobData = generateJobPostEmbeddingInput({
+			title: job.title,
+			description: job.description,
+			department: job.department || undefined,
+			location: job.location || undefined,
+			type: job.type || undefined,
+			priority: job.priority || undefined,
+			salary: job.salary as string | undefined,
+			remote_policy: job.remote_policy || undefined,
+			responsibilities: job.responsibilities as string | undefined,
+			requirements: job.requirements as string | undefined,
+			benefits: job.benefits as string | undefined,
+			tech_stack: job.tech_stack as string | undefined
+		});
+		console.log('Generating embeddings for job data');
+		await embedText(formattedJobData);
+		console.log('Job data:', job);
+
+		console.log('Searching LinkedIn for matching candidates');
+		const candidates = await searchLinkedinForObject(job.description);
+		console.log(`Found ${candidates.length} potential candidates`);
+
+		// De-duplicate candidates by URL
+		const uniqueCandidates = Array.from(
+			new Map(candidates.map((candidate) => [candidate.url, candidate])).values()
+		);
+		console.log(`Filtered to ${uniqueCandidates.length} unique candidates`);
+
+		console.log(
+			'Candidate names:',
+			uniqueCandidates.map((candidate) => candidate.data.full_name)
+		);
+
+		console.log('Adding candidates to job');
+		await Promise.all(
+			uniqueCandidates.map((candidate) => {
+				console.log(`Adding candidate: ${candidate.data.full_name} (${candidate.url})`);
+				return addCandidate(
+					candidate.url,
+					job.id,
+					100,
+					'Eagerly matched candidate based on job description'
+				);
+			})
+		);
+		console.log('All candidates added successfully');
+
+		return new Response(JSON.stringify(candidates), { status: 201 });
+	} catch (error) {
+		console.error('Error creating job:', error);
+		return new Response(JSON.stringify({ error: 'Failed to create job', details: error }), {
 			status: 500
 		});
 	}
 };
 
 export const PATCH = async ({ request, locals }: RequestEvent) => {
+	console.log('Starting job update');
 	const { id, title, description } = await request.json();
+	console.log(`Updating job ${id} for user ${locals.user.id}`);
 	const user = locals.user;
 	const post = await db
 		.update(jobPost)
 		.set({ title, description })
 		.where(and(eq(jobPost.id, id), eq(jobPost.userId, user.id)));
+	console.log('Job updated successfully');
 	return new Response(JSON.stringify(post), { status: 200 });
 };

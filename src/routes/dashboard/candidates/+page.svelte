@@ -4,6 +4,7 @@
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 	import { Input } from '@/components/ui/input';
+	import { Skeleton } from '@/components/ui/skeleton';
 	import CandidateCard from '$lib/components/dashboard/CandidateCard.svelte';
 	import type { Candidate, SearchResultItem } from '$lib/types/candidate';
 
@@ -112,17 +113,35 @@
 	{/if}
 
 	<div class="grid gap-6">
-		{#each data.candidates as candidate (candidate.id)}
-			<CandidateCard candidateData={candidate.data} b64={candidate.profileImageB64}>
-				<div slot="actions" class="flex flex-col gap-2">
-					<Button variant="outline" size="sm">View Profile</Button>
-					<Button size="sm">Contact</Button>
+		{#await data.candidates}
+			{#each Array(3) as _ (index)}
+				<Card>
+					<CardContent class="flex items-center gap-4 p-6">
+						<Skeleton class="h-16 w-16 rounded-full" />
+						<div class="flex-1 space-y-2">
+							<Skeleton class="h-4 w-[200px]" />
+							<Skeleton class="h-4 w-[150px]" />
+						</div>
+						<div class="flex flex-col gap-2">
+							<Skeleton class="h-8 w-[100px]" />
+							<Skeleton class="h-8 w-[100px]" />
+						</div>
+					</CardContent>
+				</Card>
+			{/each}
+		{:then candidates}
+			{#each candidates as candidate (candidate.id)}
+				<CandidateCard candidateData={candidate.data} b64={candidate.profileImageB64}>
+					<div slot="actions" class="flex flex-col gap-2">
+						<Button variant="outline" size="sm">View Profile</Button>
+						<Button size="sm">Contact</Button>
+					</div>
+				</CandidateCard>
+			{:else}
+				<div class="rounded-lg border bg-card p-8 text-center">
+					<p class="text-muted-foreground">No candidates found</p>
 				</div>
-			</CandidateCard>
-		{:else}
-			<div class="rounded-lg border bg-card p-8 text-center">
-				<p class="text-muted-foreground">No candidates found</p>
-			</div>
-		{/each}
+			{/each}
+		{/await}
 	</div>
 </div>
