@@ -41,12 +41,16 @@
 		postedDate: new Date().toISOString().split('T')[0],
 		updatedDate: new Date().toISOString().split('T')[0],
 		description: '',
-		responsibilities: [],
+		responsibilities: ['Design and implement new features', 'Write clean, maintainable code'],
 		requirements: [],
-		benefits: [],
-		tech_stack: [],
+		benefits: ['Health insurance', 'Flexible working hours'],
+		tech_stack: ['Typescript', 'Svelte', 'Tailwind CSS'],
 		remote_policy: '' as keyof typeof REMOTE_POLICY_OPTIONS
 	});
+
+	let showResponsibilitiesMock = $state(true);
+	let showBenefitsMock = $state(true);
+	let showTechStackMock = $state(true);
 
 	const REMOTE_POLICY_OPTIONS = {
 		remote: 'Remote',
@@ -278,6 +282,7 @@
 					<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 						<div>
 							<Label for="title">Title</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Position title for candidates</p>
 							<Input
 								id="title"
 								name="title"
@@ -289,6 +294,7 @@
 
 						<div>
 							<Label for="department">Department</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Team or division</p>
 							<Input
 								id="department"
 								name="department"
@@ -300,6 +306,7 @@
 
 						<div>
 							<Label for="location">Location</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Primary work location</p>
 							<Input
 								id="location"
 								name="location"
@@ -311,12 +318,14 @@
 
 						<div>
 							<Label for="type">Type</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Employment type</p>
 							<Select
 								selected={formData.type}
 								onSelectedChange={(e) => handleSelectChange('type', e)}
 							>
 								<SelectTrigger class="mt-1">
-									{formData.type || 'Select job type'}
+									{formData.type.charAt(0).toUpperCase() + formData.priority.slice(1) ||
+										'Select job type'}
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="full-time">Full-time</SelectItem>
@@ -328,13 +337,15 @@
 						</div>
 
 						<div>
-							<Label for="remote_policy">Remote Policy</Label>
+							<Label for="remote_policy">Work Policy</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Remote, hybrid, or on-site</p>
 							<Select
 								selected={formData.remote_policy}
 								onSelectedChange={(e) => handleSelectChange('remote_policy', e)}
 							>
 								<SelectTrigger class="mt-1">
-									{formData.remote_policy || 'Select work policy'}
+									{formData.remote_policy.charAt(0).toUpperCase() +
+										formData.remote_policy.slice(1) || 'Select work policy'}
 								</SelectTrigger>
 								<SelectContent>
 									{#each Object.entries(REMOTE_POLICY_OPTIONS) as [value, label]}
@@ -346,12 +357,14 @@
 
 						<div>
 							<Label for="priority">Priority</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Hiring urgency level</p>
 							<Select
 								selected={formData.priority}
 								onSelectedChange={(e) => handleSelectChange('priority', e)}
 							>
 								<SelectTrigger class="mt-1">
-									{formData.priority || 'Select priority'}
+									{formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1) ||
+										'Select priority'}
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="low">Low</SelectItem>
@@ -367,12 +380,14 @@
 						<h2 class="col-span-full text-xl font-semibold text-foreground">Salary Information</h2>
 						<div>
 							<Label for="currency">Currency</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Salary currency</p>
 							<Select
 								selected={formData.salary.currency}
 								onSelectedChange={(e) => handleSelectChange('salary.currency', e)}
 							>
 								<SelectTrigger class="mt-1">
-									{formData.salary.currency || 'Select currency'}
+									{formData.salary.currency.charAt(0).toUpperCase() +
+										formData.salary.currency.slice(1) || 'Select currency'}
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="USD">USD</SelectItem>
@@ -382,7 +397,8 @@
 							</Select>
 						</div>
 						<div>
-							<Label for="salaryMin">Salary Min</Label>
+							<Label for="salaryMin">Min Salary</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Annual minimum</p>
 							<Input
 								id="salaryMin"
 								type="number"
@@ -393,7 +409,8 @@
 							/>
 						</div>
 						<div>
-							<Label for="salaryMax">Salary Max</Label>
+							<Label for="salaryMax">Max Salary</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Annual maximum</p>
 							<Input
 								id="salaryMax"
 								type="number"
@@ -409,6 +426,7 @@
 						<h2 class="mb-4 text-xl font-semibold text-foreground">Job Description</h2>
 						<div>
 							<Label for="description">Description</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Role overview and expectations</p>
 							<Textarea
 								id="description"
 								name="description"
@@ -420,17 +438,22 @@
 						</div>
 
 						<div class="mt-6">
-							<h3 class="mb-4 font-medium text-foreground">Job Responsibilities</h3>
 							<Label for="responsibilities">Responsibilities</Label>
+							<p class="mb-2 text-sm text-muted-foreground">Key duties (press Enter to add)</p>
 							<div
 								class="mt-1 flex flex-wrap gap-2 rounded-md border border-input bg-background p-2"
 							>
 								{#each formData.responsibilities as resp, i}
-									<div class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm">
+									<div
+										class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm {showResponsibilitiesMock
+											? 'opacity-50'
+											: ''}"
+									>
 										{resp}
 										<button
 											class="ml-1 text-primary hover:text-primary/80"
 											onclick={() => {
+												if (showResponsibilitiesMock) return;
 												formData.responsibilities = formData.responsibilities.filter(
 													(_, index) => index !== i
 												);
@@ -458,6 +481,12 @@
 											formData.responsibilities = formData.responsibilities.slice(0, -1);
 										}
 									}}
+									onfocus={() => {
+										if (showResponsibilitiesMock) {
+											formData.responsibilities = [];
+											showResponsibilitiesMock = false;
+										}
+									}}
 								/>
 							</div>
 						</div>
@@ -473,12 +502,14 @@
 								<div class="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div>
 										<Label for={`req-type-${index}`}>Type</Label>
+										<p class="mb-2 text-sm text-muted-foreground">Must have or Nice to have</p>
 										<Select
 											selected={req.type}
 											onSelectedChange={(e) => handleRequirementChange(`${index}.type`, e)}
 										>
 											<SelectTrigger class="mt-1">
-												{req.type || 'Select type'}
+												{req.type.charAt(0).toUpperCase() + req.type.slice(1).replace(/-/g, ' ') ||
+													'Select type'}
 											</SelectTrigger>
 											<SelectContent>
 												<SelectItem value="must-have">Must Have</SelectItem>
@@ -488,7 +519,8 @@
 									</div>
 
 									<div>
-										<Label for={`req-weight-${index}`}>Weight (1-10)</Label>
+										<Label for={`req-weight-${index}`}>Weight</Label>
+										<p class="mb-2 text-sm text-muted-foreground">Importance (1-10)</p>
 										<Input
 											id={`req-weight-${index}`}
 											type="number"
@@ -502,6 +534,7 @@
 
 								<div>
 									<Label for={`req-description-${index}`}>Description</Label>
+									<p class="mb-2 text-sm text-muted-foreground">Requirement details</p>
 									<Textarea
 										id={`req-description-${index}`}
 										bind:value={req.description}
@@ -541,15 +574,20 @@
 					</div>
 
 					<div class="mt-6">
-						<h3 class="mb-4 font-medium text-foreground">Company Benefits</h3>
 						<Label for="benefits">Benefits</Label>
+						<p class="mb-2 text-sm text-muted-foreground">Company perks (press Enter to add)</p>
 						<div class="mt-1 flex flex-wrap gap-2 rounded-md border border-input bg-background p-2">
 							{#each formData.benefits as benefit, i}
-								<div class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm">
+								<div
+									class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm {showBenefitsMock
+										? 'opacity-50'
+										: ''}"
+								>
 									{benefit}
 									<button
 										class="ml-1 text-primary hover:text-primary/80"
 										onclick={() => {
+											if (showBenefitsMock) return;
 											formData.benefits = formData.benefits.filter((_, index) => index !== i);
 										}}
 									>
@@ -572,20 +610,33 @@
 										formData.benefits = formData.benefits.slice(0, -1);
 									}
 								}}
+								onfocus={() => {
+									if (showBenefitsMock) {
+										formData.benefits = [];
+										showBenefitsMock = false;
+									}
+								}}
 							/>
 						</div>
 					</div>
 
 					<div class="mt-6">
-						<h3 class="mb-4 font-medium text-foreground">Technical Stack</h3>
 						<Label for="techStack">Tech Stack</Label>
+						<p class="mb-2 text-sm text-muted-foreground">
+							Required technologies (press Enter to add)
+						</p>
 						<div class="mt-1 flex flex-wrap gap-2 rounded-md border border-input bg-background p-2">
 							{#each formData.tech_stack as tech, i}
-								<div class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm">
+								<div
+									class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm {showTechStackMock
+										? 'opacity-50'
+										: ''}"
+								>
 									{tech}
 									<button
 										class="ml-1 text-primary hover:text-primary/80"
 										onclick={() => {
+											if (showTechStackMock) return;
 											formData.tech_stack = formData.tech_stack.filter((_, index) => index !== i);
 										}}
 									>
@@ -606,6 +657,12 @@
 									}
 									if (e.key === 'Backspace' && e.currentTarget.value.trim() === '') {
 										formData.tech_stack = formData.tech_stack.slice(0, -1);
+									}
+								}}
+								onfocus={() => {
+									if (showTechStackMock) {
+										formData.tech_stack = [];
+										showTechStackMock = false;
 									}
 								}}
 							/>
@@ -639,17 +696,19 @@
 							<div>
 								<div class="mb-4">
 									<p class="mb-1 text-sm text-muted-foreground">Work Policy</p>
-									<p class="capitalize text-foreground">{formData.remote_policy}</p>
+									<p class="capitalize text-foreground">
+										{formData.remote_policy || 'Not specified'}
+									</p>
 								</div>
 
 								<div class="mb-4">
 									<p class="mb-1 text-sm text-muted-foreground">Priority</p>
-									<p class="capitalize text-foreground">{formData.priority}</p>
+									<p class="capitalize text-foreground">{formData.priority || 'Not specified'}</p>
 								</div>
 
 								<div class="mb-4">
 									<p class="mb-1 text-sm text-muted-foreground">Type</p>
-									<p class="capitalize text-foreground">{formData.type}</p>
+									<p class="capitalize text-foreground">{formData.type || 'Not specified'}</p>
 								</div>
 							</div>
 						</div>
@@ -668,7 +727,7 @@
 							</p>
 						</div>
 
-						{#if formData.responsibilities.length > 0}
+						{#if formData.responsibilities.length > 0 && !showResponsibilitiesMock}
 							<div class="mt-6">
 								<p class="mb-2 text-sm text-muted-foreground">Responsibilities</p>
 								<ul class="space-y-1">
@@ -682,7 +741,7 @@
 							</div>
 						{/if}
 
-						{#if formData.tech_stack.length > 0}
+						{#if formData.tech_stack.length > 0 && !showTechStackMock}
 							<div class="mt-6">
 								<p class="mb-2 text-sm text-muted-foreground">Tech Stack</p>
 								<div class="flex flex-wrap gap-2">
@@ -727,7 +786,7 @@
 						</div>
 					{/if}
 
-					{#if formData.benefits.length > 0}
+					{#if formData.benefits.length > 0 && !showBenefitsMock}
 						<div class="rounded-xl border border-border bg-card p-6">
 							<h3 class="mb-6 font-medium text-foreground">Benefits</h3>
 							<ul class="space-y-2">
