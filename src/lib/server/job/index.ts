@@ -45,7 +45,7 @@ export async function insertJob(
 			benefits: z.string().optional(),
 			tech_stack: z.string().optional()
 		}),
-		prompt: `Extract the following information from the job description: ${jobData}`
+		prompt: `Extract the following information from the job description: ${jobData}. Please don't include any company information in the job description.`
 	});
 
 	const stringForVector = generateJobPostEmbeddingInput(object);
