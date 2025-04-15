@@ -141,6 +141,31 @@
 	);
 </script>
 
-<div id={elem_id}>
+<div id={elem_id} class="markdown-container">
 	<Markdown md={harmonizedMarkdown} {plugins} />
 </div>
+
+<style>
+	.markdown-container :global(pre) {
+		white-space: pre-wrap;
+		word-wrap: break-word;
+		overflow-x: auto;
+	}
+
+	.markdown-container :global(table) {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+		border-collapse: collapse;
+	}
+
+	.markdown-container :global(th),
+	.markdown-container :global(td) {
+		padding: 0.5em;
+		border: 1px solid #ccc;
+	}
+
+	.markdown-container {
+		overflow-wrap: break-word;
+	}
+</style>

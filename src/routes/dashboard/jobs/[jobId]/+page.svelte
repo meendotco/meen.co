@@ -118,7 +118,7 @@
 	}
 </script>
 
-<div class="flex h-screen flex-col">
+<div class="flex h-screen flex-col overflow-hidden">
 	{#if job}
 		<!-- Top Bar with Job Details -->
 		<div class="border-b border-border bg-card p-4">
@@ -152,9 +152,7 @@
 			</div>
 		</div>
 
-		<!-- Main Content Area -->
 		<div class="flex flex-1 overflow-hidden">
-			<!-- Candidates Section -->
 			<div class="hidden w-80 overflow-y-auto border-r border-border md:block">
 				<div class="border-b border-border p-4">
 					<h2 class="flex items-center gap-2 text-lg font-medium">
@@ -282,18 +280,18 @@
 					{/if}
 
 					{#each job.chat?.messages || [] as message (message.id)}
-						<div class="rounded-lg border border-border p-4">
+						<div class="rounded-lg border border-border p-4 overflow-hidden break-words max-w-full">
 							{#if message.toolcalls}
 								<Markdown md={message.content || ''} />
 							{:else}
-								<p class="text-sm">{message.content}</p>
+								<p class="text-sm break-words">{message.content}</p>
 							{/if}
 						</div>
 					{/each}
 
 					<!-- Live Assessment Results -->
 					{#if agentResponse}
-						<div class="rounded-lg border border-primary/20 bg-primary/5 p-4">
+						<div class="rounded-lg border border-primary/20 bg-primary/5 p-4 overflow-hidden break-words max-w-full">
 							<div class="mb-2 flex items-center justify-between">
 								<div class="flex items-center gap-2">
 									<Search class="h-4 w-4 text-primary" />
@@ -303,7 +301,7 @@
 									{isAssessing ? 'In progress...' : 'Completed'}
 								</span>
 							</div>
-							<pre class="whitespace-pre-wrap font-mono text-sm">{agentResponse}</pre>
+							<pre class="whitespace-pre-wrap font-mono text-sm break-words">{agentResponse}</pre>
 							{#if !isAssessing}
 								<div class="mt-3 flex justify-end">
 									<Button variant="outline" size="sm" onclick={() => (agentResponse = '')}>

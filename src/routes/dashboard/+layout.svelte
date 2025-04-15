@@ -8,7 +8,7 @@
 	<Sidebar user={data.user} />
 
 	<div class="flex flex-1 flex-col lg:pl-14">
-		<main class="flex-1 p-6">
+		<main class="flex-1">
 			{@render children?.()}
 		</main>
 	</div>

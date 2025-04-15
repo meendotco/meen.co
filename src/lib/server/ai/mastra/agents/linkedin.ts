@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 
-import { gemini2dot5pro } from '@/server/ai';
+import { gemini2dot5pro, gpt4o } from '@/server/ai';
 import { jobPost } from '@/server/db/schema';
 import type { JobData } from '@/server/job';
 
@@ -171,7 +171,7 @@ export async function findCandidatesInteractive(job: typeof jobPost.$inferSelect
 	// --- Agent Definition ---
 	const agent = new Agent({
 		name: 'Deep Research Recruiter Agent',
-		instructions: createInteractiveAgent(job),
+		instructions: createAutonomousAgent(job),
 		model: gemini2dot5pro,
 		tools: {
 			searchLinkedinTool,

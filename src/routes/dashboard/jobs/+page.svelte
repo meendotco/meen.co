@@ -9,18 +9,25 @@
 
 	let { data } = $props();
 
+	let jobIsCreating = $state(false);
 	let jobURL = $state('');
+	let dialogOpen = $state(false);
+	
 	function createJob() {
 		return goto('/dashboard/jobs/create');
 	}
 
 	async function createJobByURL() {
+		jobIsCreating = true;
 		await fetch('/api/jobs/create/url', {
 			method: 'POST',
 			body: JSON.stringify({
 				url: jobURL
 			})
 		});
+		
+		jobIsCreating = false;
+		dialogOpen = false;
 	}
 </script>
 
@@ -28,9 +35,9 @@
 	<div class="flex items-center justify-between">
 		<h1 class="text-3xl font-bold tracking-tight">All Jobs</h1>
 		<div class="flex items-center gap-2">
-			<Dialog.Root>
+			<Dialog.Root bind:open={dialogOpen}>
 				<Dialog.Trigger>
-					<Button>
+					<Button >
 						<PlusCircle class="mr-2 h-4 w-4" />
 						Add existing job
 					</Button>
@@ -46,11 +53,13 @@
 							placeholder="https://www.linkedin.com/jobs/view/3724600000"
 							bind:value={jobURL}
 						/>
-						<Button onclick={createJobByURL}>Create Job</Button>
+						<Button disabled={jobIsCreating} onclick={createJobByURL}>
+							{jobIsCreating ? 'Creating...' : 'Create Job'}
+						</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
-			<Button onclick={createJob}>
+			<Button   onclick={createJob}>
 				<PlusCircle class="mr-2 h-4 w-4" />
 				Create Job
 			</Button>
