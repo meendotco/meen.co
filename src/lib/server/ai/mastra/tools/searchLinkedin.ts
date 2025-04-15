@@ -8,13 +8,14 @@ export async function createSearchLinkedinTool() {
 		id: 'search-linkedin',
 		description: 'Search for candidates on LinkedIn',
 		inputSchema: z.object({
-			query: z.string().describe('Search query')
+			query: z.string().describe('Search query'),
+			k: z.number().describe('Number of results to return').min(1).max(100)
 		}),
 		outputSchema: z.object({
 			results: z.array(z.string())
 		}),
 		execute: async ({ context }) => {
-			return await searchLinkedin(context.query);
+			return await searchLinkedin(context.query, context.k);
 		}
 	});
 }

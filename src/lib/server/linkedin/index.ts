@@ -98,7 +98,7 @@ export async function getFullLinkedinProfile(
 	return profile;
 }
 
-export async function searchLinkedin(query: string) {
+export async function searchLinkedin(query: string, k: number = 10) {
 	const embedding = await embedText(query);
 
 	const similarity = sql<number>`1 - (${cosineDistance(linkedInProfile.vector, embedding)})`;
@@ -113,7 +113,7 @@ export async function searchLinkedin(query: string) {
 		.from(linkedInProfile)
 		.where(gt(similarity, 0.0))
 		.orderBy((t) => desc(t.similarity))
-		.limit(10);
+		.limit(k);
 
 	const data = candidates.map((candidate) => {
 		return candidate.data as PersonEndpointResponse;

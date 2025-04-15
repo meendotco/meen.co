@@ -172,6 +172,7 @@ export function generateLinkedInProfileEmbeddingInput(profile: PersonEndpointRes
 	const parts = [
 		`<linkedInProfile>`,
 		`    <name>${safeGet(data, 'full_name')}</name>`,
+		`    <url>https://www.linkedin.com/in/${data.public_identifier}</url>`,
 		safeGet(data, 'headline') ? `    <headline>${safeGet(data, 'headline')}</headline>` : '',
 		safeGet(data, 'occupation')
 			? `    <occupation>${safeGet(data, 'occupation')}</occupation>`

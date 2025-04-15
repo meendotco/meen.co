@@ -4,8 +4,8 @@
 
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
+	import Markdown from '$lib/markdown/Markdown.svelte';
 	import { socket } from '$lib/websocket/client.svelte.js';
-
 	// Define data structure interfaces
 	interface LinkedInProfileData {
 		first_name?: string;
@@ -103,6 +103,19 @@
 			}
 		});
 	});
+
+	async function deleteChat() {
+		if (!job?.id) {
+			console.error('Job ID is missing');
+			return;
+		}
+
+		const response = await fetch(`/api/jobs/${job.id}/chat/delete`, {
+			method: 'POST'
+		});
+		const data = await response.json();
+		console.log(data);
+	}
 </script>
 
 <div class="flex h-screen flex-col">
@@ -233,6 +246,7 @@
 						<MessageSquare class="h-5 w-5 text-primary" />
 						<h2 class="text-lg font-medium">Chat - {job.chat?.title || 'New Chat'}</h2>
 					</div>
+					<Button variant="outline" size="sm" onclick={() => deleteChat()}>Delete Chat</Button>
 				</div>
 
 				<!-- Chat Messages -->
@@ -269,11 +283,10 @@
 
 					{#each job.chat?.messages || [] as message (message.id)}
 						<div class="rounded-lg border border-border p-4">
-							<p class="text-sm">{message.content}</p>
 							{#if message.toolcalls}
-								<pre class="mt-2 text-xs text-muted-foreground">
-									{JSON.stringify(message.toolcalls, null, 2)}
-								</pre>
+								<Markdown md={message.content || ''} />
+							{:else}
+								<p class="text-sm">{message.content}</p>
 							{/if}
 						</div>
 					{/each}

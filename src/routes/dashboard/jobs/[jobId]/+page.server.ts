@@ -32,7 +32,6 @@ export const load = async ({ locals, params, depends }) => {
 			}
 		}
 	});
-	console.log(job);
 
 	if (!job) {
 		throw error(404, 'Job not found');

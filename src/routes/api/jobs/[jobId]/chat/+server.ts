@@ -54,7 +54,7 @@ export const POST = async ({ locals, params, request }) => {
 	const formattedMessages = Array.isArray(job.chat?.messages)
 		? job.chat.messages.map((message) => ({
 				role: message.role,
-				content: message.content ?? ''
+				content: message.content ?? 'No content'
 			}))
 		: [];
 
@@ -83,7 +83,13 @@ export const POST = async ({ locals, params, request }) => {
 	try {
 		const agent = await findCandidatesInteractive(job);
 		console.log(formattedMessages);
-		const agentStream = await agent.stream(formattedMessages as CoreMessage[]);
+
+		// Filter out any empty messages before passing to the agent
+		const validMessages = formattedMessages.filter(
+			(msg) => msg.role !== 'assistant' || (msg.content && msg.content.trim() !== '')
+		);
+
+		const agentStream = await agent.stream(validMessages as CoreMessage[]);
 
 		let fullResponse = '';
 		for await (const chunk of agentStream.fullStream) {
@@ -96,8 +102,14 @@ export const POST = async ({ locals, params, request }) => {
 			});
 
 			if (chunk.type === 'text-delta') {
+				console.log(chunk.textDelta);
 				fullResponse += chunk.textDelta;
 			}
+
+			if (chunk.type === 'error') {
+				console.error(chunk.error);
+			}
+			console.log(chunk.type);
 		}
 
 		await db.insert(chatMessage).values({

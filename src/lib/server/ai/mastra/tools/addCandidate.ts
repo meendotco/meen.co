@@ -9,7 +9,11 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 		id: 'add-candidate',
 		description: 'Adds a potential candidate (from LinkedIn) to a specific job post.',
 		inputSchema: z.object({
-			linkedin_url: z.string().describe("The candidate's LinkedIn profile URL."),
+			linkedin_url: z
+				.string()
+				.describe(
+					"The candidate's LinkedIn profile URL. For example: https://www.linkedin.com/in/makkadotgg/"
+				),
 			match_score: z.number().describe('The match score of the candidate to the job post.'),
 			reasoning: z
 				.string()

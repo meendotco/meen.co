@@ -72,7 +72,7 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 				return addCandidate(
 					candidate.url,
 					job.id,
-					100,
+					10,
 					'Eagerly matched candidate based on job description',
 					true
 				);

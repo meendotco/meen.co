@@ -8,7 +8,7 @@ const CRAWL4AI_BASE_URL = 'http://localhost:11235'; // Use correct port
 const CRAWL4AI_API_TOKEN = env.CRAWL4AI_API_TOKEN || 'secret'; // Use env var or default
 
 const goToUrlInputSchema = z.object({
-	url: z.string().url().describe('The URL to fetch content from (cannot be a LinkedIn URL).')
+	url: z.string().describe('The URL to fetch content from (cannot be a LinkedIn URL).')
 });
 
 const goToUrlOutputSchema = z.object({
@@ -16,7 +16,7 @@ const goToUrlOutputSchema = z.object({
 		.string()
 		.describe('The processed content of the webpage in Markdown format.')
 		.optional(),
-	fetchedUrl: z.string().url().describe('The URL that was fetched.')
+	fetchedUrl: z.string().describe('The URL that was fetched.')
 });
 
 // Define an expected structure for the crawl result data (can be reused or adapted)

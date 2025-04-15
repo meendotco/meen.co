@@ -21,8 +21,6 @@ export async function createFetchLinkedinProfileTool() {
 		inputSchema: z.object({
 			url: z
 				.string()
-				.url()
-				.regex(/linkedin\.com\/in\//, 'URL must be a LinkedIn profile URL (linkedin.com/in/...)')
 				.describe('LinkedIn profile URL in the format https://www.linkedin.com/in/username/')
 		}),
 		outputSchema: z.object({
