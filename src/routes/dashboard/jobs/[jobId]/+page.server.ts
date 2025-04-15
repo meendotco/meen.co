@@ -1,6 +1,7 @@
+import { error } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 
-import { jobPost } from '@/server/db/schema';
+import { chat, jobPost } from '@/server/db/schema';
 import { db } from '$lib/server/db';
 export const load = async ({ locals, params, depends }) => {
 	const job = await db.query.jobPost.findFirst({
@@ -19,8 +20,28 @@ export const load = async ({ locals, params, depends }) => {
 					reasoning: true,
 					matchScore: true
 				}
+			},
+			chat: {
+				with: {
+					messages: {
+						with: {
+							toolcalls: true
+						}
+					}
+				}
 			}
 		}
 	});
+	console.log(job);
+
+	if (!job) {
+		throw error(404, 'Job not found');
+	}
+	if (!job?.chat) {
+		await db.insert(chat).values({
+			jobPostId: job.id,
+			title: 'Recruiter Agent'
+		});
+	}
 	return { job };
 };

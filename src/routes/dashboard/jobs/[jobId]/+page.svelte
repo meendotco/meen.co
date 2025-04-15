@@ -1,16 +1,9 @@
 <script lang="ts">
-	import { ArrowRight, Briefcase, Clock, Search, Users } from 'lucide-svelte';
+	import { ArrowRight, Briefcase, Clock, MessageSquare, Search, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	import { Button } from '$lib/components/ui/button/index.js';
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardFooter,
-		CardHeader,
-		CardTitle
-	} from '$lib/components/ui/card/index.js';
+	import { Card, CardContent } from '$lib/components/ui/card/index.js';
 	import { socket } from '$lib/websocket/client.svelte.js';
 
 	// Define data structure interfaces
@@ -26,23 +19,32 @@
 		linkedInProfile: {
 			data: LinkedInProfileData;
 			url?: string;
+			profileImageB64?: string;
 		};
 		reasoning?: string | null;
 		matchScore?: number | null;
-	}
-
-	interface ChatHistory {
-		timestamp: Date;
-		content: string;
 	}
 
 	let { data } = $props();
 	let job = $derived(data.job);
 	let candidates = $derived<Candidate[]>((job?.candidates as Candidate[]) ?? []);
 	let agentResponse = $state('');
-	let assessmentHistory = $state<ChatHistory[]>([]);
 	let isAssessing = $state(false);
 	let showFullDescription = $state(false);
+	let message = $state('');
+	async function sendMessage(message: string) {
+		if (!job?.id) {
+			console.error('Job ID is missing');
+			return;
+		}
+
+		const response = await fetch(`/api/jobs/${job.id}/chat`, {
+			method: 'POST',
+			body: JSON.stringify({ message })
+		});
+		const data = await response.json();
+		console.log(data);
+	}
 
 	async function assessCandidates() {
 		if (!job?.id) {
@@ -54,10 +56,10 @@
 		agentResponse = '';
 
 		try {
-			const response = await fetch(`/api/jobs/${job.id}/assess`, {
+			const response = await fetch(`/api/jobs/${job.id}/chat`, {
 				method: 'POST',
 				body: JSON.stringify({
-					jobId: job.id
+					message: 'Assess the candidates'
 				})
 			});
 
@@ -65,14 +67,6 @@
 
 			if (response.ok) {
 				console.log('Candidates assessed:', result);
-
-				// Save this assessment to history
-				const newHistory: ChatHistory = {
-					timestamp: new Date(),
-					content: agentResponse
-				};
-
-				assessmentHistory = [...assessmentHistory, newHistory];
 			} else {
 				console.error(result);
 			}
@@ -99,234 +93,241 @@
 	}
 
 	onMount(() => {
-		socket.on('chunk', (data) => {
-			agentResponse += data.chunk;
+		socket.on('messageChunk', (data) => {
+			if (data.chunk.type === 'text-delta') {
+				agentResponse += data.chunk.textDelta;
+			}
+			if (data.chunk.type === 'tool-result') {
+				agentResponse += `\n\nI used the tool: ${data.chunk.result.toolName}`;
+				console.log('Received tool result:', data.chunk.result);
+			}
 		});
 	});
 </script>
 
-<div class="container mx-auto space-y-8 py-6">
+<div class="flex h-screen flex-col">
 	{#if job}
-		<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-			<div>
-				<h1 class="text-3xl font-bold tracking-tight">{job.name}</h1>
-				<p class="mt-2 text-muted-foreground">
-					{#if job.description.length > 200 && !showFullDescription}
-						{job.description.slice(0, 200)}...
-						<button
-							class="ml-1 text-sm font-medium text-primary hover:underline"
-							onclick={() => (showFullDescription = true)}
-						>
-							Read more
-						</button>
-					{:else}
-						{job.description}
-						{#if showFullDescription && job.description.length > 200}
-							<button
-								class="ml-1 text-sm font-medium text-primary hover:underline"
-								onclick={() => (showFullDescription = false)}
-							>
-								Show less
-							</button>
-						{/if}
-					{/if}
-				</p>
-			</div>
+		<!-- Top Bar with Job Details -->
+		<div class="border-b border-border bg-card p-4">
+			<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+				<div class="flex items-center gap-4">
+					<div>
+						<h1 class="text-2xl font-bold tracking-tight">{job.title}</h1>
+						<div class="mt-1 flex items-center gap-2">
+							<Clock class="h-4 w-4 text-muted-foreground" />
+							<span class="text-sm text-muted-foreground">
+								Created on {formatDate(new Date(job.createdAt || new Date()))}
+							</span>
+							<span class="px-2 text-sm text-muted-foreground">•</span>
+							<span class="text-sm text-muted-foreground">
+								AI uses this job description to find the best candidates
+							</span>
+						</div>
+					</div>
+				</div>
 
-			<div class="flex gap-2">
-				<Button variant="outline" href="/dashboard/jobs" class="gap-2">
-					<ArrowRight class="h-4 w-4 rotate-180" />
-					All Jobs
-				</Button>
-				<Button onclick={assessCandidates} disabled={isAssessing} class="gap-2">
-					<Search class="h-4 w-4" />
-					{isAssessing ? 'Assessing...' : 'Assess Candidates'}
-				</Button>
+				<div class="flex gap-2">
+					<Button variant="outline" href="/dashboard/jobs" class="gap-2">
+						<ArrowRight class="h-4 w-4 rotate-180" />
+						All Jobs
+					</Button>
+					<Button onclick={assessCandidates} disabled={isAssessing} class="gap-2">
+						<Search class="h-4 w-4" />
+						{isAssessing ? 'Assessing...' : 'Assess Candidates'}
+					</Button>
+				</div>
 			</div>
 		</div>
 
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-			<Card class="md:col-span-2">
-				<CardHeader>
-					<CardTitle class="flex items-center gap-2">
+		<!-- Main Content Area -->
+		<div class="flex flex-1 overflow-hidden">
+			<!-- Candidates Section -->
+			<div class="hidden w-80 overflow-y-auto border-r border-border md:block">
+				<div class="border-b border-border p-4">
+					<h2 class="flex items-center gap-2 text-lg font-medium">
 						<Users class="h-5 w-5 text-primary" />
 						Candidates
-					</CardTitle>
-					<CardDescription>
+					</h2>
+					<p class="text-sm text-muted-foreground">
 						{candidates.length} candidate{candidates.length !== 1 ? 's' : ''} for this position
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					{#if candidates.length > 0}
-						<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-							{#each candidates as candidate (candidate.id)}
-								<Card class="overflow-hidden border-border dark:bg-card/80">
-									<CardHeader class="pb-3">
-										<div class="flex items-start justify-between">
-											<div class="flex flex-1 gap-3">
-												<div class="h-10 w-10 overflow-hidden rounded-full bg-muted">
-													{#if candidate.linkedInProfile.profileImageB64}
-														<img
-															src={`data:image/jpeg;base64,${candidate.linkedInProfile.profileImageB64}`}
-															alt="Profile"
-															class="h-full w-full object-cover"
-														/>
-													{:else}
-														<div
-															class="flex h-full w-full items-center justify-center bg-primary/10 text-primary"
-														>
-															{candidate.linkedInProfile.data?.first_name?.[0] || ''}
-															{candidate.linkedInProfile.data?.last_name?.[0] || ''}
-														</div>
-													{/if}
-												</div>
-												<div>
-													<CardTitle class="text-base">
-														{candidate.linkedInProfile.data?.first_name || 'N/A'}
-														{candidate.linkedInProfile.data?.last_name || ''}
-													</CardTitle>
-													<CardDescription class="line-clamp-1">
-														{candidate.linkedInProfile.data?.headline || 'No headline'}
-													</CardDescription>
-												</div>
-											</div>
-											{#if candidate.matchScore !== null && candidate.matchScore !== undefined}
-												<div class="ml-2 flex items-center gap-1.5">
-													<div
-														class={`h-2.5 w-2.5 rounded-full ${getScoreColor(candidate.matchScore)}`}
-													></div>
-													<span class="text-sm font-medium">{candidate.matchScore}</span>
+					</p>
+				</div>
+
+				{#if candidates.length > 0}
+					<div class="divide-y divide-border">
+						{#each candidates as candidate (candidate.id)}
+							<div class="p-4 transition-colors hover:bg-muted/40">
+								<div class="flex items-start justify-between">
+									<div class="flex flex-1 gap-3">
+										<div class="h-10 w-10 overflow-hidden rounded-full bg-muted">
+											{#if candidate.linkedInProfile.profileImageB64}
+												<img
+													src={`data:image/jpeg;base64,${candidate.linkedInProfile.profileImageB64}`}
+													alt="Profile"
+													class="h-full w-full object-cover"
+												/>
+											{:else}
+												<div
+													class="flex h-full w-full items-center justify-center bg-primary/10 text-primary"
+												>
+													{candidate.linkedInProfile.data?.first_name?.[0] || ''}
+													{candidate.linkedInProfile.data?.last_name?.[0] || ''}
 												</div>
 											{/if}
 										</div>
-									</CardHeader>
-									<CardContent class="pb-3 pt-0">
-										{#if candidate.reasoning}
-											<p class="line-clamp-3 text-sm text-muted-foreground">
-												{candidate.reasoning}
+										<div>
+											<h3 class="text-sm font-medium">
+												{candidate.linkedInProfile.data?.first_name || 'N/A'}
+												{candidate.linkedInProfile.data?.last_name || ''}
+											</h3>
+											<p class="line-clamp-1 text-xs text-muted-foreground">
+												{candidate.linkedInProfile.data?.headline || 'No headline'}
 											</p>
-										{/if}
-									</CardContent>
-									<CardFooter class="flex justify-between border-t border-border/50 pt-3">
-										<Button
-											variant="outline"
-											size="sm"
-											href={candidate.linkedInProfile.url}
-											target="_blank"
-											class="text-xs"
-										>
-											View Profile
-										</Button>
-										<Button size="sm" class="text-xs">Contact</Button>
-									</CardFooter>
-								</Card>
-							{/each}
-						</div>
-					{:else}
-						<div
-							class="flex flex-col items-center justify-center rounded-lg border border-dashed border-border p-8 text-center"
-						>
-							<Users class="mb-3 h-10 w-10 text-muted-foreground" />
-							<h3 class="text-lg font-medium">No candidates yet</h3>
+										</div>
+									</div>
+									{#if candidate.matchScore !== null && candidate.matchScore !== undefined}
+										<div class="ml-2 flex items-center gap-1.5">
+											<div
+												class={`h-2.5 w-2.5 rounded-full ${getScoreColor(candidate.matchScore)}`}
+											></div>
+											<span class="text-sm font-medium">{candidate.matchScore}</span>
+										</div>
+									{/if}
+								</div>
+								{#if candidate.reasoning}
+									<p class="mt-2 line-clamp-2 text-xs text-muted-foreground">
+										{candidate.reasoning}
+									</p>
+								{/if}
+								<div class="mt-3 flex justify-between">
+									<Button
+										variant="outline"
+										size="sm"
+										href={candidate.linkedInProfile.url}
+										target="_blank"
+										class="text-xs"
+									>
+										View Profile
+									</Button>
+									<Button size="sm" class="text-xs">Contact</Button>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<div class="flex flex-col items-center justify-center p-8 text-center">
+						<Users class="mb-3 h-10 w-10 text-muted-foreground" />
+						<h3 class="text-lg font-medium">No candidates yet</h3>
+						<p class="text-sm text-muted-foreground">
+							Use the Assess button to find candidates for this job.
+						</p>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Chat Section -->
+			<div class="flex flex-1 flex-col overflow-hidden">
+				<!-- Chat Header -->
+				<div class="flex items-center justify-between border-b border-border p-4">
+					<div class="flex items-center gap-2">
+						<MessageSquare class="h-5 w-5 text-primary" />
+						<h2 class="text-lg font-medium">Chat - {job.chat?.title || 'New Chat'}</h2>
+					</div>
+				</div>
+
+				<!-- Chat Messages -->
+				<div class="flex-1 space-y-4 overflow-y-auto p-4">
+					{#if job.description && job.description.length > 0}
+						<div class="mb-4 rounded-lg border border-border bg-card/50 p-4">
+							<div class="mb-2 flex items-center gap-2">
+								<Briefcase class="h-4 w-4 text-primary" />
+								<h4 class="font-medium">Job Description</h4>
+							</div>
 							<p class="text-sm text-muted-foreground">
-								Use the Assess button to find candidates for this job.
+								{#if job.description.length > 200 && !showFullDescription}
+									{job.description.slice(0, 200)}...
+									<button
+										class="ml-1 text-sm font-medium text-primary hover:underline"
+										onclick={() => (showFullDescription = true)}
+									>
+										Read more
+									</button>
+								{:else}
+									{job.description}
+									{#if showFullDescription && job.description.length > 200}
+										<button
+											class="ml-1 text-sm font-medium text-primary hover:underline"
+											onclick={() => (showFullDescription = false)}
+										>
+											Show less
+										</button>
+									{/if}
+								{/if}
 							</p>
 						</div>
 					{/if}
-				</CardContent>
-			</Card>
 
-			<div class="space-y-6">
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
-							<Briefcase class="h-5 w-5 text-primary" />
-							Job Details
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<div class="space-y-4">
-							<div class="flex items-center gap-2">
-								<Clock class="h-4 w-4 text-muted-foreground" />
-								<span class="text-sm text-muted-foreground">
-									Created on {formatDate(new Date(job.createdAt || new Date()))}
+					{#each job.chat?.messages || [] as message (message.id)}
+						<div class="rounded-lg border border-border p-4">
+							<p class="text-sm">{message.content}</p>
+							{#if message.toolcalls}
+								<pre class="mt-2 text-xs text-muted-foreground">
+									{JSON.stringify(message.toolcalls, null, 2)}
+								</pre>
+							{/if}
+						</div>
+					{/each}
+
+					<!-- Live Assessment Results -->
+					{#if agentResponse}
+						<div class="rounded-lg border border-primary/20 bg-primary/5 p-4">
+							<div class="mb-2 flex items-center justify-between">
+								<div class="flex items-center gap-2">
+									<Search class="h-4 w-4 text-primary" />
+									<span class="font-medium text-primary">Assessment Results</span>
+								</div>
+								<span class="text-xs text-muted-foreground">
+									{isAssessing ? 'In progress...' : 'Completed'}
 								</span>
 							</div>
-							<div class="rounded bg-primary/5 p-3">
-								<h4 class="mb-1 font-medium">Match criteria:</h4>
-								<p class="text-sm text-muted-foreground">
-									AI uses this job description to find the best candidates
-								</p>
-							</div>
+							<pre class="whitespace-pre-wrap font-mono text-sm">{agentResponse}</pre>
+							{#if !isAssessing}
+								<div class="mt-3 flex justify-end">
+									<Button variant="outline" size="sm" onclick={() => (agentResponse = '')}>
+										Dismiss
+									</Button>
+								</div>
+							{/if}
 						</div>
-					</CardContent>
-				</Card>
+					{/if}
+				</div>
 
-				<!-- Assessment History -->
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
-							<Clock class="h-5 w-5 text-primary" />
-							Assessment History
-						</CardTitle>
-						<CardDescription>Previous candidate searches</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{#if assessmentHistory.length > 0}
-							<div class="space-y-3">
-								{#each assessmentHistory as history, i (i)}
-									<div class="rounded-lg border border-border p-3">
-										<div class="mb-1 flex items-center justify-between">
-											<span class="text-xs font-medium">Assessment #{i + 1}</span>
-											<span class="text-xs text-muted-foreground"
-												>{formatDate(history.timestamp)}</span
-											>
-										</div>
-										<p class="line-clamp-3 text-xs text-muted-foreground">
-											{history.content.slice(0, 150)}...
-										</p>
-									</div>
-								{/each}
-							</div>
-						{:else}
-							<p class="text-sm text-muted-foreground">No previous assessments</p>
-						{/if}
-					</CardContent>
-				</Card>
+				<!-- Chat Input -->
+				<div class="border-t border-border p-4">
+					<div class="flex items-center gap-2">
+						<div class="relative flex-1">
+							<input
+								bind:value={message}
+								type="text"
+								class="w-full rounded-md border border-border bg-background px-4 py-2 pr-10 text-sm"
+								placeholder="Ask a question or type a command..."
+								disabled={isAssessing}
+							/>
+						</div>
+						<Button onclick={() => sendMessage(message)} disabled={isAssessing}>Send</Button>
+					</div>
+				</div>
 			</div>
 		</div>
-
-		<!-- Display Live Agent Response -->
-		{#if agentResponse}
-			<Card>
-				<CardHeader>
-					<CardTitle class="flex items-center gap-2">
-						<Search class="h-5 w-5 text-primary" />
-						Live Assessment Results
-					</CardTitle>
-					<CardDescription>Real-time output from the AI candidate assessment</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<pre
-						class="whitespace-pre-wrap rounded-lg border border-border bg-muted/50 p-4 font-mono text-sm">{agentResponse}</pre>
-				</CardContent>
-				<CardFooter class="justify-between border-t border-border pt-4">
-					<p class="text-xs text-muted-foreground">
-						Assessment {isAssessing ? 'in progress' : 'completed'}
-					</p>
-					{#if !isAssessing && agentResponse}
-						<Button variant="outline" size="sm" onclick={() => (agentResponse = '')}>
-							Dismiss
-						</Button>
-					{/if}
-				</CardFooter>
-			</Card>
-		{/if}
 	{:else}
-		<Card>
-			<CardContent class="flex items-center justify-center p-6">
-				<p class="text-muted-foreground">Job not found or you do not have permission to view it.</p>
-			</CardContent>
-		</Card>
+		<div class="flex h-screen items-center justify-center">
+			<Card class="w-full max-w-md">
+				<CardContent class="flex items-center justify-center p-6">
+					<p class="text-muted-foreground">
+						Job not found or you do not have permission to view it.
+					</p>
+				</CardContent>
+			</Card>
+		</div>
 	{/if}
 </div>

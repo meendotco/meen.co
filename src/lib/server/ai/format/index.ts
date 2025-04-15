@@ -99,17 +99,14 @@ const formatSimpleListToTags = (
  * @returns An XML-tagged string representing the job post.
  */
 export function generateJobPostEmbeddingInput(jobPost: JobData): string {
-	// Helper specific to formatting salary JSONB for job posts
 	const formatSalaryToTags = (salary: unknown): string => {
 		if (salary && typeof salary === 'object') {
-			// Adjust keys based on your actual salary JSON structure
 			const s = salary as { min?: number; max?: number; currency?: string; period?: string };
 			let tags = '';
 			if (s.min) tags += `            <min_salary>${s.min}</min_salary>\n`;
 			if (s.max) tags += `            <max_salary>${s.max}</max_salary>\n`;
 			if (s.currency) tags += `            <currency>${s.currency}</currency>\n`;
 			if (s.period) tags += `            <period>${s.period}</period>\n`;
-			// Only return if there's actual content
 			return tags ? `    <salary_info>\n${tags.trim()}\n    </salary_info>` : '';
 		}
 		return '';
@@ -185,7 +182,6 @@ export function generateLinkedInProfileEmbeddingInput(profile: PersonEndpointRes
 		formatSimpleListToTags(data.skills ?? [], 'skills', 'skill'),
 		formatObjectListToTags(data.experiences, 'experiences', 'experience_entry', [
 			{ jsonKey: 'title', xmlTag: 'title' },
-			{ jsonKey: 'company', xmlTag: 'company' },
 			{ jsonKey: 'location', xmlTag: 'location' },
 			{ jsonKey: 'description', xmlTag: 'description' }
 		]),
@@ -215,7 +211,6 @@ export function generateLinkedInProfileEmbeddingInput(profile: PersonEndpointRes
 		]),
 		formatObjectListToTags(data.volunteer_work, 'volunteer_work', 'volunteer_entry', [
 			{ jsonKey: 'title', xmlTag: 'title' },
-			{ jsonKey: 'company', xmlTag: 'organization' },
 			{ jsonKey: 'description', xmlTag: 'description' }
 		]),
 		formatSimpleListToTags(data.accomplishment_courses, 'courses', 'course', 'name'),

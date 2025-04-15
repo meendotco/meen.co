@@ -86,7 +86,8 @@ export async function addCandidate(
 	linkedinUrl: string,
 	jobId: string,
 	matchScore?: number,
-	reasoning?: string
+	reasoning?: string,
+	eagerlyAdded: boolean = false
 ) {
 	try {
 		// Check if job exists
@@ -146,7 +147,8 @@ export async function addCandidate(
 				jobPostId: jobId,
 				linkedInProfileId: profileId,
 				matchScore: matchScore,
-				reasoning: reasoning
+				reasoning: reasoning,
+				eagerlyAdded: eagerlyAdded
 			})
 			.returning();
 

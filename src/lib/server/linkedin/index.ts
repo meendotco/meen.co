@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { eq } from 'drizzle-orm';
+import { eq, not } from 'drizzle-orm';
 import { cosineDistance, desc, gt, sql } from 'drizzle-orm';
 import ProxycurlApi, { type PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
@@ -143,7 +143,7 @@ export async function searchLinkedinForObject(query: string) {
 		.from(linkedInProfile)
 		.where(gt(similarity, 0.0))
 		.orderBy((t) => desc(t.similarity))
-		.limit(10);
+		.limit(2);
 
 	console.log(candidates.map((candidate) => (candidate.data as PersonEndpointResponse).full_name));
 
