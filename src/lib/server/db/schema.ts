@@ -205,7 +205,7 @@ export const linkedInProfile = pgTable(
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
-		url: text('url').notNull().unique(),
+		handle: text('handle').notNull().unique(),
 		data: jsonb('data').notNull(),
 		profileImageB64: text('profileImageB64'),
 		vector: vector('vector', { dimensions: 1536 }),

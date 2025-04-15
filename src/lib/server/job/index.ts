@@ -83,7 +83,7 @@ export async function insertJob(
 }
 
 export async function addCandidate(
-	linkedinUrl: string,
+	linkedinHandle: string,
 	jobId: string,
 	matchScore?: number,
 	reasoning?: string,
@@ -101,7 +101,7 @@ export async function addCandidate(
 
 		// Find or create LinkedIn Profile entry
 		const profileEntry = await db.query.linkedInProfile.findFirst({
-			where: eq(linkedInProfile.url, linkedinUrl)
+			where: eq(linkedInProfile.handle, linkedinHandle)
 		});
 
 		let profileId: string;
@@ -110,12 +110,12 @@ export async function addCandidate(
 			profileId = profileEntry.id;
 		} else {
 			// Fetch profile data
-			const profileData = await getFullLinkedinProfile(linkedinUrl);
+			const profileData = await getFullLinkedinProfile(linkedinHandle);
 
 			const newProfile = await db
 				.insert(linkedInProfile)
 				.values({
-					url: linkedinUrl,
+					handle: linkedinHandle,
 					data: profileData,
 					expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days expiry
 				})
@@ -159,7 +159,7 @@ export async function addCandidate(
 		// Return the created candidate with profile information
 		return {
 			...newCandidate[0],
-			linkedInProfile: { url: linkedinUrl }
+			linkedInProfile: { handle: linkedinHandle }
 		};
 	} catch (error) {
 		throw new Error(

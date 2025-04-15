@@ -7,21 +7,13 @@ import { getFullLinkedinProfile } from '@/server/linkedin';
 export async function createFetchLinkedinProfileTool() {
 	return createTool({
 		id: 'fetch-linkedin-profile',
-		description: `Fetch a LinkedIn profile using a profile URL.
-		
-		The URL must be in the format: https://www.linkedin.com/in/username/
-		
-		For example, if you find a LinkedIn post URL like:
-		https://www.linkedin.com/posts/nils-alstad-80794110_were-looking-for-interns-activity-7257261100079960064--L_2
-		
-		Extract just the profile portion to get:
-		https://www.linkedin.com/in/nils-alstad-80794110/
-		
-		Always use the /in/ format for profile URLs.`,
+		description: `Fetch a LinkedIn profile using a profile handle.`,
 		inputSchema: z.object({
-			url: z
+			handle: z
 				.string()
-				.describe('LinkedIn profile URL in the format https://www.linkedin.com/in/username/')
+				.describe(
+					'LinkedIn profile handle in the format. For example: makkadotgg. If the url is https://www.linkedin.com/in/username/. The handle will be username.'
+				)
 		}),
 		outputSchema: z.object({
 			result: z.object({
@@ -29,14 +21,13 @@ export async function createFetchLinkedinProfileTool() {
 			})
 		}),
 		execute: async ({ context }) => {
-			const profileText = await fetchLinkedinProfile(context.url);
+			const profileText = await fetchLinkedinProfile(context.handle);
 			return { result: { profile: profileText } };
 		}
 	});
 }
 
-const fetchLinkedinProfile = async (url: string) => {
-	console.log('fetching profile: ' + url);
-	const profile: PersonEndpointResponse = await getFullLinkedinProfile(url);
+const fetchLinkedinProfile = async (handle: string) => {
+	const profile: PersonEndpointResponse = await getFullLinkedinProfile(handle);
 	return profile;
 };

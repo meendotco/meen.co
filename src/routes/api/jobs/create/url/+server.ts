@@ -56,7 +56,7 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 
 		// De-duplicate candidates by URL
 		const uniqueCandidates = Array.from(
-			new Map(candidates.map((candidate) => [candidate.url, candidate])).values()
+			new Map(candidates.map((candidate) => [candidate.handle, candidate])).values()
 		);
 		console.log(`Filtered to ${uniqueCandidates.length} unique candidates`);
 
@@ -68,9 +68,9 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 		console.log('Adding candidates to job');
 		await Promise.all(
 			uniqueCandidates.map((candidate) => {
-				console.log(`Adding candidate: ${candidate.data.full_name} (${candidate.url})`);
+				console.log(`Adding candidate: ${candidate.data.full_name} (${candidate.handle})`);
 				return addCandidate(
-					candidate.url,
+					candidate.handle,
 					job.id,
 					10,
 					'Eagerly matched candidate based on job description',

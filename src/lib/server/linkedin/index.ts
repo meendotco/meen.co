@@ -15,7 +15,7 @@ const BearerAuth = defaultClient.authentications['BearerAuth'];
 BearerAuth.accessToken = PROXYCURL_API_KEY;
 
 export async function getFullLinkedinProfile(
-	url: string = 'https://www.linkedin.com/in/makkadotgg/'
+	handle: string = 'makkadotgg'
 ): Promise<PersonEndpointResponse> {
 	const apiInstance = new ProxycurlApi.PeopleAPIApi();
 	const fallbackToCache = 'on-error';
@@ -32,7 +32,7 @@ export async function getFullLinkedinProfile(
 	};
 
 	const cache = await db.query.linkedInProfile.findFirst({
-		where: eq(linkedInProfile.url, url)
+		where: eq(linkedInProfile.handle, handle)
 	});
 
 	if (cache) {
@@ -43,7 +43,7 @@ export async function getFullLinkedinProfile(
 	try {
 		profile = await new Promise<PersonEndpointResponse>((resolve, reject) => {
 			apiInstance.personProfileEndpoint(
-				url,
+				handle,
 				fallbackToCache,
 				opts,
 				(error: unknown, data: PersonEndpointResponse | null) => {
@@ -78,14 +78,14 @@ export async function getFullLinkedinProfile(
 	await db
 		.insert(linkedInProfile)
 		.values({
-			url,
+			handle,
 			data: profile,
 			profileImageB64,
 			vector,
 			expiresAt
 		})
 		.onConflictDoUpdate({
-			target: linkedInProfile.url,
+			target: linkedInProfile.handle,
 			set: {
 				data: profile,
 				profileImageB64,
@@ -107,7 +107,7 @@ export async function searchLinkedin(query: string, k: number = 10) {
 		.select({
 			id: linkedInProfile.id,
 			data: linkedInProfile.data,
-			url: linkedInProfile.url,
+			handle: linkedInProfile.handle,
 			similarity
 		})
 		.from(linkedInProfile)
@@ -137,7 +137,7 @@ export async function searchLinkedinForObject(query: string) {
 		.select({
 			id: linkedInProfile.id,
 			data: linkedInProfile.data,
-			url: linkedInProfile.url,
+			handle: linkedInProfile.handle,
 			similarity
 		})
 		.from(linkedInProfile)

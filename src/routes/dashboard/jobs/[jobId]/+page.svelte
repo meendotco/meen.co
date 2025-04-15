@@ -28,10 +28,10 @@
 	let { data } = $props();
 	let job = $derived(data.job);
 	let candidates = $derived<Candidate[]>((job?.candidates as Candidate[]) ?? []);
-	let agentResponse = $state('');
 	let isAssessing = $state(false);
 	let showFullDescription = $state(false);
 	let message = $state('');
+	let messages = $state<Message[]>(job?.chat?.messages ?? []);
 	async function sendMessage(message: string) {
 		if (!job?.id) {
 			console.error('Job ID is missing');
@@ -53,7 +53,6 @@
 		}
 
 		isAssessing = true;
-		agentResponse = '';
 
 		try {
 			const response = await fetch(`/api/jobs/${job.id}/chat`, {
@@ -106,26 +105,32 @@
 
 	async function deleteChat() {
 		if (!job?.id) {
-			console.error('Job ID is missing');
 			return;
 		}
 
 		const response = await fetch(`/api/jobs/${job.id}/chat/delete`, {
 			method: 'POST'
 		});
-		const data = await response.json();
-		console.log(data);
+		if (response.ok) {
+			window.location.reload();
+		}
 	}
 </script>
 
 <div class="flex h-screen flex-col overflow-hidden">
 	{#if job}
-		<!-- Top Bar with Job Details -->
 		<div class="border-b border-border bg-card p-4">
 			<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 				<div class="flex items-center gap-4">
 					<div>
-						<h1 class="text-2xl font-bold tracking-tight">{job.title}</h1>
+						<div class="flex flex-row gap-2">
+							<Button variant="outline" href="/dashboard/jobs" class="gap-2">
+								<ArrowRight class="h-4 w-4 rotate-180" />
+								All Jobs
+							</Button>
+
+							<h1 class="text-2xl font-bold tracking-tight">{job.title}</h1>
+						</div>
 						<div class="mt-1 flex items-center gap-2">
 							<Clock class="h-4 w-4 text-muted-foreground" />
 							<span class="text-sm text-muted-foreground">
@@ -137,17 +142,6 @@
 							</span>
 						</div>
 					</div>
-				</div>
-
-				<div class="flex gap-2">
-					<Button variant="outline" href="/dashboard/jobs" class="gap-2">
-						<ArrowRight class="h-4 w-4 rotate-180" />
-						All Jobs
-					</Button>
-					<Button onclick={assessCandidates} disabled={isAssessing} class="gap-2">
-						<Search class="h-4 w-4" />
-						{isAssessing ? 'Assessing...' : 'Assess Candidates'}
-					</Button>
 				</div>
 			</div>
 		</div>
@@ -214,7 +208,7 @@
 									<Button
 										variant="outline"
 										size="sm"
-										href={candidate.linkedInProfile.url}
+										href={`https://www.linkedin.com/in/${candidate.linkedInProfile.handle}`}
 										target="_blank"
 										class="text-xs"
 									>
@@ -279,38 +273,15 @@
 						</div>
 					{/if}
 
-					{#each job.chat?.messages || [] as message (message.id)}
-						<div class="rounded-lg border border-border p-4 overflow-hidden break-words max-w-full">
+					{#each messages as message (message.id)}
+						<div class="max-w-full overflow-hidden break-words rounded-lg border border-border p-4">
 							{#if message.toolcalls}
 								<Markdown md={message.content || ''} />
 							{:else}
-								<p class="text-sm break-words">{message.content}</p>
+								<p class="break-words text-sm">{message.content}</p>
 							{/if}
 						</div>
 					{/each}
-
-					<!-- Live Assessment Results -->
-					{#if agentResponse}
-						<div class="rounded-lg border border-primary/20 bg-primary/5 p-4 overflow-hidden break-words max-w-full">
-							<div class="mb-2 flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<Search class="h-4 w-4 text-primary" />
-									<span class="font-medium text-primary">Assessment Results</span>
-								</div>
-								<span class="text-xs text-muted-foreground">
-									{isAssessing ? 'In progress...' : 'Completed'}
-								</span>
-							</div>
-							<pre class="whitespace-pre-wrap font-mono text-sm break-words">{agentResponse}</pre>
-							{#if !isAssessing}
-								<div class="mt-3 flex justify-end">
-									<Button variant="outline" size="sm" onclick={() => (agentResponse = '')}>
-										Dismiss
-									</Button>
-								</div>
-							{/if}
-						</div>
-					{/if}
 				</div>
 
 				<!-- Chat Input -->

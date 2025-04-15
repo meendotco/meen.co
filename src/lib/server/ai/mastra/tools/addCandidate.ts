@@ -26,14 +26,11 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 		}),
 		execute: async ({ context }) => {
 			const { linkedin_url, match_score, reasoning } = context;
-
-			console.log('adding candidate: ' + linkedin_url);
 			try {
 				if (!job || !job.id) {
 					return { message: `No Job Post Found` };
 				}
 
-				// Use the addCandidate function from the job module
 				const candidate = await addCandidate(linkedin_url, job.id, match_score, reasoning);
 
 				return {
@@ -42,7 +39,6 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 					message: 'Successfully added candidate to job post.'
 				};
 			} catch (error) {
-				// Provide a more generic error message to the tool output
 				return {
 					message: `An error occurred while adding the candidate: ${error instanceof Error ? error.message : 'Unknown error'}`
 				};

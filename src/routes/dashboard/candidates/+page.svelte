@@ -133,7 +133,9 @@
 			{#each candidates as candidate (candidate.id)}
 				<CandidateCard candidateData={candidate.data} b64={candidate.profileImageB64}>
 					<div slot="actions" class="flex flex-col gap-2">
-						<Button variant="outline" size="sm">View Profile</Button>
+						<Button href="https://linkedin.com/in/{candidate.handle}" variant="outline" size="sm"
+							>View Profile</Button
+						>
 						<Button size="sm">Contact</Button>
 					</div>
 				</CandidateCard>

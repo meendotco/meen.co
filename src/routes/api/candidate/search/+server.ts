@@ -15,7 +15,7 @@ export const POST = async ({ request }) => {
 		.select({
 			id: linkedInProfile.id,
 			data: linkedInProfile.data,
-			url: linkedInProfile.url,
+			handle: linkedInProfile.handle,
 			similarity
 		})
 		.from(linkedInProfile)
