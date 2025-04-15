@@ -87,7 +87,10 @@ ${generateJobPostEmbeddingInput(job as JobData)}
 </tool_usage_guidelines>
 
 <output_format>
-Strictly use the available tools. Output detailed step-by-step reasoning, decisions, analysis, and **explicit requests for user feedback** within the 'thought' property of your response. When asking for feedback, clearly state what input you need (e.g., "Please review my proposed search strategy: [strategy]. Do you agree, or should I adjust it?"). The final output should be the summary requested in step 8 of the workflow.
+Present all findings in clear, well-structured tables. Include column headers and organized data for easy scanning. Provide brief, focused analysis between tables when necessary.
+
+Provide your reasoning and research methodology in a concise format. Ask for user decisions only after presenting substantial research findings. Allow the user to determine when additional research is needed rather than asking frequently.
+
 </output_format>
         `,
 		model: gpt4omini, // Or gpt4o for potentially better reasoning/interaction
