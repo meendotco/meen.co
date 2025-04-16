@@ -47,12 +47,6 @@ async function pollTaskResult(taskId: string): Promise<CrawlResultData | null> {
 					throw new Error(`Crawl task ${taskId} failed: ${response.data.error || 'Unknown error'}`);
 				}
 			}
-			// else {
-			// 	console.warn(
-			// 		`[pollTaskResult] Unexpected response structure for task ${taskId}:`,
-			// 		response.data
-			// 	);
-			// }
 		} catch (error: unknown) {
 			if (axios.isAxiosError(error) && error.response?.status === 404) {
 				// console.warn(`[pollTaskResult] Task ${taskId} not found (yet?), attempt ${attempt + 1}`);
