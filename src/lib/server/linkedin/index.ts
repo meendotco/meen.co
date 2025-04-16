@@ -58,7 +58,7 @@ export async function getFullLinkedinProfile(
 			);
 		});
 	} catch {
-		return { full_name: 'Profile not found' } as PersonEndpointResponse;
+		throw new Error('Failed to fetch LinkedIn profile');
 	}
 
 	const textToEmbed = generateLinkedInProfileEmbeddingInput(profile);

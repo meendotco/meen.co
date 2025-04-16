@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
+	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import Sidebar from '$lib/components/Sidebar.svelte';
 	import {
@@ -13,24 +12,23 @@
 	} from '$lib/components/ui/breadcrumb';
 
 	let { data, children } = $props();
-	let sidebarCollapsed = $state(false);
 
-	function getCookie(name: string) {
-		const value = `; ${document.cookie}`;
-		const parts = value.split(`; ${name}=`);
-		if (parts.length === 2) return parts.pop()?.split(';').shift();
-		return undefined;
+	// Initialize isCollapsed from cookie or default to false
+	let initialCollapsed = false;
+	if (browser) {
+		const cookieValue = document.cookie
+			.split('; ')
+			.find((row) => row.startsWith('PaneForge:collapsed='))
+			?.split('=')[1];
+		initialCollapsed = cookieValue === 'true';
 	}
+	let isCollapsed = $state(initialCollapsed);
 
-	onMount(() => {
-		const collapsedState = getCookie('PaneForge:collapsed');
-		sidebarCollapsed = collapsedState === 'true';
-	});
-
+	// Function to update the cookie when isCollapsed changes
 	$effect(() => {
-		// Force reactivity with $page
-		$page;
-		// Update the sidebar collapsed state when the page changes
+		if (browser) {
+			document.cookie = `PaneForge:collapsed=${isCollapsed}; path=/; max-age=31536000; SameSite=Strict`;
+		}
 	});
 
 	// Generate breadcrumb items based on the current route
@@ -54,13 +52,11 @@
 	}
 </script>
 
-<div class="flex min-h-screen bg-background">
-	<Sidebar user={data.user} isCollapsed={sidebarCollapsed} />
-
+<div class="flex min-h-screen w-full bg-background">
+	<Sidebar user={data.user} bind:isCollapsed />
 	<div
 		class="flex-1 transition-all duration-300"
-		class:ml-[80px]={sidebarCollapsed}
-		class:ml-[240px]={!sidebarCollapsed}
+		style:margin-left={isCollapsed ? '80px' : '256px'}
 	>
 		<main class="flex-1 p-6">
 			<div class="mb-6 flex items-center space-x-1 px-1 py-3">

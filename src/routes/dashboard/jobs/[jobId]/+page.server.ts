@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
-import { chat, jobPost } from '@/server/db/schema';
+import { chat, chatMessage, jobPost } from '@/server/db/schema';
 import { db } from '$lib/server/db';
 export const load = async ({ locals, params }) => {
 	const job = await db.query.jobPost.findFirst({
@@ -26,7 +26,8 @@ export const load = async ({ locals, params }) => {
 					messages: {
 						with: {
 							toolcalls: true
-						}
+						},
+						orderBy: desc(chatMessage.createdAt)
 					}
 				}
 			}

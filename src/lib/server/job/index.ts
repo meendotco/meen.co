@@ -90,7 +90,6 @@ export async function addCandidate(
 	eagerlyAdded: boolean = false
 ) {
 	try {
-		// Check if job exists
 		const job = await db.query.jobPost.findFirst({
 			where: eq(jobPost.id, jobId)
 		});
@@ -99,7 +98,6 @@ export async function addCandidate(
 			throw new Error(`Job with ID ${jobId} not found`);
 		}
 
-		// Find or create LinkedIn Profile entry
 		const profileEntry = await db.query.linkedInProfile.findFirst({
 			where: eq(linkedInProfile.handle, linkedinHandle)
 		});
@@ -110,21 +108,28 @@ export async function addCandidate(
 			profileId = profileEntry.id;
 		} else {
 			// Fetch profile data
-			const profileData = await getFullLinkedinProfile(linkedinHandle);
+			try {
+				const profileData = await getFullLinkedinProfile(linkedinHandle);
 
-			const newProfile = await db
-				.insert(linkedInProfile)
-				.values({
-					handle: linkedinHandle,
-					data: profileData,
-					expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days expiry
-				})
-				.returning({ id: linkedInProfile.id });
+				if (!profileData) {
+					throw new Error('Failed to fetch LinkedIn profile');
+				}
+				const newProfile = await db
+					.insert(linkedInProfile)
+					.values({
+						handle: linkedinHandle,
+						data: profileData,
+						expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days expiry
+					})
+					.returning({ id: linkedInProfile.id });
 
-			if (!newProfile || newProfile.length === 0) {
-				throw new Error('Failed to create LinkedIn profile entry');
+				if (!newProfile || newProfile.length === 0) {
+					throw new Error('Failed to create LinkedIn profile entry');
+				}
+				profileId = newProfile[0].id;
+			} catch (error) {
+				return { error: `LinkedIn profile not found: ${linkedinHandle}` };
 			}
-			profileId = newProfile[0].id;
 		}
 
 		// Check if candidate already exists for this job

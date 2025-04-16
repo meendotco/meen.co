@@ -28,6 +28,7 @@ export async function createFetchLinkedinProfileTool() {
 }
 
 const fetchLinkedinProfile = async (handle: string) => {
+	console.log('Fetching LinkedIn profile', handle);
 	const profile: PersonEndpointResponse = await getFullLinkedinProfile(handle);
 	return profile;
 };

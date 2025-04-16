@@ -77,6 +77,7 @@ export function createGoToUrlTool() {
 		execute: async ({ context }: { context: z.infer<typeof goToUrlInputSchema> }) => {
 			const { url } = context;
 
+			console.log('goToUrl', url);
 			if (url.includes('linkedin.com')) {
 				throw new Error('Accessing LinkedIn URLs directly is not permitted with this tool.');
 			}

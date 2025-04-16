@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 
-import { claude37Sonnet, gemini2dot5pro, gpt4o } from '@/server/ai';
+import { claude37Sonnet, gemini2dot5pro, gpt4o, o3, o4mini } from '@/server/ai';
 import { jobPost } from '@/server/db/schema';
 import type { JobData } from '@/server/job';
 
@@ -171,8 +171,8 @@ export async function findCandidatesInteractive(job: typeof jobPost.$inferSelect
 	// --- Agent Definition ---
 	const agent = new Agent({
 		name: 'Deep Research Recruiter Agent',
-		instructions: createAutonomousAgent(job),
-		model: gemini2dot5pro,
+		instructions: createInteractiveAgent(job),
+		model: o4mini,
 		tools: {
 			searchLinkedinTool,
 			addCandidateTool,

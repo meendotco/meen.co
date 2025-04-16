@@ -28,9 +28,11 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 			const { linkedin_url, match_score, reasoning } = context;
 			try {
 				if (!job || !job.id) {
+					console.log('No Job Post Found');
 					return { message: `No Job Post Found` };
 				}
 
+				console.log('Adding candidate to job post', linkedin_url, job.id, match_score, reasoning);
 				const candidate = await addCandidate(linkedin_url, job.id, match_score, reasoning);
 
 				return {

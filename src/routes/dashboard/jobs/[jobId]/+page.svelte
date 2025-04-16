@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { TextStreamPart } from 'ai';
-	import { ArrowRight, Briefcase, Clock, MessageSquare, Users } from 'lucide-svelte';
+	import { ArrowRight, Briefcase, Clock, MessageSquare, Send, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
 	import Markdown from '$lib/markdown/Markdown.svelte';
@@ -54,7 +56,10 @@
 	let showFullDescription = $state(false);
 	let message = $state('');
 	let messages = $derived(data.job?.chat?.messages ?? []);
+
 	async function sendMessage(messageToSend: string) {
+		if (!messageToSend.trim() || chatDisabled) return;
+
 		messages.push({
 			id: crypto.randomUUID(),
 			content: messageToSend,
@@ -97,7 +102,9 @@
 			(data: { chunk: TextStreamPart<any>; appPayload: { jobId: string; messageId: string } }) => {
 				const chunk = data.chunk;
 				const payload = data.appPayload;
-				if (payload.jobId !== job?.id) {
+				console.log('messageChunk', data);
+
+				if (payload.jobId !== page.params.jobId) {
 					return;
 				}
 
@@ -120,14 +127,15 @@
 					chatDisabled = false;
 					errorMessage =
 						typeof chunk.error === 'object' && chunk.error
-							? `${(chunk.error as any).name || 'Error'}: ${(chunk.error as any).reason || 'Unknown error'}`
+							? `${(chunk.error as Record<string, string>).name || 'Error'}: ${(chunk.error as Record<string, string>).reason || 'Unknown error'}`
 							: 'An unknown error occurred';
 				}
 			}
 		);
 
 		socket.on('messageStarted', (data: { appPayload: { jobId: string; messageId: string } }) => {
-			if (data.appPayload.jobId !== job?.id) {
+			console.log('messageStarted', data);
+			if (data.appPayload.jobId !== page.params.jobId) {
 				return;
 			}
 			chatDisabled = true;
@@ -143,7 +151,7 @@
 		});
 
 		socket.on('messageComplete', (data: { appPayload: { jobId: string; messageId: string } }) => {
-			if (data.appPayload.jobId !== job?.id) {
+			if (data.appPayload.jobId !== page.params.jobId) {
 				return;
 			}
 			chatDisabled = false;
@@ -165,29 +173,40 @@
 			messages = oldMessages;
 		}
 	}
+
+	function handleKeyPress(event: KeyboardEvent) {
+		if (event.key === 'Enter' && !event.shiftKey && message.trim()) {
+			event.preventDefault();
+			sendMessage(message);
+		}
+	}
 </script>
 
-<div class="flex h-screen flex-col overflow-hidden">
+<div class="flex h-screen flex-col overflow-hidden bg-background">
 	{#if job}
-		<div class="border-b border-border bg-card p-4">
+		<div class="border-b border-border bg-card p-4 shadow-sm">
 			<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 				<div class="flex items-center gap-4">
 					<div>
 						<div class="flex flex-row gap-2">
-							<Button variant="outline" href="/dashboard/jobs" class="gap-2">
+							<Button
+								variant="outline"
+								href="/dashboard/jobs"
+								class="gap-2 rounded-full text-sm shadow-sm transition-all hover:shadow"
+							>
 								<ArrowRight class="h-4 w-4 rotate-180" />
 								All Jobs
 							</Button>
 
-							<h1 class="text-2xl font-bold tracking-tight">{job.title}</h1>
+							<h1 class="ml-2 text-2xl font-bold tracking-tight">{job.title}</h1>
 						</div>
-						<div class="mt-1 flex items-center gap-2">
-							<Clock class="h-4 w-4 text-muted-foreground" />
-							<span class="text-sm text-muted-foreground">
+						<div class="mt-2 flex items-center gap-2 text-muted-foreground">
+							<Clock class="h-4 w-4" />
+							<span class="text-sm">
 								Created on {formatDate(new Date(job.createdAt || new Date()))}
 							</span>
-							<span class="px-2 text-sm text-muted-foreground">•</span>
-							<span class="text-sm text-muted-foreground">
+							<span class="px-2 text-sm">•</span>
+							<span class="text-sm italic">
 								AI uses this job description to find the best candidates
 							</span>
 						</div>
@@ -197,8 +216,8 @@
 		</div>
 
 		<div class="flex flex-1 overflow-hidden">
-			<div class="hidden w-80 overflow-y-auto border-r border-border md:block">
-				<div class="border-b border-border p-4">
+			<div class="hidden w-80 overflow-y-auto border-r border-border bg-card/30 md:block">
+				<div class="border-b border-border p-4 shadow-sm">
 					<h2 class="flex items-center gap-2 text-lg font-medium">
 						<Users class="h-5 w-5 text-primary" />
 						Candidates
@@ -209,12 +228,12 @@
 				</div>
 
 				{#if candidates.length > 0}
-					<div class="divide-y divide-border">
+					<div class="divide-y divide-border/40">
 						{#each candidates as candidate (candidate.id)}
-							<div class="p-4 transition-colors hover:bg-muted/40">
+							<div class="p-4 transition-all duration-200 hover:bg-muted/40">
 								<div class="flex items-start justify-between">
 									<div class="flex flex-1 gap-3">
-										<div class="h-10 w-10 overflow-hidden rounded-full bg-muted">
+										<div class="h-12 w-12 overflow-hidden rounded-full bg-muted shadow-md">
 											{#if candidate.linkedInProfile.profileImageB64}
 												<img
 													src={`data:image/jpeg;base64,${candidate.linkedInProfile.profileImageB64}`}
@@ -223,7 +242,7 @@
 												/>
 											{:else}
 												<div
-													class="flex h-full w-full items-center justify-center bg-primary/10 text-primary"
+													class="flex h-full w-full items-center justify-center bg-primary/10 font-semibold text-primary"
 												>
 													{candidate.linkedInProfile.data?.first_name?.[0] || ''}
 													{candidate.linkedInProfile.data?.last_name?.[0] || ''}
@@ -231,7 +250,7 @@
 											{/if}
 										</div>
 										<div>
-											<h3 class="text-sm font-medium">
+											<h3 class="font-medium">
 												{candidate.linkedInProfile.data?.first_name || 'N/A'}
 												{candidate.linkedInProfile.data?.last_name || ''}
 											</h3>
@@ -243,7 +262,7 @@
 									{#if candidate.matchScore !== null && candidate.matchScore !== undefined}
 										<div class="ml-2 flex items-center gap-1.5">
 											<div
-												class={`h-2.5 w-2.5 rounded-full ${getScoreColor(candidate.matchScore)}`}
+												class={`h-3 w-3 rounded-full ${getScoreColor(candidate.matchScore)} shadow-sm`}
 											></div>
 											<span class="text-sm font-medium">{candidate.matchScore}</span>
 										</div>
@@ -254,17 +273,17 @@
 										{candidate.reasoning}
 									</p>
 								{/if}
-								<div class="mt-3 flex justify-between">
+								<div class="mt-4 flex justify-between gap-2">
 									<Button
 										variant="outline"
 										size="sm"
 										href={candidate.linkedInProfile.url || '#'}
 										target="_blank"
-										class="text-xs"
+										class="flex-1 rounded-full text-xs shadow-sm transition-all hover:shadow"
 									>
 										View Profile
 									</Button>
-									<Button size="sm" class="text-xs">Contact</Button>
+									<Button size="sm" class="flex-1 rounded-full text-xs shadow-sm">Contact</Button>
 								</div>
 							</div>
 						{/each}
@@ -272,27 +291,36 @@
 				{/if}
 			</div>
 
-			<div class="flex flex-1 flex-col overflow-hidden">
-				<div class="flex items-center justify-between border-b border-border p-4">
+			<div class="flex flex-1 flex-col overflow-hidden bg-card/20">
+				<div class="flex items-center justify-between border-b border-border p-4 shadow-sm">
 					<div class="flex items-center gap-2">
 						<MessageSquare class="h-5 w-5 text-primary" />
-						<h2 class="text-lg font-medium">Chat - {job.chat?.title || 'New Chat'}</h2>
+						<h2 class="text-lg font-medium">Chat - {job.chat?.title || 'Recruiter Agent'}</h2>
 					</div>
-					<Button variant="outline" size="sm" onclick={() => deleteChat()}>Delete Chat</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onclick={() => deleteChat()}
+						class="rounded-full shadow-sm transition-colors hover:bg-destructive/10 hover:text-destructive"
+						>Delete Chat</Button
+					>
 				</div>
 
-				<div class="flex-1 space-y-4 overflow-y-auto p-4">
+				<div class="flex-1 space-y-4 overflow-y-auto p-4 pb-2">
 					{#if job.description && job.description.length > 0}
-						<div class="mb-4 rounded-lg border border-border bg-card/50 p-4">
+						<div
+							in:fade={{ duration: 300 }}
+							class="mb-4 rounded-lg border border-border/50 bg-card/50 p-4 shadow-sm"
+						>
 							<div class="mb-2 flex items-center gap-2">
 								<Briefcase class="h-4 w-4 text-primary" />
 								<h4 class="font-medium">Job Description</h4>
 							</div>
-							<p class="text-sm text-muted-foreground">
+							<p class="text-sm leading-relaxed text-muted-foreground">
 								{#if job.description.length > 200 && !showFullDescription}
 									{job.description.slice(0, 200)}...
 									<button
-										class="ml-1 text-sm font-medium text-primary hover:underline"
+										class="ml-1 text-sm font-medium text-primary transition-colors hover:underline"
 										onclick={() => (showFullDescription = true)}
 									>
 										Read more
@@ -301,7 +329,7 @@
 									{job.description}
 									{#if showFullDescription && job.description.length > 200}
 										<button
-											class="ml-1 text-sm font-medium text-primary hover:underline"
+											class="ml-1 text-sm font-medium text-primary transition-colors hover:underline"
 											onclick={() => (showFullDescription = false)}
 										>
 											Show less
@@ -314,11 +342,18 @@
 
 					{#each messages as message (message.id)}
 						<div
-							class={`flex max-w-[85%] flex-col rounded-lg border border-border p-3 ${message.role === 'user' ? 'ml-auto bg-primary/10' : 'mr-auto bg-card'}`}
+							in:fly={{ y: 20, duration: 200 }}
+							class={`flex max-w-[85%] flex-col rounded-lg border ${
+								message.role === 'user'
+									? 'ml-auto border-primary/20 bg-primary/10'
+									: 'mr-auto border-border/50 bg-card/80'
+							} p-4 shadow-sm`}
 						>
-							<div class="mb-1.5 flex items-center justify-between gap-2">
+							<div class="mb-2 flex items-center justify-between gap-2">
 								<div class="flex items-center gap-2">
-									<span class="text-xs font-medium">
+									<span
+										class={`text-xs font-medium ${message.role === 'user' ? 'text-primary' : ''}`}
+									>
 										{message.role === 'user' ? 'You' : 'AI Assistant'}
 									</span>
 									{#if message.toolcalls && message.toolcalls.length > 0}
@@ -345,31 +380,65 @@
 				</div>
 
 				{#if errorMessage}
-					<div class="border-t border-border p-4">
-						<p class="text-red-500">{errorMessage}</p>
+					<div
+						class="border-t border-border bg-destructive/10 p-4"
+						transition:fade={{ duration: 200 }}
+					>
+						<p class="flex items-center gap-2 text-destructive">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<circle cx="12" cy="12" r="10"></circle>
+								<line x1="12" y1="8" x2="12" y2="12"></line>
+								<line x1="12" y1="16" x2="12.01" y2="16"></line>
+							</svg>
+							{errorMessage}
+						</p>
 					</div>
 				{/if}
+
 				<!-- Chat Input -->
-				<div class="border-t border-border p-4">
+				<div class="border-t border-border bg-card/40 p-4 shadow-inner">
 					<div class="flex items-center gap-2">
 						<div class="relative flex-1">
 							<input
 								bind:value={message}
+								onkeypress={handleKeyPress}
 								type="text"
-								class="w-full rounded-md border border-border bg-background px-4 py-2 pr-10 text-sm"
+								class="w-full rounded-full border border-border bg-background px-5 py-3 pr-12 text-sm shadow-sm transition-shadow focus:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/20"
 								placeholder="Ask a question or type a command..."
 								disabled={chatDisabled}
 							/>
+							<button
+								class={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 ${message.trim() && !chatDisabled ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'} transition-colors`}
+								disabled={!message.trim() || chatDisabled}
+								onclick={() => sendMessage(message)}
+							>
+								<Send class="h-4 w-4" />
+							</button>
 						</div>
-						<Button onclick={() => sendMessage(message)} disabled={chatDisabled}>Send</Button>
+						<Button
+							onclick={() => sendMessage(message)}
+							disabled={!message.trim() || chatDisabled}
+							class="rounded-full shadow-sm"
+						>
+							Send
+						</Button>
 					</div>
 				</div>
 			</div>
 		</div>
 	{:else}
-		<div class="flex h-screen items-center justify-center">
-			<Card class="w-full max-w-md">
-				<CardContent class="flex items-center justify-center p-6">
+		<div class="flex h-screen items-center justify-center bg-background">
+			<Card class="w-full max-w-md shadow-lg">
+				<CardContent class="flex items-center justify-center p-8">
 					<p class="text-muted-foreground">
 						Job not found or you do not have permission to view it.
 					</p>

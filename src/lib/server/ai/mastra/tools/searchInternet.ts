@@ -35,7 +35,7 @@ export function createSearchInternetTool() {
 			const { query } = context;
 
 			const results = await searchGoogle(query);
-
+			console.log('searchInternet', results);
 			return {
 				data: results.items,
 				url: `https://www.google.com/search?q=${query}`

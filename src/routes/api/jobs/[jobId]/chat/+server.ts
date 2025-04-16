@@ -81,6 +81,7 @@ export const POST = async ({ locals, params, request }) => {
 		}
 	});
 	for await (const chunk of agentStream.fullStream) {
+		console.log(chunk.type);
 		broadcastToUsers(locals.wss, [user.id], {
 			messageType: 'messageChunk',
 			data: {
@@ -94,6 +95,9 @@ export const POST = async ({ locals, params, request }) => {
 
 		if (chunk.type === 'text-delta') {
 			fullResponse += chunk.textDelta;
+		}
+		if (chunk.type === 'error') {
+			console.error(chunk.error);
 		}
 	}
 
