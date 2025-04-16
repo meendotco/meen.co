@@ -106,6 +106,67 @@ export const authenticators = pgTable(
 		}
 	]
 );
+
+export const chat = pgTable('chat', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	jobPostId: text('jobPostId')
+		.notNull()
+		.references(() => jobPost.id, { onDelete: 'cascade' }),
+	title: text('title'),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+});
+
+export const chatMessage = pgTable('chatMessage', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	chatId: text('chatId')
+		.notNull()
+		.references(() => chat.id, { onDelete: 'cascade' }),
+	role: text('role').notNull(),
+	content: text('content'),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow()
+});
+
+export const toolcall = pgTable('toolcall', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	chatMessageId: text('chatMessageId')
+		.notNull()
+		.references(() => chatMessage.id, { onDelete: 'cascade' }),
+	name: text('name').notNull(),
+	args: jsonb('args'),
+	result: jsonb('result'),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow()
+});
+
+export const chatRelations = relations(chat, ({ one, many }) => ({
+	jobPost: one(jobPost, {
+		fields: [chat.jobPostId],
+		references: [jobPost.id]
+	}),
+	messages: many(chatMessage)
+}));
+
+export const chatMessageRelations = relations(chatMessage, ({ one, many }) => ({
+	chat: one(chat, {
+		fields: [chatMessage.chatId],
+		references: [chat.id]
+	}),
+	toolcalls: many(toolcall)
+}));
+
+export const toolcallRelations = relations(toolcall, ({ one }) => ({
+	chatMessage: one(chatMessage, {
+		fields: [toolcall.chatMessageId],
+		references: [chatMessage.id]
+	})
+}));
+
 export const jobPost = pgTable(
 	'jobPost',
 	{
@@ -144,7 +205,7 @@ export const linkedInProfile = pgTable(
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
-		url: text('url').notNull().unique(),
+		handle: text('handle').notNull().unique(),
 		data: jsonb('data').notNull(),
 		profileImageB64: text('profileImageB64'),
 		vector: vector('vector', { dimensions: 1536 }),
@@ -154,6 +215,7 @@ export const linkedInProfile = pgTable(
 	},
 	(table) => [
 		index('linkedInProfile_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))
+		// eslint-disable-next-line max-lines
 	]
 );
 
@@ -170,6 +232,7 @@ export const candidates = pgTable(
 			.notNull()
 			.references(() => linkedInProfile.id, { onDelete: 'cascade' }),
 		reasoning: text('reasoning'),
+		eagerlyAdded: boolean('eagerlyAdded').notNull().default(false),
 		matchScore: integer('matchScore'),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
@@ -185,7 +248,11 @@ export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
 		fields: [jobPost.ownerId],
 		references: [users.id]
 	}),
-	candidates: many(candidates)
+	candidates: many(candidates),
+	chat: one(chat, {
+		fields: [jobPost.id],
+		references: [chat.jobPostId]
+	})
 }));
 
 export const linkedInProfileRelations = relations(linkedInProfile, ({ many }) => ({
