@@ -3,27 +3,56 @@
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sun from '@lucide/svelte/icons/sun';
 	import { DropdownMenu } from 'bits-ui';
-	import { LogOut, User } from 'lucide-svelte';
+	import { LogOut, Settings, User } from 'lucide-svelte';
 	import { toggleMode } from 'mode-watcher';
 
 	import { Button } from '@/components/ui/button';
 	import { page } from '$app/state';
-
-	let { user } = $props();
+	import { goto } from '$app/navigation';
+	let { user, isCollapsed } = $props();
 </script>
 
 {#if user?.email}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
-			<Button
-				variant="ghost"
-				size="icon"
-				class="avatar-button transition-all duration-200 hover:bg-foreground/5"
-			>
-				<div class="avatar">
-					<User class="avatar-icon" strokeWidth={1.5} />
+			{#if page.url.pathname.startsWith('/dashboard')}
+				<div class="flex items-center gap-3 transition-all duration-200 hover:bg-foreground/5">
+					<Button
+						variant="ghost"
+						size="icon"
+						class="avatar-button transition-all duration-200 hover:bg-foreground/5"
+					>
+						<div class="avatar">
+							{#if user?.image}
+								<img
+									src={user.image}
+									alt={user.name || 'User'}
+									class="h-full w-full rounded-full object-cover"
+								/>
+							{:else}
+								<User class="avatar-icon" strokeWidth={1.5} />
+							{/if}
+						</div>
+					</Button>
+					{#if !isCollapsed && user}
+						<div class="flex flex-col overflow-hidden">
+							<span class="truncate text-sm font-medium text-foreground">{user.name || 'User'}</span
+							>
+							<span class="truncate text-[11px] text-muted-foreground">{user.email || ''}</span>
+						</div>
+					{/if}
 				</div>
-			</Button>
+			{:else}
+				<Button
+					variant="ghost"
+					size="icon"
+					class="avatar-button transition-all duration-200 hover:bg-foreground/5"
+				>
+					<div class="avatar">
+						<User class="avatar-icon" strokeWidth={1.5} />
+					</div>
+				</Button>
+			{/if}
 		</DropdownMenu.Trigger>
 
 		<DropdownMenu.Content class="dropdown-content" sideOffset={8}>
@@ -31,12 +60,16 @@
 				<p class="text-base font-medium text-foreground dark:text-white">My Profile</p>
 			</div>
 			<DropdownMenu.Separator class="separator" />
-			<div class="px-3 py-2">
+			<!-- <div class="px-3 py-2">
 				<p class="truncate text-sm text-muted-foreground dark:text-neutral-400">
 					{user?.email || 'No email'}
 				</p>
 			</div>
-			<DropdownMenu.Separator class="separator" />
+			<DropdownMenu.Separator class="separator" /> -->
+			<DropdownMenu.Item onclick={() => goto('/dashboard/settings')} class="menu-item">
+				<Settings class="mr-2 h-4 w-4" />
+				<span>Settings</span>
+			</DropdownMenu.Item>
 			<DropdownMenu.Item onclick={() => toggleMode()} class="menu-item">
 				<div class="mr-2 flex h-4 w-4 items-center justify-center">
 					<Sun class="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

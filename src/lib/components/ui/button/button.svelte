@@ -14,6 +14,9 @@
 				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
 				ghost: "hover:bg-accent hover:text-accent-foreground",
 				link: "text-primary underline-offset-4 hover:underline",
+				tertiary: "text-foreground bg-[#232323] hover:brightness-125",
+				subtle: "border border-input bg-accent/20 hover:bg-white/10 hover:text-accent-foreground",
+				white: "bg-foreground text-background hover:opacity-70",
 			},
 			size: {
 				default: "h-10 px-4 py-2",

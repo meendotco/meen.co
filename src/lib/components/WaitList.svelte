@@ -3,6 +3,9 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { cn } from '$lib/utils';
+
+	let { className = '' } = $props();
 	let isSubmitting = $state(false);
 	let email = $state('');
 	let name = $state('');
@@ -62,10 +65,9 @@
 	{:else}
 		<Dialog.Root>
 			<Dialog.Trigger
-				class={buttonVariants({
-					size: 'lg',
-					class: 'h-full w-full font-medium transition-all hover:bg-primary/90 hover:shadow-md'
-				})}
+				class={cn(
+					className
+				)}
 			>
 				Search
 			</Dialog.Trigger>
