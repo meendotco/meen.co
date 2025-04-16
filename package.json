@@ -86,7 +86,6 @@
 		"dlx": "^0.2.1",
 		"drizzle-orm": "^0.40.0",
 		"events": "^3.3.0",
-		"lucide-react": "^0.488.0",
 		"highlight.js": "^11.11.1",
 		"katex": "^0.16.22",
 		"nanoid": "^5.1.5",
