@@ -1,9 +1,11 @@
 import { Buffer } from 'buffer';
-import { eq } from 'drizzle-orm';
+import { eq, not } from 'drizzle-orm';
+import { cosineDistance, desc, gt, sql } from 'drizzle-orm';
 import ProxycurlApi, { type PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 import { PROXYCURL_API_KEY } from '$env/static/private';
 import { embedText } from '$lib/server/ai';
+import { generateLinkedInProfileEmbeddingInput } from '$lib/server/ai/format';
 import { db } from '$lib/server/db';
 
 import { linkedInProfile } from '../db/schema';
@@ -13,7 +15,7 @@ const BearerAuth = defaultClient.authentications['BearerAuth'];
 BearerAuth.accessToken = PROXYCURL_API_KEY;
 
 export async function getFullLinkedinProfile(
-	url: string = 'https://www.linkedin.com/in/makkadotgg/'
+	handle: string = 'makkadotgg'
 ): Promise<PersonEndpointResponse> {
 	const apiInstance = new ProxycurlApi.PeopleAPIApi();
 	const fallbackToCache = 'on-error';
@@ -30,32 +32,36 @@ export async function getFullLinkedinProfile(
 	};
 
 	const cache = await db.query.linkedInProfile.findFirst({
-		where: eq(linkedInProfile.url, url)
+		where: eq(linkedInProfile.handle, handle)
 	});
 
 	if (cache) {
 		return cache.data as PersonEndpointResponse;
 	}
+	let profile: PersonEndpointResponse | null = null;
 
-	const profile = await new Promise<PersonEndpointResponse>((resolve, reject) => {
-		apiInstance.personProfileEndpoint(
-			url,
-			fallbackToCache,
-			opts,
-			(error: unknown, data: PersonEndpointResponse | null) => {
-				if (error) {
-					reject(error);
-				} else if (data) {
-					resolve(data);
-				} else {
-					reject(new Error('No data received from Proxycurl API'));
+	try {
+		profile = await new Promise<PersonEndpointResponse>((resolve, reject) => {
+			apiInstance.personProfileEndpoint(
+				handle,
+				fallbackToCache,
+				opts,
+				(error: unknown, data: PersonEndpointResponse | null) => {
+					if (error) {
+						reject(error);
+					} else if (data) {
+						resolve(data);
+					} else {
+						reject(new Error('No data received from Proxycurl API'));
+					}
 				}
-			}
-		);
-	});
+			);
+		});
+	} catch {
+		return { full_name: 'Profile not found' } as PersonEndpointResponse;
+	}
 
-	console.log('got profile: ' + url);
-	const textToEmbed = `${profile.first_name} ${profile.last_name} ${profile.headline || ''} ${profile.summary || ''} ${profile.skills?.join(', ') || ''}`;
+	const textToEmbed = generateLinkedInProfileEmbeddingInput(profile);
 	const vector = await embedText(textToEmbed);
 
 	let profileImageB64: string | null = null;
@@ -72,14 +78,14 @@ export async function getFullLinkedinProfile(
 	await db
 		.insert(linkedInProfile)
 		.values({
-			url,
+			handle,
 			data: profile,
 			profileImageB64,
 			vector,
 			expiresAt
 		})
 		.onConflictDoUpdate({
-			target: linkedInProfile.url,
+			target: linkedInProfile.handle,
 			set: {
 				data: profile,
 				profileImageB64,
@@ -90,4 +96,56 @@ export async function getFullLinkedinProfile(
 		});
 
 	return profile;
+}
+
+export async function searchLinkedin(query: string, k: number = 10) {
+	const embedding = await embedText(query);
+
+	const similarity = sql<number>`1 - (${cosineDistance(linkedInProfile.vector, embedding)})`;
+
+	const candidates = await db
+		.select({
+			id: linkedInProfile.id,
+			data: linkedInProfile.data,
+			handle: linkedInProfile.handle,
+			similarity
+		})
+		.from(linkedInProfile)
+		.where(gt(similarity, 0.0))
+		.orderBy((t) => desc(t.similarity))
+		.limit(k);
+
+	const data = candidates.map((candidate) => {
+		return candidate.data as PersonEndpointResponse;
+	});
+
+	const formattedData = data.map((candidate) => {
+		return generateLinkedInProfileEmbeddingInput(candidate);
+	});
+
+	return {
+		results: formattedData
+	};
+}
+
+export async function searchLinkedinForObject(query: string) {
+	const embedding = await embedText(query);
+
+	const similarity = sql<number>`1 - (${cosineDistance(linkedInProfile.vector, embedding)})`;
+
+	const candidates = await db
+		.select({
+			id: linkedInProfile.id,
+			data: linkedInProfile.data,
+			handle: linkedInProfile.handle,
+			similarity
+		})
+		.from(linkedInProfile)
+		.where(gt(similarity, 0.0))
+		.orderBy((t) => desc(t.similarity))
+		.limit(2);
+
+	console.log(candidates.map((candidate) => (candidate.data as PersonEndpointResponse).full_name));
+
+	return candidates;
 }

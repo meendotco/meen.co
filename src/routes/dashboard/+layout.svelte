@@ -70,6 +70,7 @@
 		class:ml-[240px]={!sidebarCollapsed}
 	>
 
+
 		<main class="flex-1 p-6">
 			<div class="mb-6 flex items-center space-x-1 px-1 py-3">
 				<Breadcrumb>
@@ -89,7 +90,6 @@
 					</BreadcrumbList>
 				</Breadcrumb>
 			</div>
-
 			{@render children?.()}
 		</main>
 	</div>

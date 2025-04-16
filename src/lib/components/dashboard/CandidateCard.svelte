@@ -89,7 +89,7 @@
 				<div>
 					<h4 class="text-sm font-medium">Experience</h4>
 					<div class="mt-1 space-y-1">
-						{#each candidateData.experiences.slice(0, 2) as experience (experience.company + experience.title)}
+						{#each candidateData.experiences.slice(0, 2) as experience, index (index)}
 							<div>
 								<p class="text-sm font-medium">{experience.title} at {experience.company}</p>
 								{#if experience.starts_at}

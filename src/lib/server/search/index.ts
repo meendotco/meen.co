@@ -26,18 +26,12 @@ export async function searchGoogle(query: string): Promise<GoogleSearchResult> {
 	return response.data;
 }
 
-import { createTool } from '@mastra/core/tools';
-import axios from 'axios';
 import { z } from 'zod';
 
 import { env } from '$env/dynamic/private';
 
 const CRAWL4AI_BASE_URL = 'http://localhost:11235'; // Use correct port
 const CRAWL4AI_API_TOKEN = env.CRAWL4AI_API_TOKEN || 'secret'; // Use env var or default
-
-const goToUrlInputSchema = z.object({
-	url: z.string().url().describe('The URL to fetch content from (cannot be a LinkedIn URL).')
-});
 
 const goToUrlOutputSchema = z.object({
 	markdown: z
