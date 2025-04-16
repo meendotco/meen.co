@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 
 import { chat, chatMessage, jobPost } from '@/server/db/schema';
 import { db } from '$lib/server/db';
@@ -27,7 +27,7 @@ export const load = async ({ locals, params }) => {
 						with: {
 							toolcalls: true
 						},
-						orderBy: desc(chatMessage.createdAt)
+						orderBy: asc(chatMessage.createdAt)
 					}
 				}
 			}
