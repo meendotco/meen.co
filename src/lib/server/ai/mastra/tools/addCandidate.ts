@@ -35,6 +35,18 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 				console.log('Adding candidate to job post', linkedin_url, job.id, match_score, reasoning);
 				const candidate = await addCandidate(linkedin_url, job.id, match_score, reasoning);
 
+				// Check if addCandidate returned an error object
+				if ('error' in candidate && candidate.error) {
+					return { message: `Failed to add candidate: ${candidate.error}` };
+				}
+
+				// Check if candidate has an ID (TypeScript guard)
+				if (!('id' in candidate)) {
+					return {
+						message: 'Failed to add candidate: Unexpected response from addCandidate function.'
+					};
+				}
+
 				return {
 					candidate_id: candidate.id,
 					candidate_url: linkedin_url,

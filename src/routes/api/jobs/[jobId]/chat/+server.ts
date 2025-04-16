@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { CoreMessage } from 'ai';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import { findCandidatesInteractive } from '@/server/ai/mastra/agents/linkedin';
 import { db } from '@/server/db';
@@ -23,7 +23,8 @@ export const POST = async ({ locals, params, request }) => {
 					messages: {
 						with: {
 							toolcalls: true
-						}
+						},
+						orderBy: asc(chatMessage.createdAt)
 					}
 				}
 			}
