@@ -51,6 +51,7 @@
 	let showResponsibilitiesMock = $state(true);
 	let showBenefitsMock = $state(true);
 	let showTechStackMock = $state(true);
+	let isSalaryOptional = $state(false);
 
 	const REMOTE_POLICY_OPTIONS = {
 		remote: 'Remote',
@@ -108,8 +109,10 @@
 		if (!formData.type) errors.push('Job type is required');
 		if (!formData.remote_policy) errors.push('Remote policy is required');
 		if (!formData.priority) errors.push('Priority is required');
-		if (!formData.salary.currency) errors.push('Currency is required');
-		if (!formData.salary.min || !formData.salary.max) errors.push('Salary range is required');
+		if (!isSalaryOptional) {
+			if (!formData.salary.currency) errors.push('Currency is required');
+			if (!formData.salary.min || !formData.salary.max) errors.push('Salary range is required');
+		}
 		if (!formData.description) errors.push('Description is required');
 		if (formData.responsibilities.length === 0)
 			errors.push('At least one responsibility is required');
@@ -147,12 +150,14 @@
 		if (formData.responsibilities.length === 0)
 			errors.push('At least one responsibility is required');
 
-		if (!formData.salary.currency) errors.push('Currency is required');
-		if (!formData.salary.min || !formData.salary.max) errors.push('Salary range is required');
-		if (formData.salary.min > formData.salary.max)
-			errors.push('Minimum salary cannot be greater than maximum salary');
-		if (formData.salary.min < 0 || formData.salary.max < 0)
-			errors.push('Salary values cannot be negative');
+		if (!isSalaryOptional) {
+			if (!formData.salary.currency) errors.push('Currency is required');
+			if (!formData.salary.min || !formData.salary.max) errors.push('Salary range is required');
+			if (formData.salary.min > formData.salary.max)
+				errors.push('Minimum salary cannot be greater than maximum salary');
+			if (formData.salary.min < 0 || formData.salary.max < 0)
+				errors.push('Salary values cannot be negative');
+		}
 
 		if (formData.requirements.length === 0) errors.push('At least one requirement is required');
 		formData.requirements.forEach((req, index) => {
@@ -324,7 +329,7 @@
 								onSelectedChange={(e) => handleSelectChange('type', e)}
 							>
 								<SelectTrigger class="mt-1">
-									{formData.type.charAt(0).toUpperCase() + formData.priority.slice(1) ||
+									{formData.type.charAt(0).toUpperCase() + formData.type.slice(1) ||
 										'Select job type'}
 								</SelectTrigger>
 								<SelectContent>
@@ -384,6 +389,7 @@
 							<Select
 								selected={formData.salary.currency}
 								onSelectedChange={(e) => handleSelectChange('salary.currency', e)}
+								disabled={isSalaryOptional}
 							>
 								<SelectTrigger class="mt-1">
 									{formData.salary.currency.charAt(0).toUpperCase() +
@@ -406,19 +412,27 @@
 								bind:value={formData.salary.min}
 								placeholder="e.g. 80000"
 								class="mt-1"
+								disabled={isSalaryOptional}
 							/>
 						</div>
 						<div>
 							<Label for="salaryMax">Max Salary</Label>
 							<p class="mb-2 text-sm text-muted-foreground">Annual maximum</p>
-							<Input
-								id="salaryMax"
-								type="number"
-								name="salary.max"
-								bind:value={formData.salary.max}
-								placeholder="e.g. 120000"
-								class="mt-1"
-							/>
+							<div class="flex items-center gap-2">
+								<Input
+									id="salaryMax"
+									type="number"
+									name="salary.max"
+									bind:value={formData.salary.max}
+									placeholder="e.g. 120000"
+									class="mt-1"
+									disabled={isSalaryOptional}
+								/>
+								<div class="flex items-center space-x-2">
+									<Checkbox id="salaryOptional" bind:checked={isSalaryOptional} />
+									<Label for="salaryOptional" class="text-sm">Optional</Label>
+								</div>
+							</div>
 						</div>
 					</div>
 
@@ -718,14 +732,16 @@
 							<p class="text-foreground">{formData.description || 'No description provided.'}</p>
 						</div>
 
-						<div class="mt-6">
-							<p class="mb-1 text-sm text-muted-foreground">Salary Range</p>
-							<p class="text-foreground">
-								{formData.salary.currency}
-								{formData.salary.min.toLocaleString()} -{' '}
-								{formData.salary.max.toLocaleString()}
-							</p>
-						</div>
+						{#if !isSalaryOptional}
+							<div class="mt-6">
+								<p class="mb-1 text-sm text-muted-foreground">Salary Range</p>
+								<p class="text-foreground">
+									{formData.salary.currency}
+									{formData.salary.min.toLocaleString()} -{' '}
+									{formData.salary.max.toLocaleString()}
+								</p>
+							</div>
+						{/if}
 
 						{#if formData.responsibilities.length > 0 && !showResponsibilitiesMock}
 							<div class="mt-6">
