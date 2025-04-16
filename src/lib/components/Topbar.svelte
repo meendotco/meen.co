@@ -17,13 +17,13 @@
 		return () => window.removeEventListener('scroll', handleScroll);
 	});
 
-	const showTopbar = $derived(scrollY > 100 || user?.email);
+	const showTopbar = $derived(scrollY > 0 || user?.email);
 </script>
 
 <header
 	class="sticky top-0 z-50 flex w-full justify-center py-4 backdrop-blur-lg transition-opacity duration-300"
 	class:opacity-0={!showTopbar}
-	class:opacity-100={showTopbar}
+	class:opacity-100={true}
 >
 	<div
 		class="flex w-[95%] max-w-5xl items-center justify-between rounded-full border border-white/10 bg-background/80 px-4 py-2 shadow-lg supports-[backdrop-filter]:bg-background/60"
