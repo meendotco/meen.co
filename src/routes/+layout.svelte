@@ -13,7 +13,7 @@
 <div class="min-h-screen bg-background">
 	{#if !page.url.pathname.startsWith('/dashboard')}
 		<Topbar user={data.user} />
-
+	{/if}
 	{@render children?.()}
 	{#if page.url.pathname === '/'}
 		<div

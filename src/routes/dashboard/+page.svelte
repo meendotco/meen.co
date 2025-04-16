@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { Card } from '$lib/components/ui/card';
-	import { Button } from '$lib/components/ui/button';
-	import Container from '$lib/components/landing/container.svelte';
-	import { fade, fly, scale, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { fade, fly, scale, slide } from 'svelte/transition';
+
+	import Container from '$lib/components/landing/container.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Card } from '$lib/components/ui/card';
 </script>
 
 <div class="container mx-auto flex flex-col gap-8 py-8" in:fade={{ duration: 300, delay: 150 }}>
@@ -82,7 +83,7 @@
 					</div>
 					<div class="z-10 mt-6">
 						<a
-							href="/dashboard/job-post/create"
+							href="/dashboard/jobs"
 							class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-md transition-all hover:translate-y-[-2px] hover:bg-primary/90 hover:shadow-lg"
 						>
 							Get Started
