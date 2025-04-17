@@ -55,7 +55,7 @@
 	let candidates = $derived<Candidate[]>((job?.candidates as Candidate[]) ?? []);
 	let showFullDescription = $state(false);
 	let message = $state('');
-	let messages = $derived(data.job?.chat?.messages ?? []);
+	let messages = $state<Message[]>((data.job?.chat?.messages as Message[] | undefined) ?? []);
 
 	async function sendMessage(messageToSend: string) {
 		if (!messageToSend.trim() || chatDisabled) return;
@@ -97,16 +97,11 @@
 
 	onMount(() => {
 		socket.on(
-			'messageChunk',
+			`${job.id}.messageChunk`,
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			(data: { chunk: TextStreamPart<any>; appPayload: { jobId: string; messageId: string } }) => {
 				const chunk = data.chunk;
-				const payload = data.appPayload;
 				console.log('messageChunk', data);
-
-				if (payload.jobId !== page.params.jobId) {
-					return;
-				}
 
 				if (chunk.type === 'text-delta' && typeof chunk.textDelta === 'string') {
 					messages[messages.length - 1].content =
@@ -133,30 +128,35 @@
 			}
 		);
 
-		socket.on('messageStarted', (data: { appPayload: { jobId: string; messageId: string } }) => {
-			console.log('messageStarted', data);
-			if (data.appPayload.jobId !== page.params.jobId) {
-				return;
-			}
-			chatDisabled = true;
+		socket.on(
+			`${job.id}.messageStarted`,
+			(data: { appPayload: { jobId: string; messageId: string } }) => {
+				console.log('messageStarted', data);
 
-			messages.push({
-				id: data.appPayload.messageId,
-				content: '',
-				role: 'assistant',
-				createdAt: new Date(),
-				chatId: job?.chat?.id ?? '',
-				toolcalls: []
-			} satisfies Message);
-		});
+				chatDisabled = true;
 
-		socket.on('messageComplete', (data: { appPayload: { jobId: string; messageId: string } }) => {
-			if (data.appPayload.jobId !== page.params.jobId) {
-				return;
+				messages.push({
+					id: data.appPayload.messageId,
+					content: '',
+					role: 'assistant',
+					createdAt: new Date(),
+					chatId: job?.chat?.id ?? '',
+					toolcalls: []
+				} satisfies Message);
 			}
-			chatDisabled = false;
-			errorMessage = null;
-		});
+		);
+
+		socket.on(
+			`${job.id}.messageComplete`,
+			(data: { appPayload: { jobId: string; messageId: string } }) => {
+				console.log('messageComplete', data);
+				if (data.appPayload.jobId !== page.params.jobId) {
+					return;
+				}
+				chatDisabled = false;
+				errorMessage = null;
+			}
+		);
 	});
 
 	async function deleteChat() {
@@ -359,7 +359,7 @@
 									{#if message.toolcalls && message.toolcalls.length > 0}
 										<span class="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
 											Tool Calls:
-											{#each message.toolcalls as toolcall (toolcall.args + toolcall.name + toolcall.result)}
+											{#each message.toolcalls as toolcall, index (index)}
 												<p class="rounded-md bg-primary/20 p-1 text-xs">
 													{toolcall.name}
 												</p>

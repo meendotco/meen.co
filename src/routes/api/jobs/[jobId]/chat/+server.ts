@@ -76,7 +76,7 @@ export const POST = async ({ locals, params, request }) => {
 	let fullResponse = '';
 
 	broadcastToUsers(locals.wss, [user.id], {
-		messageType: 'messageStarted',
+		messageType: `${job.id}.messageStarted`,
 		data: {
 			appPayload: { jobId: job.id, messageId: messageId }
 		}
@@ -84,7 +84,7 @@ export const POST = async ({ locals, params, request }) => {
 	for await (const chunk of agentStream.fullStream) {
 		console.log(chunk.type);
 		broadcastToUsers(locals.wss, [user.id], {
-			messageType: 'messageChunk',
+			messageType: `${job.id}.messageChunk`,
 			data: {
 				chunk: chunk,
 				appPayload: {
@@ -110,7 +110,7 @@ export const POST = async ({ locals, params, request }) => {
 	});
 
 	broadcastToUsers(locals.wss, [user.id], {
-		messageType: 'messageComplete',
+		messageType: `${job.id}.messageComplete`,
 		data: {
 			appPayload: { jobId: job.id, messageId: messageId }
 		}
