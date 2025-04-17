@@ -1,17 +1,15 @@
 <script lang="ts">
+	import Input from '@/components/ui/input/input.svelte';
+	import { page } from '$app/state';
 	import Logo from '$lib/components/Logo.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import WaitList from '$lib/components/WaitList.svelte';
-	let { data } = $props();
+	let jobPostUrl = $state('');
 </script>
 
 <section
 	class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background py-10"
 >
-	<!-- Animated background gradient elements -->
-
 	<div class="container z-10 flex flex-col items-center justify-center space-y-10 px-4 text-center">
-		<!-- Logo and glowing effect -->
 		<Logo />
 
 		<div class="relative space-y-4">
@@ -28,31 +26,8 @@
 				</span>
 			</h1>
 			<p class="relative z-10 mx-auto max-w-[42rem] text-xl text-foreground/90 sm:text-2xl">
-				Empowering the future through intelligent solutions.
+				Revolutionizing the way you find and evaluate candidates.
 			</p>
-			<p class="relative z-10 mx-auto max-w-[42rem] text-lg text-foreground/70">
-				Experience the next generation of AI technology.
-			</p>
-		</div>
-
-		<div
-			class="z-10 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
-		>
-			{#if data.user}
-				<Button href="/dashboard" size="lg" class="relative rounded-full px-8">
-					<div
-						class="absolute -inset-0.5 -z-10 rounded-full bg-gradient-to-r from-purple-600 via-primary to-indigo-600 opacity-75 blur-sm transition-all group-hover:opacity-100"
-					></div>
-					<span class="z-10">Go to Dashboard</span>
-				</Button>
-			{:else}
-				<Button href="/signin" size="lg" class="group relative rounded-full px-8">
-					<div
-						class="absolute -inset-0.5 -z-10 rounded-full bg-gradient-to-r from-purple-600 via-primary to-indigo-600 opacity-75 blur-sm transition-all group-hover:opacity-100"
-					></div>
-					<span class="z-10">Get Started</span>
-				</Button>
-			{/if}
 		</div>
 	</div>
 
@@ -65,7 +40,6 @@
 				<h2 class="mb-8 text-center text-2xl font-semibold text-foreground md:text-3xl">
 					Find the Perfect Match
 				</h2>
-
 				<div class="relative mx-auto max-w-2xl">
 					<div
 						class="absolute -inset-1 rounded-lg bg-gradient-to-r from-purple-500 via-primary to-indigo-500 opacity-70 blur-sm"
@@ -73,12 +47,20 @@
 					<div
 						class="relative flex overflow-hidden rounded-lg bg-card/50 backdrop-blur-sm dark:bg-black/50"
 					>
-						<input
+						<Input
+							bind:value={jobPostUrl}
 							type="text"
-							placeholder="Senior Product Manager with 5+ years SaaS exp"
-							class="flex-1 border-none bg-transparent px-4 py-3 text-foreground placeholder-foreground/50 outline-none dark:text-white dark:placeholder-white/50"
+							placeholder="Enter your job post URL"
+							class="h-12 flex-1 border-none bg-transparent px-4 py-3 text-foreground placeholder-foreground/50 outline-none dark:text-white dark:placeholder-white/50"
 						/>
-						<WaitList />
+						<Button
+							href={`/signin?redirect=${page.url.pathname}/dashboard/demo/${jobPostUrl}`}
+							variant="default"
+							class="h-12 rounded-r-lg"
+							disabled={!jobPostUrl}
+						>
+							Find Candidates</Button
+						>
 					</div>
 				</div>
 
@@ -129,12 +111,12 @@
 			Our Features
 		</h2>
 
-		<div class="grid gap-6 md:grid-cols-3">
+		<div class="grid gap-8 md:grid-cols-3">
 			<div
-				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-6 backdrop-blur dark:border-indigo-900/30 dark:bg-black/20"
+				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-8 backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:border-primary/50 dark:border-indigo-900/30 dark:bg-black/20 dark:hover:border-purple-400/50"
 			>
 				<div
-					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 dark:bg-indigo-900/50"
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-primary/30 to-purple-500/30 dark:from-indigo-900/60 dark:to-purple-900/60"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -161,10 +143,10 @@
 			</div>
 
 			<div
-				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-6 backdrop-blur dark:border-indigo-900/30 dark:bg-black/20"
+				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-8 backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:border-primary/50 dark:border-indigo-900/30 dark:bg-black/20 dark:hover:border-purple-400/50"
 			>
 				<div
-					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 dark:bg-indigo-900/50"
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-primary/30 to-purple-500/30 dark:from-indigo-900/60 dark:to-purple-900/60"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -191,10 +173,10 @@
 			</div>
 
 			<div
-				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-6 backdrop-blur dark:border-indigo-900/30 dark:bg-black/20"
+				class="overflow-hidden rounded-xl border border-border/30 bg-card/20 p-8 backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:border-primary/50 dark:border-indigo-900/30 dark:bg-black/20 dark:hover:border-purple-400/50"
 			>
 				<div
-					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 dark:bg-indigo-900/50"
+					class="mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-primary/30 to-purple-500/30 dark:from-indigo-900/60 dark:to-purple-900/60"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

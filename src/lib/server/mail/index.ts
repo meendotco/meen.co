@@ -32,7 +32,7 @@ async function notifyAndSaveWaitlist(
 }
 export async function waitListEmail(
 	email: string,
-	name: string,
+	name?: string,
 	company?: string,
 	companySize?: string,
 	role?: string
@@ -46,7 +46,7 @@ export async function waitListEmail(
 
 	notifyAndSaveWaitlist(
 		email,
-		name,
+		name || email.split('@')[0],
 		company || 'No Company Entered',
 		companySize || 'No Company Size Entered',
 		role || 'No Role Entered'

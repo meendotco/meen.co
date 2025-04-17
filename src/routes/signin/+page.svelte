@@ -1,24 +1,20 @@
 <script lang="ts">
 	import { SignIn } from '@auth/sveltekit/components';
 	import { Linkedin, LoaderCircle } from '@lucide/svelte';
-	import { fade, fly } from 'svelte/transition';
 
-	import { Button } from '$lib/components/ui/button';
+	import { page } from '$app/state';
 	import Logo from '$lib/components/Logo.svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	let isLinkedinLoading = $state(false);
-
-	// Animation duration
-	const duration = 0.5;
 </script>
-
 
 <div
 	class="container mx-auto flex min-h-[calc(100vh-14rem)] flex-col items-center justify-center py-10"
 >
 	<div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
 		<div class="flex w-full flex-col text-center">
-			<div in:fade={{ delay: 200, duration: duration * 1000 }}>
+			<div>
 				<div class="flex justify-center">
 					<Logo className="h-8 w-8" />
 				</div>
@@ -27,7 +23,7 @@
 			</div>
 
 			<div>
-				<div in:fade={{ delay: 300, duration: duration * 1000 }} class="flex flex-col gap-4 py-8">
+				<div class="flex flex-col gap-4 py-8">
 					<div class="w-full">
 						<Button
 							size="lg"
@@ -44,7 +40,14 @@
 							{:else}
 								<Linkedin class="h-4 w-4" />
 							{/if}
-							<SignIn provider="linkedin" signInPage="signin" />
+							{#if page.params.redirect}
+								<SignIn
+									provider="linkedin"
+									redirect={`/auth/signin/linkedin?redirect=${page.params.redirect}`}
+								/>
+							{:else}
+								<SignIn provider="linkedin" redirect={`${page.url.origin}/dashboard`} />
+							{/if}
 						</Button>
 					</div>
 				</div>

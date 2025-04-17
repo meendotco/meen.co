@@ -5,9 +5,7 @@ import { embedText } from '$lib/server/ai';
 import { generateJobPostEmbeddingInput } from '$lib/server/ai/format';
 import { db } from '$lib/server/db';
 import { jobPost } from '$lib/server/db/schema';
-import { addCandidate } from '$lib/server/job';
 import { insertJob } from '$lib/server/job';
-import { searchLinkedinForObject } from '$lib/server/linkedin';
 import { getJobDataFromURL } from '$lib/server/search/index';
 
 export const POST = async ({ request, locals }: RequestEvent) => {
@@ -50,6 +48,7 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 		await embedText(formattedJobData);
 		console.log('Job data:', job);
 
+		/*/
 		console.log('Searching LinkedIn for matching candidates');
 		const candidates = await searchLinkedinForObject(job.description);
 		console.log(`Found ${candidates.length} potential candidates`);
@@ -79,8 +78,9 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 			})
 		);
 		console.log('All candidates added successfully');
+		/*/
 
-		return new Response(JSON.stringify(candidates), { status: 201 });
+		return new Response(JSON.stringify(job), { status: 201 });
 	} catch (error) {
 		console.error('Error creating job:', error);
 		return new Response(JSON.stringify({ error: 'Failed to create job', details: error }), {

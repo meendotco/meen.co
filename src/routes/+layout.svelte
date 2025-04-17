@@ -1,12 +1,48 @@
 <script lang="ts">
 	import '../app.css';
 
+	import { Heart } from 'lucide-svelte';
+
 	import { page } from '$app/state';
 	import Topbar from '$lib/components/Topbar.svelte';
-	import { Github, Twitter, Linkedin, Mail, Heart } from 'lucide-svelte';
 	let { data, children } = $props();
 
 	import { ModeWatcher } from 'mode-watcher';
+
+	let email = $state('');
+	let isSubmitting = $state(false);
+
+	async function submitToWaitlist() {
+		isSubmitting = true;
+
+		try {
+			const response = await fetch('/waitlist', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					email
+				})
+			});
+
+			if (response.ok) {
+				email = '';
+			} else {
+				console.error(await response.json());
+			}
+		} catch (error) {
+			console.error(error);
+		} finally {
+			isSubmitting = false;
+		}
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter') {
+			submitToWaitlist();
+		}
+	}
 </script>
 
 <ModeWatcher />
@@ -44,16 +80,26 @@
 					<p class="mt-2 text-sm text-foreground/70 dark:text-white/70">
 						Empowering the future through intelligent solutions.
 					</p>
-					
+
 					<div class="mt-4 flex items-center space-x-3">
-						<a href="https://github.com" aria-label="GitHub" class="text-foreground/60 hover:text-primary transition-colors dark:text-white/60 dark:hover:text-primary">
-							<Github size={18} />
-						</a>
-						<a href="https://twitter.com" aria-label="Twitter" class="text-foreground/60 hover:text-primary transition-colors dark:text-white/60 dark:hover:text-primary">
-							<Twitter size={18} />
-						</a>
-						<a href="https://linkedin.com" aria-label="LinkedIn" class="text-foreground/60 hover:text-primary transition-colors dark:text-white/60 dark:hover:text-primary">
-							<Linkedin size={18} />
+						<a
+							href="https://discord.gg/hA8fuAnNKh"
+							target="_blank"
+							aria-label="Discord"
+							class="text-foreground/60 transition-colors hover:text-primary dark:text-white/60 dark:hover:text-primary"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								fill="currentColor"
+								class="bi bi-discord"
+								viewBox="0 0 16 16"
+							>
+								<path
+									d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059l-.018-.011a9 9 0 0 1-1.248-.595.05.05 0 0 1-.02-.066l.015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612"
+								/>
+							</svg>
 						</a>
 					</div>
 				</div>
@@ -62,18 +108,10 @@
 					<h4 class="mb-3 font-medium text-foreground dark:text-white">Company</h4>
 					<ul class="space-y-2 text-sm">
 						<li>
-							<a href="/about" class="text-foreground/70 hover:text-primary transition-colors dark:text-white/70 dark:hover:text-primary"
-								>About</a
-							>
-						</li>
-						<li>
-							<a href="/contact" class="text-foreground/70 hover:text-primary transition-colors dark:text-white/70 dark:hover:text-primary"
+							<a
+								href="mailto:hello@meen.ai"
+								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
 								>Contact us</a
-							>
-						</li>
-						<li>
-							<a href="/careers" class="text-foreground/70 hover:text-primary transition-colors dark:text-white/70 dark:hover:text-primary"
-								>Careers</a
 							>
 						</li>
 					</ul>
@@ -83,22 +121,16 @@
 					<h4 class="mb-3 font-medium text-foreground dark:text-white">Resources</h4>
 					<ul class="space-y-2 text-sm">
 						<li>
-							<a href="/blog" class="text-foreground/70 hover:text-primary transition-colors dark:text-white/70 dark:hover:text-primary"
-								>Blog</a
-							>
-						</li>
-						<li>
-							<a href="/documentation" class="text-foreground/70 hover:text-primary transition-colors dark:text-white/70 dark:hover:text-primary"
-								>Documentation</a
-							>
-						</li>
-						<li>
-							<a href="/privacy" class="text-foreground/70 hover:text-primary transition-colors dark:text-white/70 dark:hover:text-primary"
+							<a
+								href="/privacy"
+								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
 								>Privacy policy</a
 							>
 						</li>
 						<li>
-							<a href="/terms" class="text-foreground/70 hover:text-primary transition-colors dark:text-white/70 dark:hover:text-primary"
+							<a
+								href="/terms"
+								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
 								>Terms of service</a
 							>
 						</li>
@@ -107,26 +139,28 @@
 
 				<div>
 					<h4 class="mb-3 font-medium text-foreground dark:text-white">Get in touch</h4>
-					<p class="text-sm text-foreground/70 dark:text-white/70 mb-3">
-						Subscribe to our newsletter for updates
-					</p>
 					<form class="flex flex-col space-y-2">
-						<input 
-							type="email" 
-							placeholder="Enter your email" 
-							class="rounded-md bg-background text-sm p-2 border border-border dark:border-white/10 focus:outline-none focus:ring-1 focus:ring-primary"
+						<input
+							bind:value={email}
+							onkeydown={handleKeydown}
+							type="email"
+							placeholder="Enter your email"
+							class="rounded-md border border-border bg-background p-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:border-white/10"
 						/>
-						<button 
-							type="submit" 
-							class="rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium py-2 transition-colors"
+						<button
+							disabled={isSubmitting}
+							onclick={submitToWaitlist}
+							class="rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
 						>
-							Subscribe
+							{isSubmitting ? 'Submitting...' : 'Join waitlist'}
 						</button>
 					</form>
 				</div>
 			</div>
 
-			<div class="mt-8 pt-8 border-t border-border dark:border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-foreground/70 dark:text-white/70">
+			<div
+				class="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-foreground/70 dark:border-white/10 dark:text-white/70 md:flex-row"
+			>
 				<div>
 					&copy; {new Date().getFullYear()} Meen AI. All rights reserved.
 				</div>

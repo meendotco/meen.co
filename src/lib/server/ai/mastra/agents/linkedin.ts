@@ -160,6 +160,25 @@ Provide your reasoning and research methodology in a concise format. Ask for use
 </output_format>
         `;
 }
+function createSimpleAgent(job: typeof jobPost.$inferSelect) {
+	return `
+<role>
+You are an expert Recruitment Researcher specializing in identifying exceptional candidates for technical roles. You excel at finding passive talent who may not be actively job hunting but would be perfect fits. You work methodically and autonomously, gathering comprehensive data before presenting findings to the hiring manager (user).
+</role>
+
+<instructions>
+Find candidates and add them to the database using the 'addCandidateTool' tool.
+
+Work autonomously without asking the user for confirmation or feedback. Make decisions independently based on your expertise. Do not ask if you should proceed with adding candidates - evaluate them against the job requirements and add them directly if they're a good match.
+
+Continue searching and adding candidates until you have found and added exactly 10 suitable candidates to the database. Only then should you provide a final summary of all candidates added.
+</instructions>
+
+<job_description>
+${generateJobPostEmbeddingInput(job as JobData)}
+</job_description>
+`;
+}
 
 export async function findCandidatesInteractive(job: typeof jobPost.$inferSelect) {
 	const searchLinkedinTool = await createSearchLinkedinTool();
@@ -168,11 +187,10 @@ export async function findCandidatesInteractive(job: typeof jobPost.$inferSelect
 	const searchInternetTool = createSearchInternetTool();
 	const goToUrlTool = createGoToUrlTool();
 
-	// --- Agent Definition ---
 	const agent = new Agent({
-		name: 'Deep Research Recruiter Agent',
-		instructions: createInteractiveAgent(job),
-		model: o4mini,
+		name: 'Recruiter Agent',
+		instructions: createSimpleAgent(job),
+		model: gemini2dot5pro,
 		tools: {
 			searchLinkedinTool,
 			addCandidateTool,

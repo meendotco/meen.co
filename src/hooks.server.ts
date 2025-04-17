@@ -32,7 +32,10 @@ const authorizationHandle: Handle = async ({ event, resolve }) => {
 	//const start = performance.now();
 	const auth = await event.locals.auth();
 	if (!auth) {
-		if (event.url.pathname.startsWith('/api') || event.url.pathname.startsWith('/dashboard')) {
+		if (
+			(event.url.pathname.startsWith('/api') && !event.url.pathname.startsWith('/api/waitlist')) ||
+			event.url.pathname.startsWith('/dashboard')
+		) {
 			return new Response('Unauthorized', { status: 401 });
 		}
 	}
