@@ -8,8 +8,14 @@ export async function createSearchLinkedinTool() {
 		id: 'search-linkedin',
 		description: 'Search for candidates on LinkedIn',
 		inputSchema: z.object({
-			query: z.string().describe('Search query'),
-			k: z.number().describe('Number of results to return')
+			query: z
+				.string()
+				.describe(
+					'Search query. Used for vector search on linkedin profiles. All data is embedded and stored in the database.'
+				),
+			k: z
+				.number()
+				.describe('Number of results to return. Default this to 50 so you can get a good sample.')
 		}),
 		outputSchema: z.object({
 			results: z.array(z.string())

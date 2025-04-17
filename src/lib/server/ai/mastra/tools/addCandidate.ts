@@ -9,11 +9,9 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 		id: 'add-candidate',
 		description: 'Adds a potential candidate (from LinkedIn) to a specific job post.',
 		inputSchema: z.object({
-			linkedin_url: z
+			handle: z
 				.string()
-				.describe(
-					"The candidate's LinkedIn profile URL. For example: https://www.linkedin.com/in/makkadotgg/"
-				),
+				.describe("The candidate's LinkedIn profile handle. For example: makkadotgg"),
 			match_score: z.number().describe('The match score of the candidate to the job post.'),
 			reasoning: z
 				.string()
@@ -21,19 +19,19 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 		}),
 		outputSchema: z.object({
 			candidate_id: z.string().optional().describe('The ID of the newly created candidate entry.'),
-			candidate_url: z.string().optional().describe('The LinkedIn URL of the candidate.'),
+			candidate_handle: z.string().optional().describe('The LinkedIn handle of the candidate.'),
 			message: z.string().describe('A message indicating success or failure.')
 		}),
 		execute: async ({ context }) => {
-			const { linkedin_url, match_score, reasoning } = context;
+			const { handle, match_score, reasoning } = context;
 			try {
 				if (!job || !job.id) {
 					console.log('No Job Post Found');
 					return { message: `No Job Post Found` };
 				}
 
-				console.log('Adding candidate to job post', linkedin_url, job.id, match_score, reasoning);
-				const candidate = await addCandidate(linkedin_url, job.id, match_score, reasoning);
+				console.log('Adding candidate to job post', handle, job.id, match_score, reasoning);
+				const candidate = await addCandidate(handle, job.id, match_score, reasoning);
 
 				// Check if addCandidate returned an error object
 				if ('error' in candidate && candidate.error) {
@@ -49,7 +47,7 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 
 				return {
 					candidate_id: candidate.id,
-					candidate_url: linkedin_url,
+					candidate_handle: handle,
 					message: 'Successfully added candidate to job post.'
 				};
 			} catch (error) {

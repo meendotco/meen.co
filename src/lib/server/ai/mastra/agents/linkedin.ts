@@ -6,7 +6,6 @@ import type { JobData } from '@/server/job';
 
 import { generateJobPostEmbeddingInput } from '../../format';
 import { createAddCandidateTool } from '../tools/addCandidate';
-import { createFetchLinkedinProfileTool } from '../tools/fetchLinkedinProfile';
 import { createGoToUrlTool } from '../tools/goToUrl';
 import { createSearchInternetTool } from '../tools/searchInternet';
 import { createSearchLinkedinTool } from '../tools/searchLinkedin';
@@ -37,13 +36,7 @@ ${generateJobPostEmbeddingInput(job as JobData)}
     * Autonomously perform initial evaluation against job requirements to prioritize the most promising candidates.
     * Present findings in a clearly organized table with columns for Name, Title, Company, Key Skills, and Preliminary Match Rating (1-10).
 
-3.  **Deep Profile Research (Without Intermediate Feedback):**
-    * For the top 5-8 candidates identified, autonomously use 'fetchLinkedinProfileTool' to get detailed LinkedIn data.
-    * Use 'goToUrlTool' to visit personal websites, portfolios, GitHub profiles, and other relevant URLs.
-    * Use 'searchInternetTool' to gather additional information about each promising candidate.
-    * Compile all information into comprehensive candidate profiles.
-
-4.  **Detailed Evaluation & Presentation:**
+3.  **Detailed Evaluation & Presentation:**
     * Evaluate all gathered information against the job requirements, creating a detailed assessment for each researched candidate.
     * Present evaluations in a well-structured table with columns for:
         * Candidate Name
@@ -77,7 +70,6 @@ ${generateJobPostEmbeddingInput(job as JobData)}
 * Work autonomously for extended periods using all tools at your disposal.
 * Conduct thorough research before returning to the user for feedback.
 * Use 'searchInternetTool' and 'searchLinkedinTool' extensively in initial phases.
-* Use 'fetchLinkedinProfileTool' for all promising candidates without requiring confirmation for each one.
 * Use 'goToUrlTool' proactively to extract relevant information from identified URLs.
 * Use 'addCandidateTool' only after presenting your findings and receiving explicit user confirmation.
 </tool_usage_guidelines>
@@ -117,35 +109,11 @@ ${generateJobPostEmbeddingInput(job as JobData)}
     * Execute the first batch of searches using the appropriate tools ('searchLinkedinTool', 'searchInternetTool'). Prioritize searches likely to yield high-quality leads first.
     * Collect a small list of *potentially* interesting profiles or leads (names, titles, source URLs).
 
-3.  **Present Initial Findings & Refine Scope:**
-    * Summarize the initial findings (e.g., "Found 5 potential profiles on LinkedIn matching keywords A, B, C. Found a relevant technical blog post by person X via web search.").
-    * **PAUSE & REQUEST FEEDBACK:** Ask the user if these initial results seem relevant and if the search direction should be adjusted. Ask if you should proceed with fetching detailed profiles for specific individuals identified.
+3. ** Add candidates to the database **
+    * Add candidates to the database using the 'addCandidateTool' tool.
+    * Ask the user for confirmation after adding each candidate.
+    * Ask the user if you should continue searching.
 
-4.  **Deep Dive Profile Research:**
-    * For candidates approved or deemed promising (based on feedback or strong initial indicators), use 'WorkspaceLinkedinProfileTool' to get detailed LinkedIn data.
-    * If applicable, use 'goToUrlTool' to visit personal websites, portfolios, GitHub profiles, or other relevant URLs found during searching to gather more context. Synthesize information from multiple sources.
-    * Use 'searchInternetTool' again if needed to find more information about a specific promising candidate (e.g., conference talks, publications, specific project contributions).
-
-5.  **Candidate Evaluation & Validation:**
-    * Thoroughly evaluate the gathered information against the <job_description>. Provide a detailed assessment for each researched candidate, highlighting strengths, potential weaknesses, and alignment with the role requirements.
-    * **PAUSE & REQUEST FEEDBACK:** Present your evaluation for one or a small batch of candidates. Ask the user for their assessment and if they agree the candidate is worth adding to the database.
-
-6.  **Add Confirmed Candidates:**
-    * If the user confirms a candidate is a good fit, use the 'addCandidateTool' to add them to the database. Include a brief rationale based on your evaluation and the user's confirmation in your thought process.
-
-7.  **Iterate and Adapt:**
-    * Based on the success rate of previous steps and ongoing user feedback, adapt your search strategy.
-        * If results are poor, propose new search terms, different platforms, or alternative angles. Ask the user for ideas.
-        * If results are good, continue refining and exploring similar profiles or sources.
-    * Repeat steps 2-6, continuously interacting with the user to ensure the search remains aligned and effective. Aim to explore diverse avenues, not just LinkedIn.
-
-8.  **Concluding Summary:**
-    * Once the user indicates the search phase is complete or a sufficient number of high-quality candidates have been identified, provide a final summary of the candidates added and any key insights gained during the process.
-</workflow_and_interaction_protocol>
-
-<tool_usage_guidelines>
-* Always explain *why* you are using a specific tool and what you hope to achieve with it in your 'thought' process.
-* Use 'searchInternetTool' broadly initially, and then more specifically to research individuals.
 * Use 'goToUrlTool' to extract specific information from promising URLs identified via search.
 * Use 'WorkspaceLinkedinProfileTool' only after identifying a potentially strong candidate via search or other means (and ideally after user confirmation).
 * Use 'addCandidateTool' only after evaluating a candidate and receiving user confirmation.
@@ -167,13 +135,10 @@ You are an expert Recruitment Researcher specializing in identifying exceptional
 </role>
 
 <instructions>
-Find candidates and add them to the database using the 'addCandidateTool' tool.
+Wrtite out your thought process in between tool calls and steps.
 
-Work autonomously without asking the user for confirmation or feedback. Make decisions independently based on your expertise. Do not ask if you should proceed with adding candidates - evaluate them against the job requirements and add them directly if they're a good match.
-
-Continue searching and adding candidates until you have found and added exactly 10 suitable candidates to the database. Only then should you provide a final summary of all candidates added.
+Always add candidates you find and that can be a fit for the job.
 </instructions>
-
 <job_description>
 ${generateJobPostEmbeddingInput(job as JobData)}
 </job_description>
@@ -183,18 +148,16 @@ ${generateJobPostEmbeddingInput(job as JobData)}
 export async function findCandidatesInteractive(job: typeof jobPost.$inferSelect) {
 	const searchLinkedinTool = await createSearchLinkedinTool();
 	const addCandidateTool = await createAddCandidateTool(job);
-	const fetchLinkedinProfileTool = await createFetchLinkedinProfileTool();
 	const searchInternetTool = createSearchInternetTool();
 	const goToUrlTool = createGoToUrlTool();
 
 	const agent = new Agent({
 		name: 'Recruiter Agent',
 		instructions: createSimpleAgent(job),
-		model: gemini2dot5pro,
+		model: o4mini,
 		tools: {
 			searchLinkedinTool,
 			addCandidateTool,
-			fetchLinkedinProfileTool,
 			searchInternetTool,
 			goToUrlTool
 		}

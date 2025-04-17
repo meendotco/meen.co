@@ -2,6 +2,7 @@
 	import { quintOut } from 'svelte/easing';
 	import { fade, fly, scale, slide } from 'svelte/transition';
 
+	let { data } = $props();
 	import Container from '$lib/components/landing/container.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -21,7 +22,7 @@
 				<div class="relative flex h-full flex-col justify-between p-6">
 					<div class="z-10 flex flex-col gap-2">
 						<h3 class="text-lg font-semibold text-foreground/80">Active Job Posts</h3>
-						<p class="text-4xl font-bold text-primary">12</p>
+						<p class="text-4xl font-bold text-primary">{data.totalJobs}</p>
 						<p class="flex items-center text-xs font-medium text-green-600">
 							<span class="mr-1 inline-block">↑</span> 8% from last month
 						</p>
@@ -37,7 +38,7 @@
 				<div class="relative flex h-full flex-col justify-between p-6">
 					<div class="z-10 flex flex-col gap-2">
 						<h3 class="text-lg font-semibold text-foreground/80">Candidate Matches</h3>
-						<p class="text-4xl font-bold text-indigo-400">248</p>
+						<p class="text-4xl font-bold text-indigo-400">{data.totalCandidates}</p>
 						<p class="flex items-center text-xs font-medium text-green-600">
 							<span class="mr-1 inline-block">↑</span> 12% from last month
 						</p>
@@ -52,8 +53,8 @@
 			>
 				<div class="relative flex h-full flex-col justify-between p-6">
 					<div class="z-10 flex flex-col gap-2">
-						<h3 class="text-lg font-semibold text-foreground/80">Avg. Match Quality</h3>
-						<p class="text-4xl font-bold text-purple-400">92%</p>
+						<h3 class="text-lg font-semibold text-foreground/80">Total People</h3>
+						<p class="text-4xl font-bold text-purple-400">{data.totalPeople}</p>
 						<p class="flex items-center text-xs font-medium text-green-600">
 							<span class="mr-1 inline-block">↑</span> 5% from last month
 						</p>

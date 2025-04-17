@@ -10,15 +10,6 @@ export const load = async ({ locals, params }) => {
 			candidates: {
 				with: {
 					linkedInProfile: true
-				},
-				columns: {
-					id: true,
-					jobPostId: true,
-					linkedInProfileId: true,
-					createdAt: true,
-					updatedAt: true,
-					reasoning: true,
-					matchScore: true
 				}
 			},
 			chat: {

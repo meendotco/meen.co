@@ -277,7 +277,7 @@
 									<Button
 										variant="outline"
 										size="sm"
-										href={candidate.linkedInProfile.url || '#'}
+										href={`https://linkedin.com/in/${candidate.linkedInProfile.handle}`}
 										target="_blank"
 										class="flex-1 rounded-full text-xs shadow-sm transition-all hover:shadow"
 									>
