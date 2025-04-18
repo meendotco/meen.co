@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
 
 	import { page } from '$app/stores';
 	import Sidebar from '$lib/components/Sidebar.svelte';
@@ -88,6 +89,7 @@
 				message: message
 			})
 		});
+		toast.success('Access request sent successfully');
 
 		if (response.ok) {
 			success = true;

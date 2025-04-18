@@ -1,23 +1,10 @@
 <script lang="ts">
-	import { Github, Linkedin, Twitter } from 'lucide-svelte';
-
 	import { Button } from '@/components/ui/button';
 	import { page } from '$app/state';
 
 	import Logo from './Logo.svelte';
 	import UserMenu from './UserMenu.svelte';
 	let { user } = $props();
-
-	let scrollY = $state(0);
-
-	$effect(() => {
-		const handleScroll = () => {
-			scrollY = window.scrollY;
-		};
-
-		window.addEventListener('scroll', handleScroll);
-		return () => window.removeEventListener('scroll', handleScroll);
-	});
 
 	const showTopbar = true;
 
@@ -38,12 +25,12 @@
 </script>
 
 <header
-	class="sticky top-0 z-50 flex w-full justify-center py-4 backdrop-blur-lg transition-all duration-300"
+	class="absolute top-0 z-50 flex w-full justify-center py-4 transition-all duration-300"
 	class:opacity-0={!showTopbar}
 	class:opacity-100={showTopbar}
 >
 	<div
-		class="flex flex w-[95%] max-w-5xl flex-row items-center justify-between rounded-full border border-border bg-background/80 px-4 py-2 shadow-lg supports-[backdrop-filter]:bg-background/60 dark:border-white/10 dark:bg-black/60"
+		class="flex flex w-[95%] max-w-5xl flex-row items-center justify-between rounded-full border border-border bg-background/80 px-4 py-2 shadow-lg backdrop-blur-lg supports-[backdrop-filter]:bg-background/60 dark:border-white/10 dark:bg-black/60"
 	>
 		<div class="flex items-center space-x-2">
 			<Logo />
@@ -54,7 +41,7 @@
 		</div>
 		{#if page.url.pathname == '/'}
 			<nav class="hidden items-center space-x-4 md:flex">
-				{#each routes as route}
+				{#each routes as route (route.href)}
 					<a
 						href={route.href}
 						class="px-3 py-2 text-sm text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"

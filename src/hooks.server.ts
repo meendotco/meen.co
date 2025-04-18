@@ -1,3 +1,5 @@
+// src/hooks.server.ts
+import type { HandleServerError } from '@sveltejs/kit';
 import { type Handle, type RequestEvent } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { eq } from 'drizzle-orm';
@@ -96,3 +98,9 @@ export const handle: Handle = sequence(
 	authorizationHandle,
 	webSocketHandle
 );
+
+export const handleError: HandleServerError = ({ error, event }) => {
+	console.error('❌  Server error for', event.url, '\n', error);
+	// Return a safe payload – it becomes $page.error in +error.svelte
+	return { message: 'Unexpected server error' };
+};
