@@ -5,6 +5,7 @@
 	import { fade, fly } from 'svelte/transition';
 
 	import { page } from '$app/state';
+	import Container from '$lib/components/landing/container.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
 	import Markdown from '$lib/markdown/Markdown.svelte';
@@ -93,6 +94,14 @@
 			hour: 'numeric',
 			minute: 'numeric'
 		}).format(new Date(date));
+	}
+
+	// Handle keydown event for input
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && !event.shiftKey && message.trim() && !chatDisabled) {
+			event.preventDefault();
+			sendMessage(message);
+		}
 	}
 
 	onMount(() => {
@@ -314,7 +323,7 @@
 						>
 							<div class="mb-2 flex items-center gap-2">
 								<Briefcase class="h-4 w-4 text-primary" />
-								<h4 class="font-medium">Job Description</h4>
+								<h4 class="text-sm font-medium">Job Description</h4>
 							</div>
 							<p class="text-sm leading-relaxed text-muted-foreground">
 								{#if job.description.length > 200 && !showFullDescription}
@@ -357,7 +366,7 @@
 										{message.role === 'user' ? 'You' : 'AI Assistant'}
 									</span>
 									{#if message.toolcalls && message.toolcalls.length > 0}
-										<span class="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+										<span class="rounded bg-primary/10 px-1.5 py-0.5 text-xs text-primary/80">
 											Tool Calls:
 											{#each message.toolcalls as toolcall, index (index)}
 												<p class="rounded-md bg-primary/20 p-1 text-xs">
@@ -366,15 +375,24 @@
 											{/each}
 										</span>
 									{/if}
+									<span class="text-xs text-muted-foreground">
+										{new Date(message.createdAt).toLocaleTimeString([], {
+											hour: '2-digit',
+											minute: '2-digit'
+										})}
+									</span>
 								</div>
-								<span class="text-xs text-muted-foreground">
-									{new Date(message.createdAt).toLocaleTimeString([], {
-										hour: '2-digit',
-										minute: '2-digit'
-									})}
-								</span>
+								<div
+									class={`max-w-[85%] rounded-2xl border px-3 py-2 text-sm shadow-sm
+										${
+											message.role === 'user'
+												? 'rounded-tr-sm border-primary/30 bg-gradient-to-br from-primary to-primary/90 text-primary-foreground'
+												: 'rounded-tl-sm border-border/30 bg-gradient-to-br from-card to-card/90'
+										}`}
+								>
+									<Markdown md={message.content || ''} />
+								</div>
 							</div>
-							<Markdown md={message.content || ''} />
 						</div>
 					{/each}
 				</div>
@@ -416,13 +434,6 @@
 								placeholder="Ask a question or type a command..."
 								disabled={chatDisabled}
 							/>
-							<button
-								class={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 ${message.trim() && !chatDisabled ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'} transition-colors`}
-								disabled={!message.trim() || chatDisabled}
-								onclick={() => sendMessage(message)}
-							>
-								<Send class="h-4 w-4" />
-							</button>
 						</div>
 						<Button
 							onclick={() => sendMessage(message)}
