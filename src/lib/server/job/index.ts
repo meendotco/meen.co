@@ -89,14 +89,17 @@ export async function addCandidate(
 	reasoning?: string,
 	eagerlyAdded: boolean = false
 ) {
+	console.log(`Starting addCandidate process for ${linkedinHandle} to job ${jobId}`);
 	try {
 		const job = await db.query.jobPost.findFirst({
 			where: eq(jobPost.id, jobId)
 		});
 
 		if (!job) {
+			console.log(`Job with ID ${jobId} not found`);
 			throw new Error(`Job with ID ${jobId} not found`);
 		}
+		console.log(`Found job: ${job.title}`);
 
 		const profileEntry = await db.query.linkedInProfile.findFirst({
 			where: eq(linkedInProfile.handle, linkedinHandle)
@@ -105,15 +108,20 @@ export async function addCandidate(
 		let profileId: string;
 
 		if (profileEntry) {
+			console.log(`Found existing LinkedIn profile for ${linkedinHandle}`);
 			profileId = profileEntry.id;
 		} else {
+			console.log(`No existing profile found for ${linkedinHandle}, fetching from LinkedIn`);
 			// Fetch profile data
 			try {
 				const profileData = await getFullLinkedinProfile(linkedinHandle);
 
 				if (!profileData) {
+					console.log(`Failed to fetch LinkedIn profile for ${linkedinHandle}`);
 					throw new Error('Failed to fetch LinkedIn profile');
 				}
+				console.log(`Successfully fetched LinkedIn profile data for ${linkedinHandle}`);
+
 				const newProfile = await db
 					.insert(linkedInProfile)
 					.values({
@@ -124,15 +132,21 @@ export async function addCandidate(
 					.returning({ id: linkedInProfile.id });
 
 				if (!newProfile || newProfile.length === 0) {
+					console.log(`Failed to create LinkedIn profile entry for ${linkedinHandle}`);
 					throw new Error('Failed to create LinkedIn profile entry');
 				}
 				profileId = newProfile[0].id;
+				console.log(`Created new LinkedIn profile with ID ${profileId}`);
 			} catch (error) {
+				console.log(
+					`Error fetching LinkedIn profile: ${error instanceof Error ? error.message : String(error)}`
+				);
 				return { error: `LinkedIn profile not found: ${linkedinHandle}` };
 			}
 		}
 
 		// Check if candidate already exists for this job
+		console.log(`Checking if candidate already exists for job ${jobId}`);
 		const existingCandidate = await db.query.candidates.findFirst({
 			where: (candidates, { and }) =>
 				and(eq(candidates.jobPostId, jobId), eq(candidates.linkedInProfileId, profileId)),
@@ -142,10 +156,12 @@ export async function addCandidate(
 		});
 
 		if (existingCandidate) {
+			console.log(`Candidate already exists for job ${jobId}, returning existing record`);
 			return existingCandidate;
 		}
 
 		// Create new candidate entry
+		console.log(`Creating new candidate entry with match score ${matchScore}`);
 		const newCandidate = await db
 			.insert(candidates)
 			.values({
@@ -158,8 +174,10 @@ export async function addCandidate(
 			.returning();
 
 		if (!newCandidate || newCandidate.length === 0) {
+			console.log(`Failed to add candidate to job post ${jobId}`);
 			throw new Error('Failed to add candidate to job post');
 		}
+		console.log(`Successfully added candidate with ID ${newCandidate[0].id}`);
 
 		// Return the created candidate with profile information
 		return {
@@ -167,6 +185,9 @@ export async function addCandidate(
 			linkedInProfile: { handle: linkedinHandle }
 		};
 	} catch (error) {
+		console.error(
+			`Error in addCandidate: ${error instanceof Error ? error.message : String(error)}`
+		);
 		throw new Error(
 			`Failed to add candidate: ${error instanceof Error ? error.message : String(error)}`
 		);
