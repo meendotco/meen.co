@@ -32,13 +32,12 @@ export const users = pgTable('user', {
 	email: text('email').unique(),
 	emailVerified: timestamp('emailVerified', { mode: 'date' }),
 	image: text('image'),
-	organizationId: text('organizationId').references(() => organization.id, { onDelete: 'cascade' })
+	organizationId: text('organizationId').references(() => organization.id, { onDelete: 'cascade' }),
 	preferences: jsonb('preferences').default({
 		darkMode: false,
 		notifications: false,
 		emailUpdates: false
 	})
-
 });
 
 export const organization = pgTable('organization', {
