@@ -146,6 +146,55 @@ export function generateJobPostEmbeddingInput(jobPost: JobData): string {
 	return jobPostInputStringTagged.replace(/\n\s*\n/g, '\n').trim();
 }
 
+export function generateJobPostEmbeddingInputFull(jobPost: JobData): string {
+	const formatSalaryToTags = (salary: unknown): string => {
+		if (salary && typeof salary === 'object') {
+			const s = salary as { min?: number; max?: number; currency?: string; period?: string };
+			let tags = '';
+			if (s.min) tags += `            <min_salary>${s.min}</min_salary>\n`;
+			if (s.max) tags += `            <max_salary>${s.max}</max_salary>\n`;
+			if (s.currency) tags += `            <currency>${s.currency}</currency>\n`;
+			if (s.period) tags += `            <period>${s.period}</period>\n`;
+			return tags ? `    <salary_info>\n${tags.trim()}\n    </salary_info>` : '';
+		}
+		return '';
+	};
+
+	const parts = [
+		`<jobPost>`,
+		`    <company>${safeGet(jobPost, 'company_id')}</company>`,
+		`    <title>${safeGet(jobPost, 'title')}</title>`,
+		`    <description>${safeGet(jobPost, 'description')}</description>`,
+		jobPost.location ? `    <location>${safeGet(jobPost, 'location')}</location>` : '',
+		jobPost.department ? `    <department>${safeGet(jobPost, 'department')}</department>` : '',
+		jobPost.type ? `    <job_type>${safeGet(jobPost, 'type')}</job_type>` : '',
+		jobPost.remote_policy
+			? `    <remote_policy>${safeGet(jobPost, 'remote_policy')}</remote_policy>`
+			: '',
+		formatSimpleListToTags(
+			jobPost.responsibilities as string[] | undefined,
+			'responsibilities',
+			'responsibility'
+		),
+		formatSimpleListToTags(
+			jobPost.requirements as string[] | undefined,
+			'requirements',
+			'requirement'
+		),
+		formatSimpleListToTags(jobPost.tech_stack as string[] | undefined, 'tech_stack', 'tech'),
+		formatSimpleListToTags(jobPost.benefits as string[] | undefined, 'benefits', 'benefit'),
+		formatSalaryToTags(jobPost.salary),
+		`</jobPost>`
+	];
+
+	// Filter out empty lines/tags and join
+	const jobPostInputStringTagged = parts.filter((part) => part && part.trim() !== '').join('\n');
+
+	console.log(jobPostInputStringTagged.replace(/\n\s*\n/g, '\n').trim());
+	// Clean up potential double blank lines that might result from filtering
+	return jobPostInputStringTagged.replace(/\n\s*\n/g, '\n').trim();
+}
+
 // --- Main Function for LinkedIn Profiles ---
 
 /**
