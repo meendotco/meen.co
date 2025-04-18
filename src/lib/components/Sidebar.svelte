@@ -1,22 +1,19 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { cn } from '$lib/utils';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import UserMenu from '$lib/components/UserMenu.svelte';
-	import Logo from '$lib/components/Logo.svelte';
-	import { User } from 'lucide-svelte';
-	import { createEventDispatcher } from 'svelte';
-
 	import {
 		BriefcaseBusiness,
-		Search,
-		Settings,
 		ChevronLeft,
 		ChevronRight,
-		LayoutDashboard
+		LayoutDashboard,
+		Search,
+		Settings
 	} from 'lucide-svelte';
+	import { createEventDispatcher } from 'svelte';
+
+	import { page } from '$app/stores';
+	import Logo from '$lib/components/Logo.svelte';
+	import { Badge } from '$lib/components/ui/badge';
+	import UserMenu from '$lib/components/UserMenu.svelte';
+	import { cn } from '$lib/utils';
 
 	let { isCollapsed = $bindable(false), user } = $props();
 	const dispatch = createEventDispatcher();
@@ -67,6 +64,12 @@
 						class="ml-1 bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text text-lg font-semibold text-transparent"
 						>Meen</span
 					>
+
+					{#if user?.organizationHandle}
+						<Badge>{user?.organizationHandle}</Badge>
+					{:else}
+						<Badge variant="secondary" class="justify-center text-xs">no org</Badge>
+					{/if}
 				{/if}
 			</div>
 		</div>
@@ -93,7 +96,9 @@
 
 		<!-- User Menu -->
 		<div class="border-t border-border p-4">
-			<UserMenu {user} {isCollapsed} />
+			<div class="flex flex-col gap-2">
+				<UserMenu {user} {isCollapsed} />
+			</div>
 		</div>
 
 		<!-- Tongue-style Collapse Button -->

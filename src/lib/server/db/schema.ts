@@ -32,7 +32,9 @@ export const users = pgTable('user', {
 	email: text('email').unique(),
 	emailVerified: timestamp('emailVerified', { mode: 'date' }),
 	image: text('image'),
-	organizationId: text('organizationId').references(() => organization.id, { onDelete: 'cascade' }),
+	organizationHandle: text('organizationHandle').references(() => organization.handle, {
+		onDelete: 'cascade'
+	}),
 	preferences: jsonb('preferences').default({
 		darkMode: false,
 		notifications: false,
@@ -40,11 +42,25 @@ export const users = pgTable('user', {
 	})
 });
 
-export const organization = pgTable('organization', {
+export const accessRequest = pgTable('accessRequest', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	name: text('name')
+	userId: text('userId').references(() => users.id, { onDelete: 'cascade' }),
+	companyName: text('companyName'),
+	message: text('message'),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+});
+
+export const accessRequestRelations = relations(accessRequest, ({ one }) => ({
+	user: one(users, {
+		fields: [accessRequest.userId],
+		references: [users.id]
+	})
+}));
+export const organization = pgTable('organization', {
+	handle: text('handle').primaryKey()
 });
 
 export const orgUserRelations = relations(organization, ({ many }) => ({
@@ -53,8 +69,8 @@ export const orgUserRelations = relations(organization, ({ many }) => ({
 
 export const userRelations = relations(users, ({ one }) => ({
 	organization: one(organization, {
-		fields: [users.organizationId],
-		references: [organization.id]
+		fields: [users.organizationHandle],
+		references: [organization.handle]
 	})
 }));
 

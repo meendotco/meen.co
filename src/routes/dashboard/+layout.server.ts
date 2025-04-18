@@ -13,6 +13,13 @@ export const load: LayoutServerLoad = async (event) => {
 		throw redirect(302, '/signin');
 	}
 
+	if (!event.locals.user.organizationHandle) {
+		return {
+			user: event.locals.user,
+			org: null
+		};
+	}
+
 	const cachedCandidates = cache.get('totalCandidates');
 	const cachedJobs = cache.get('totalJobs');
 	const cachedPeople = cache.get('totalPeople');
