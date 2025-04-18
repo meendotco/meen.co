@@ -12,7 +12,7 @@ export async function createAddCandidateTool(job: typeof jobPost.$inferSelect) {
 			handle: z
 				.string()
 				.describe("The candidate's LinkedIn profile handle. For example: makkadotgg"),
-			match_score: z.number().describe('The match score of the candidate to the job post.'),
+			match_score: z.number().describe('The match score of the candidate to the job post. (1-100)'),
 			reasoning: z
 				.string()
 				.describe('The reasoning why this candidate is a potential match for the job.')

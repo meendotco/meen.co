@@ -2,13 +2,13 @@
 	import '../app.css';
 
 	import { Heart } from 'lucide-svelte';
+	import { ModeWatcher } from 'mode-watcher';
 
 	import { page } from '$app/state';
+	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
 	import Topbar from '$lib/components/Topbar.svelte';
-	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '$lib/components/ui/sonner';
 	let { data, children } = $props();
-
 
 	let email = $state('');
 	let isSubmitting = $state(false);
@@ -48,6 +48,7 @@
 
 <ModeWatcher />
 <Toaster />
+<ErrorBoundary />
 <div class="min-h-screen bg-background">
 	{#if !page.url.pathname.startsWith('/dashboard')}
 		<Topbar user={data.user} />
@@ -112,7 +113,8 @@
 							<a
 								href="mailto:hello@meen.ai"
 								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
-							>Contact us</a>
+								>Contact us</a
+							>
 						</li>
 					</ul>
 				</div>
@@ -124,13 +126,15 @@
 							<a
 								href="/privacy"
 								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
-							>Privacy policy</a>
+								>Privacy policy</a
+							>
 						</li>
 						<li>
 							<a
 								href="/terms"
 								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
-							>Terms of service</a>
+								>Terms of service</a
+							>
 						</li>
 					</ul>
 				</div>
