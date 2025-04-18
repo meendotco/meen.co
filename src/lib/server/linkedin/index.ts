@@ -7,6 +7,7 @@ import { PROXYCURL_API_KEY } from '$env/static/private';
 import { embedText } from '$lib/server/ai';
 import { generateLinkedInProfileEmbeddingInput } from '$lib/server/ai/format';
 import { db } from '$lib/server/db';
+import { searchGoogle } from '$lib/server/search';
 
 import { linkedInProfile } from '../db/schema';
 
@@ -121,7 +122,50 @@ export async function getFullLinkedinProfile(
 		);
 	}
 }
+export async function searchLinkedinGoogle(query: string) {
+	try {
+		const results = await searchGoogle(`site:linkedin.com ${query}`);
+		const extractedProfiles = [];
 
+		if (results && results.items && Array.isArray(results.items)) {
+			for (const item of results.items) {
+				const profileInfo = {
+					name: '',
+					link: item.link || '',
+					snippet: item.snippet || '',
+					title: item.title || ''
+				};
+				if (item.title) {
+					const titleParts = item.title.split(' - ');
+					if (titleParts.length > 0) {
+						profileInfo.name = titleParts[0].trim();
+					}
+				}
+				if (
+					profileInfo.link.includes('linkedin.com/in/') ||
+					(profileInfo.name && !profileInfo.name.includes('LinkedIn'))
+				) {
+					extractedProfiles.push(profileInfo);
+				}
+			}
+		}
+
+		const formattedProfiles = extractedProfiles.map((profile) => {
+			return `<GoogleSearchResult><name>${profile.name}</name>\nLink: ${profile.link}\nTitle: ${profile.title}\nSnippet: ${profile.snippet}</GoogleSearchResult>`;
+		});
+
+		return {
+			profiles: formattedProfiles
+		};
+	} catch (error) {
+		console.error(
+			`Error in searchLinkedinGoogle: ${error instanceof Error ? error.message : String(error)}`
+		);
+		throw new Error(
+			`Failed to search LinkedIn profiles: ${error instanceof Error ? error.message : String(error)}`
+		);
+	}
+}
 export async function searchLinkedin(query: string, k: number = 10) {
 	try {
 		const embedding = await embedText(query);
@@ -144,12 +188,16 @@ export async function searchLinkedin(query: string, k: number = 10) {
 			return candidate.data as PersonEndpointResponse;
 		});
 
+		const googleResults = await searchLinkedinGoogle(query);
+
 		const formattedData = data.map((candidate) => {
 			return generateLinkedInProfileEmbeddingInput(candidate);
 		});
 
+		const totalData = [...formattedData, ...googleResults.profiles];
+
 		return {
-			results: formattedData
+			results: totalData
 		};
 	} catch (error) {
 		console.error(
@@ -182,7 +230,6 @@ export async function searchLinkedinForObject(query: string) {
 		console.log(
 			candidates.map((candidate) => (candidate.data as PersonEndpointResponse).full_name)
 		);
-
 		return candidates;
 	} catch (error) {
 		console.error(
