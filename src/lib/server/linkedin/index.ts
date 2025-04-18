@@ -19,7 +19,7 @@ export async function getFullLinkedinProfile(
 	handle: string = 'makkadotgg'
 ): Promise<PersonEndpointResponse> {
 	try {
-		// Check if profile exists in database first
+		// Check if profile exists in database first using the handle
 		const cache = await db.query.linkedInProfile.findFirst({
 			where: eq(linkedInProfile.handle, handle)
 		});
@@ -30,8 +30,11 @@ export async function getFullLinkedinProfile(
 			return cache.data as PersonEndpointResponse;
 		}
 
-		// Profile not in cache, fetch from Proxycurl API
-		console.log(`Fetching LinkedIn profile for ${handle} from API`);
+		// Construct the full LinkedIn profile URL
+		const profileUrl = `https://www.linkedin.com/in/${handle}`;
+
+		// Profile not in cache, fetch from Proxycurl API using the URL
+		console.log(`Fetching LinkedIn profile for ${handle} (${profileUrl}) from API`);
 		const apiInstance = new ProxycurlApi.PeopleAPIApi();
 		const fallbackToCache = 'on-error';
 		const opts = {
@@ -50,8 +53,9 @@ export async function getFullLinkedinProfile(
 
 		try {
 			profile = await new Promise<PersonEndpointResponse>((resolve, reject) => {
+				// Call the endpoint with the URL as the first argument
 				apiInstance.personProfileEndpoint(
-					handle,
+					profileUrl, // Correct position for the URL
 					fallbackToCache,
 					opts,
 					(error: unknown, data: PersonEndpointResponse | null) => {
@@ -92,25 +96,57 @@ export async function getFullLinkedinProfile(
 
 		const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
 
-		await db
-			.insert(linkedInProfile)
-			.values({
-				handle,
-				data: profile,
-				profileImageB64,
-				vector,
-				expiresAt
-			})
-			.onConflictDoUpdate({
-				target: linkedInProfile.handle,
-				set: {
+		try {
+			await db
+				.insert(linkedInProfile)
+				.values({
+					handle, // Store using the original handle for consistency
 					data: profile,
 					profileImageB64,
-					vector: vector,
-					expiresAt: expiresAt,
-					updatedAt: new Date()
+					vector,
+					expiresAt
+				})
+				.onConflictDoUpdate({
+					target: linkedInProfile.handle,
+					set: {
+						data: profile,
+						profileImageB64,
+						vector: vector,
+						expiresAt: expiresAt,
+						updatedAt: new Date()
+					}
+				});
+		} catch (dbError: unknown) {
+			// Type guard to check if it's an object with a 'code' property
+			const potentialDbError = dbError as { code?: number | string };
+
+			// Check if the error is a unique constraint violation (PostgreSQL code 23505)
+			if (potentialDbError?.code === '23505') {
+				console.warn(
+					`Unique constraint violation for handle ${handle} during insert/update. Fetching existing profile.`
+				);
+				const existingProfile = await db.query.linkedInProfile.findFirst({
+					where: eq(linkedInProfile.handle, handle)
+				});
+				if (existingProfile) {
+					return existingProfile.data as PersonEndpointResponse;
+				} else {
+					// This case should ideally not happen if 23505 was thrown, but handle it just in case
+					console.error(
+						`Unique constraint violation for ${handle}, but failed to fetch existing profile.`
+					);
+					throw new Error(
+						`Failed to process LinkedIn profile ${handle} after unique constraint error.`
+					);
 				}
-			});
+			} else {
+				// Re-throw other database errors
+				console.error(
+					`Database error during LinkedIn profile insert/update for ${handle}: ${dbError instanceof Error ? dbError.message : String(dbError)}`
+				);
+				throw dbError;
+			}
+		}
 
 		return profile;
 	} catch (error) {

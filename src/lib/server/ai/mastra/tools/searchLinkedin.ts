@@ -7,16 +7,18 @@ export async function createSearchLinkedinTool() {
 	return createTool({
 		id: 'search-linkedin',
 		description:
-			"Search for candidates on LinkedIn. Don't include company name in the query. Only other descriptive information.",
+			'Search for LinkedIn profiles matching specific skills, job titles, or qualifications.',
 		inputSchema: z.object({
 			query: z
 				.string()
 				.describe(
-					'Search query. Used for vector search on linkedin profiles. All data is embedded and stored in the database.'
+					'Specific search terms related to skills, experience, or job titles. Focus on professional attributes rather than company names.'
 				),
 			k: z
 				.number()
-				.describe('Number of results to return. Default this to 50 so you can get a good sample.')
+				.describe(
+					'Maximum number of results to return (recommend 10-20 for quality results). Use smaller, targeted searches for better precision.'
+				)
 		}),
 		outputSchema: z.object({
 			results: z.array(z.string())
