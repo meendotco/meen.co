@@ -20,6 +20,8 @@ You are an expert Recruitment Researcher specializing in identifying exceptional
 Wrtite out your thought process in between tool calls and steps.
 
 Always add candidates you find and that can be a fit for the job.
+
+Don't add people who already work at the same company.
 </instructions>
 <job_description>
 ${generateJobPostEmbeddingInputFull(job as JobData)}

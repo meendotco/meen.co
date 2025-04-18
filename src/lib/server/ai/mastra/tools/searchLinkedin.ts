@@ -6,7 +6,8 @@ import { searchLinkedin } from '@/server/linkedin';
 export async function createSearchLinkedinTool() {
 	return createTool({
 		id: 'search-linkedin',
-		description: 'Search for candidates on LinkedIn',
+		description:
+			"Search for candidates on LinkedIn. Don't include company name in the query. Only other descriptive information.",
 		inputSchema: z.object({
 			query: z
 				.string()
