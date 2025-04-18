@@ -23,7 +23,7 @@
 	];
 </script>
 
-<div class="flex w-full flex-col items-center justify-center py-12 md:py-16 lg:py-24">
+<div id="features" class="flex w-full flex-col items-center justify-center py-12 md:py-16 lg:py-24">
 	<Container>
 		<div class="mx-auto flex max-w-2xl flex-col items-center text-center">
 			<SectionBadge title="Features" />

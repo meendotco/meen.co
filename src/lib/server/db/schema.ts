@@ -31,7 +31,12 @@ export const users = pgTable('user', {
 	name: text('name'),
 	email: text('email').unique(),
 	emailVerified: timestamp('emailVerified', { mode: 'date' }),
-	image: text('image')
+	image: text('image'),
+	preferences: jsonb('preferences').default({
+		darkMode: false,
+		notifications: false,
+		emailUpdates: false
+	})
 });
 
 export const accounts = pgTable(

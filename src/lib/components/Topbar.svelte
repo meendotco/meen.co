@@ -19,7 +19,22 @@
 		return () => window.removeEventListener('scroll', handleScroll);
 	});
 
-	const showTopbar = $derived(scrollY > 100 || user?.email);
+	const showTopbar = true;
+
+	const routes = [
+		{
+			label: 'About',
+			href: '#about'
+		},
+		{
+			label: 'Features',
+			href: '#features'
+		},
+		{
+			label: 'Contact',
+			href: '#contact'
+		}
+	];
 </script>
 
 <header
@@ -33,35 +48,43 @@
 		<div class="flex items-center space-x-2">
 			<Logo />
 			<span
-				class="hidden bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text font-bold text-transparent sm:inline-block"
+				class="hidden bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text px-1 font-bold text-transparent sm:inline-block"
 				>Meen AI</span
 			>
 		</div>
-		<nav class="hidden items-center md:flex"></nav>
-
-		<div class="flex items-center space-x-1 md:space-x-4">
-			<div class="flex items-center space-x-2">
-				{#if user}
+		{#if page.url.pathname == '/'}
+			<nav class="hidden items-center space-x-4 md:flex">
+				{#each routes as route}
 					<a
-						href="/dashboard"
-						class="px-3 py-2 text-sm font-medium {page.url.pathname.startsWith('/dashboard')
-							? 'text-primary'
-							: 'text-foreground/70'} transition-colors hover:text-primary dark:hover:text-primary"
+						href={route.href}
+						class="px-3 py-2 text-sm text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
 					>
-						Dashboard
+						{route.label}
 					</a>
-				{:else}
-					<Button
-						variant="default"
-						href="/signin"
-						class="rounded-full bg-primary text-sm text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
-					>
-						Get Started
-					</Button>
-				{/if}
-			</div>
+				{/each}
+			</nav>
+		{/if}
 
-			<UserMenu {user} />
+		<div class="flex items-center space-x-2">
+			{#if user}
+				<a
+					href="/dashboard"
+					class="px-3 py-2 text-sm font-medium {page.url.pathname.startsWith('/dashboard')
+						? 'text-primary'
+						: 'text-foreground/70'} transition-colors hover:text-primary dark:hover:text-primary"
+				>
+					Dashboard
+				</a>
+				<UserMenu {user} isCollapsed={false} />
+			{:else}
+				<Button
+					variant="default"
+					href="/signin"
+					class="rounded-full bg-primary text-sm text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
+				>
+					Get Started
+				</Button>
+			{/if}
 		</div>
 	</div>
 </header>

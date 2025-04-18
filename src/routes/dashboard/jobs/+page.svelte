@@ -31,66 +31,101 @@
 	}
 </script>
 
-<div class="container mx-auto flex flex-col gap-6 py-6">
-	<div class="flex items-center justify-between">
-		<h1 class="text-3xl font-bold tracking-tight">All Jobs</h1>
-		<div class="flex items-center gap-2">
+<div class="container mx-auto flex flex-col gap-8 py-8">
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<div>
+			<h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Job Listings</h1>
+			<p class="text-muted-foreground mt-1">Manage and track your active recruitment campaigns</p>
+		</div>
+		<div class="flex flex-wrap items-center gap-3">
 			<Dialog.Root bind:open={dialogOpen}>
 				<Dialog.Trigger>
-					<Button >
-						<PlusCircle class="mr-2 h-4 w-4" />
+					<Button variant="outline" class="border-primary/20 hover:bg-primary/5 transition-all duration-300">
+						<PlusCircle class="mr-2 h-4 w-4 text-primary" />
 						Add existing job
 					</Button>
 				</Dialog.Trigger>
-				<Dialog.Content>
-					<Dialog.Title>Create Job</Dialog.Title>
-					<Dialog.Description
-						>Please enter the URL of the job you want to create.</Dialog.Description
-					>
-					<Dialog.Footer>
+				<Dialog.Content class="sm:max-w-md">
+					<Dialog.Header>
+						<Dialog.Title class="text-xl">Import Existing Job</Dialog.Title>
+						<Dialog.Description class="text-muted-foreground">
+							Enter the URL of a job listing you'd like to import and analyze
+						</Dialog.Description>
+					</Dialog.Header>
+					<div class="py-4">
 						<Input
 							type="url"
 							placeholder="https://www.linkedin.com/jobs/view/3724600000"
 							bind:value={jobURL}
+							class="focus-visible:ring-primary/20 transition-all duration-300"
 						/>
-						<Button disabled={jobIsCreating} onclick={createJobByURL}>
-							{jobIsCreating ? 'Creating...' : 'Create Job'}
+					</div>
+					<Dialog.Footer class="flex justify-end gap-2">
+						<Dialog.Close asChild>
+							<Button variant="outline">Cancel</Button>
+						</Dialog.Close>
+						<Button 
+							disabled={jobIsCreating} 
+							onclick={createJobByURL}
+							class="relative overflow-hidden group"
+						>
+							{#if jobIsCreating}
+								<span class="flex items-center">
+									<div class="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent"></div>
+									Adding...
+								</span>
+							{:else}
+								<span class="flex items-center">
+									<PlusCircle class="mr-2 h-4 w-4" />
+									Add job
+								</span>
+							{/if}
+							<span class="absolute inset-0 translate-y-[100%] bg-primary/10 transition-transform duration-300 group-hover:translate-y-0"></span>
 						</Button>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
-			<Button   onclick={createJob}>
+			<Button 
+				onclick={createJob} 
+				class="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 shadow-md hover:shadow-lg"
+			>
 				<PlusCircle class="mr-2 h-4 w-4" />
-				Create Job
+				Create New Job
 			</Button>
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#await data.streamed.jobs}
-			<div class="col-span-full flex items-center justify-center p-12">
-				<div class="text-center">
-					<div
-						class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"
-					></div>
-					<p class="mt-2 text-sm text-muted-foreground">Loading jobs...</p>
+			<div class="col-span-full flex items-center justify-center p-16">
+				<div class="flex flex-col items-center">
+					<div class="relative h-12 w-12">
+						<div class="absolute inset-0 h-full w-full animate-ping rounded-full bg-primary/20 duration-1000"></div>
+						<div class="absolute inset-0 h-full w-full animate-spin rounded-full border-4 border-primary/30 border-t-primary"></div>
+					</div>
+					<p class="mt-4 text-sm font-medium text-muted-foreground">Loading your job listings...</p>
 				</div>
 			</div>
 		{:then jobs}
 			{#if jobs.length > 0}
 				{#each jobs as job (job.id)}
-					<Card class="transition-all hover:shadow-md dark:border-border dark:bg-card">
+					<Card class="group overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 dark:border-border/30 dark:bg-card/80">
 						<a href={`/dashboard/jobs/${job.id}`} class="flex h-full flex-col justify-between p-6">
-							<div class="flex flex-col gap-3">
-								<div class="flex items-center gap-2">
-									<Briefcase class="h-5 w-5 text-primary" />
-									<h2 class="text-xl font-semibold">
-										{#if job.title.length > 20}
-											{job.title.slice(0, 20)}...
-										{:else}
-											{job.title}
-										{/if}
-									</h2>
+							<div class="flex flex-col gap-4">
+								<div class="flex items-start gap-3">
+									<div class="rounded-full bg-primary/10 p-2 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+										<Briefcase class="h-5 w-5" />
+									</div>
+									<div>
+										<h2 class="text-xl font-semibold transition-colors duration-300 group-hover:text-primary">
+											{#if job.title.length > 20}
+												{job.title.slice(0, 20)}...
+											{:else}
+												{job.title}
+											{/if}
+										</h2>
+										<p class="text-xs text-muted-foreground">{job.department || 'No department'}</p>
+									</div>
 								</div>
 								<p class="text-sm text-muted-foreground">
 									{#if job.description.length > 100}
@@ -100,9 +135,9 @@
 									{/if}
 								</p>
 							</div>
-							<div class="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-								<span>Created {new Date().toLocaleDateString()}</span>
-								<span class="flex items-center gap-1">
+							<div class="mt-6 flex items-center justify-between border-t border-border/30 pt-4 text-xs">
+								<span class="text-muted-foreground">Created {new Date(job.createdAt).toLocaleDateString()}</span>
+								<span class="flex items-center gap-2 rounded-full bg-green-500/10 px-2 py-1 font-medium text-green-500">
 									<div class="h-2 w-2 rounded-full bg-green-500"></div>
 									Active
 								</span>
@@ -112,15 +147,22 @@
 				{/each}
 			{:else}
 				<div
-					class="col-span-full flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border p-12 text-center"
+					class="col-span-full flex flex-col items-center justify-center gap-6 rounded-xl border border-dashed border-border/50 bg-card/30 p-16 text-center backdrop-blur-sm"
 				>
-					<Briefcase class="h-12 w-12 text-muted-foreground" />
-					<h3 class="text-lg font-medium">No jobs yet</h3>
-					<p class="text-sm text-muted-foreground">Create your first job to attract candidates.</p>
+					<div class="rounded-full bg-primary/10 p-6">
+						<Briefcase class="h-12 w-12 text-primary" />
+					</div>
+					<div>
+						<h3 class="text-2xl font-medium">No job listings yet</h3>
+						<p class="mt-2 text-muted-foreground">Create your first job listing to start attracting top talent.</p>
+					</div>
 
-					<Button class={buttonVariants({ variant: 'outline' })} onclick={createJob}>
-						<PlusCircle class="mr-2 h-4 w-4 text-foreground" />
-						<span class="text-foreground">Create your first job</span>
+					<Button 
+						onclick={createJob}
+						class="mt-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 shadow-md hover:shadow-lg"
+					>
+						<PlusCircle class="mr-2 h-4 w-4" />
+						<span>Create your first job</span>
 					</Button>
 				</div>
 			{/if}

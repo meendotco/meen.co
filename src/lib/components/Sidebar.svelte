@@ -7,6 +7,7 @@
 	import UserMenu from '$lib/components/UserMenu.svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import { User } from 'lucide-svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	import {
 		BriefcaseBusiness,
@@ -17,7 +18,8 @@
 		LayoutDashboard
 	} from 'lucide-svelte';
 
-	let { isCollapsed = false, user } = $props();
+	let { isCollapsed = $bindable(false), user } = $props();
+	const dispatch = createEventDispatcher();
 
 	const routes = [
 		{
@@ -45,14 +47,14 @@
 
 	function toggleSidebar() {
 		isCollapsed = !isCollapsed;
-		document.cookie = `PaneForge:collapsed=${isCollapsed}; path=/; max-age=31536000; SameSite=Strict`;
+		dispatch('collapse', isCollapsed);
 	}
 </script>
 
 <aside class="fixed inset-y-0 left-0 z-40 hidden transition-all duration-200 md:block">
 	<div
 		data-collapsed={isCollapsed}
-		class="relative flex h-full flex-col gap-2 border-r border-border bg-gradient-to-b from-background via-background to-background/95 shadow-md transition-all duration-300"
+		class="relative flex h-full flex-col gap-2 border-r border-border bg-background/80 shadow-md backdrop-blur-lg transition-all duration-300"
 		class:w-[240px]={!isCollapsed}
 		class:w-[80px]={isCollapsed}
 	>
@@ -61,7 +63,10 @@
 			<div class="flex items-center gap-2">
 				<Logo className={isCollapsed ? 'transition-all duration-200 ml-2' : ''} />
 				{#if !isCollapsed}
-					<span class="ml-1 text-lg font-semibold text-foreground">Meen</span>
+					<span
+						class="ml-1 bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text text-lg font-semibold text-transparent"
+						>Meen</span
+					>
 				{/if}
 			</div>
 		</div>
@@ -75,7 +80,7 @@
 						'flex h-10 items-center gap-3 rounded-md px-3 transition-colors',
 						$page.url.pathname === route.href
 							? 'bg-primary text-primary-foreground'
-							: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+							: 'text-foreground/70 hover:text-primary dark:text-white/70 dark:hover:text-primary'
 					)}
 				>
 					<svelte:component this={route.icon} class="h-5 w-5" />
@@ -94,7 +99,7 @@
 		<!-- Tongue-style Collapse Button -->
 		<button
 			type="button"
-			class="absolute -right-4 top-20 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card shadow-md transition-all hover:bg-muted"
+			class="absolute -right-4 top-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-background/80 shadow-md backdrop-blur-lg transition-all hover:bg-muted"
 			onclick={toggleSidebar}
 			aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
 		>
