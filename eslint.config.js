@@ -41,7 +41,7 @@ export default ts.config(
 		rules: {
 			'no-undef': 'off',
 			'max-lines': ['warn', { max: 200, skipBlankLines: true, skipComments: true }],
-			'no-console': 'warn',
+			'no-console': 'off',
 			'simple-import-sort/imports': 'warn',
 			'simple-import-sort/exports': 'warn',
 			'@typescript-eslint/sort-type-constituents': 'warn'
@@ -57,6 +57,9 @@ export default ts.config(
 				parser: ts.parser,
 				svelteConfig
 			}
+		},
+		rules: {
+			'no-console': 'warn'
 		}
 	},
 	{
