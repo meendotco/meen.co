@@ -31,8 +31,27 @@ export const users = pgTable('user', {
 	name: text('name'),
 	email: text('email').unique(),
 	emailVerified: timestamp('emailVerified', { mode: 'date' }),
-	image: text('image')
+	image: text('image'),
+	organizationId: text('organizationId').references(() => organization.id, { onDelete: 'cascade' })
 });
+
+export const organization = pgTable('organization', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	name: text('name')
+});
+
+export const orgUserRelations = relations(organization, ({ many }) => ({
+	users: many(users)
+}));
+
+export const userRelations = relations(users, ({ one }) => ({
+	organization: one(organization, {
+		fields: [users.organizationId],
+		references: [organization.id]
+	})
+}));
 
 export const accounts = pgTable(
 	'account',
@@ -215,7 +234,6 @@ export const linkedInProfile = pgTable(
 	},
 	(table) => [
 		index('linkedInProfile_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))
-		// eslint-disable-next-line max-lines
 	]
 );
 
