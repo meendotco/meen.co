@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import type { AdapterAccountType } from '@auth/sveltekit/adapters';
 import { relations } from 'drizzle-orm';
 import {
@@ -9,6 +10,7 @@ import {
 	primaryKey,
 	text,
 	timestamp,
+	uniqueIndex,
 	vector
 } from 'drizzle-orm/pg-core';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -213,12 +215,10 @@ export const jobPost = pgTable(
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
-		ownerId: text('ownerId')
-			.notNull()
-			.references(() => users.id, { onDelete: 'cascade' }),
-		userId: text('userId')
-			.notNull()
-			.references(() => users.id, { onDelete: 'cascade' }),
+		handle: text('handle').notNull(),
+		ownerOrganizationHandle: text('ownerOrganizationHandle').references(() => organization.handle, {
+			onDelete: 'cascade'
+		}),
 		title: text('title').notNull(),
 		description: text('description').notNull(),
 		department: text('department'),
@@ -236,8 +236,23 @@ export const jobPost = pgTable(
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
 	},
-	(table) => [index('jobPost_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops'))]
+	(table) => [
+		index('jobPost_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops')),
+		uniqueIndex('jobPost_handle_org_unique').on(table.handle, table.ownerOrganizationHandle)
+	]
 );
+
+export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
+	ownerOrganization: one(organization, {
+		fields: [jobPost.ownerOrganizationHandle],
+		references: [organization.handle]
+	}),
+	candidates: many(candidates),
+	chat: one(chat, {
+		fields: [jobPost.id],
+		references: [chat.jobPostId]
+	})
+}));
 
 export const linkedInProfile = pgTable(
 	'linkedInProfile',
@@ -281,18 +296,6 @@ export const candidates = pgTable(
 		index('candidate_linkedInProfileId_idx').on(table.linkedInProfileId)
 	]
 );
-
-export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
-	owner: one(users, {
-		fields: [jobPost.ownerId],
-		references: [users.id]
-	}),
-	candidates: many(candidates),
-	chat: one(chat, {
-		fields: [jobPost.id],
-		references: [chat.jobPostId]
-	})
-}));
 
 export const linkedInProfileRelations = relations(linkedInProfile, ({ many }) => ({
 	candidates: many(candidates)
