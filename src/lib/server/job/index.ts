@@ -25,7 +25,6 @@ export interface JobData {
 
 export async function insertJob(
 	jobData: string,
-	userId: string,
 	ownerOrganizationHandle: string,
 	status?: 'archived' | 'draft' | 'published'
 ) {
@@ -55,7 +54,10 @@ export async function insertJob(
 		const post = await db
 			.insert(jobPost)
 			.values({
-				handle: object.title,
+				handle: object.title
+					.toLowerCase()
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/^-|-$/g, ''),
 				ownerOrganizationHandle,
 				vector,
 				title: object.title,

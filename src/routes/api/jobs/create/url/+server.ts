@@ -19,8 +19,9 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 				}
 			);
 		}
+		console.log(locals.user.organizationHandle);
 
-		const job = await insertJob(jobData, locals.user.id, locals.user.organizationHandle);
+		const job = await insertJob(jobData, locals.user.organizationHandle);
 
 		return new Response(JSON.stringify(job), { status: 201 });
 	} catch (error) {
