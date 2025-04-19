@@ -1,0 +1,2 @@
+ALTER TABLE "jobPost" ADD COLUMN "ownerOrganizationHandle" text;--> statement-breakpoint
+ALTER TABLE "jobPost" ADD CONSTRAINT "jobPost_ownerOrganizationHandle_organization_handle_fk" FOREIGN KEY ("ownerOrganizationHandle") REFERENCES "public"."organization"("handle") ON DELETE cascade ON UPDATE no action;

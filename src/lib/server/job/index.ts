@@ -26,7 +26,7 @@ export interface JobData {
 export async function insertJob(
 	jobData: string,
 	userId: string,
-	ownerId?: string,
+	ownerOrganizationHandle: string,
 	status?: 'archived' | 'draft' | 'published'
 ) {
 	const { object } = await generateObject({
@@ -55,22 +55,22 @@ export async function insertJob(
 		const post = await db
 			.insert(jobPost)
 			.values({
-				userId,
-				ownerId: ownerId || userId,
+				handle: object.title,
+				ownerOrganizationHandle,
+				vector,
 				title: object.title,
+				description: object.description,
 				department: object.department,
 				location: object.location,
 				type: object.type,
 				status,
 				priority: object.priority,
 				salary: object.salary,
-				vector,
-				description: object.description,
+				remote_policy: object.remote_policy,
 				responsibilities: object.responsibilities,
 				requirements: object.requirements,
 				benefits: object.benefits,
-				tech_stack: object.tech_stack,
-				remote_policy: object.remote_policy
+				tech_stack: object.tech_stack
 			})
 			.returning();
 

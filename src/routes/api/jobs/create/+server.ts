@@ -22,6 +22,7 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 			const post = await db.insert(jobPost).values({
 				userId: user.id,
 				ownerId: user.id,
+				ownerOrganizationHandle: user.organizationHandle,
 				title: jobData.title,
 				department: jobData.department,
 				location: jobData.location,
