@@ -1,8 +1,17 @@
 <script lang="ts">
+	import { LinkedinIcon } from 'lucide-svelte';
+
 	import { Button } from '$lib/components/ui/button';
 
 	let { data } = $props();
 	const post = $derived(data.post);
+
+	function applyWithLinkedin() {
+		// This would typically redirect to a LinkedIn OAuth flow or open a modal
+		// For now, we'll just log the action
+		console.log('Applying with LinkedIn for job:', post?.id);
+		// You would implement the actual LinkedIn integration here
+	}
 </script>
 
 <div class="container mx-auto px-4 py-8">
@@ -60,7 +69,20 @@
 		</div>
 	{/if}
 
-	<div class="mt-8">
-		<Button>Apply Now</Button>
+	<div class="row mt-8 flex flex gap-4">
+		{#if data.user && data.user.organizationHandle === post?.ownerOrganizationHandle}
+			<div class="">
+				<p class="text-sm text-accent/50">Looks like you're the owner of this job post.</p>
+				<Button href={`/dashboard/jobs/${post?.id}`}>Edit Job</Button>
+			</div>
+		{:else}
+			<Button
+				on:click={applyWithLinkedin}
+				class="flex items-center gap-2 bg-[#0077B5] hover:bg-[#0077B5]/90"
+			>
+				<LinkedinIcon class="h-4 w-4" />
+				Apply with LinkedIn
+			</Button>
+		{/if}
 	</div>
 </div>

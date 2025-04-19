@@ -1,5 +1,5 @@
 import { generateObject } from 'ai';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { embedText, gpt4o } from '$lib/server/ai';
@@ -22,7 +22,6 @@ export interface JobData {
 	benefits?: string;
 	tech_stack?: string;
 }
-
 export async function insertJob(
 	jobData: string,
 	ownerOrganizationHandle: string,
@@ -51,13 +50,30 @@ export async function insertJob(
 	const vector = await embedText(stringForVector);
 
 	try {
+		// Generate base handle from title
+		let handle = object.title
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-|-$/g, '');
+
+		// Check if handle+organization combination already exists
+		const existingJob = await db.query.jobPost.findFirst({
+			where: and(
+				eq(jobPost.handle, handle),
+				eq(jobPost.ownerOrganizationHandle, ownerOrganizationHandle)
+			)
+		});
+
+		// If combination exists, add a 4-digit random number to handle
+		if (existingJob) {
+			const randomSuffix = Math.floor(1000 + Math.random() * 9000); // Ensures 4 digits (1000-9999)
+			handle = `${handle}-${randomSuffix}`;
+		}
+
 		const post = await db
 			.insert(jobPost)
 			.values({
-				handle: object.title
-					.toLowerCase()
-					.replace(/[^a-z0-9]+/g, '-')
-					.replace(/^-|-$/g, ''),
+				handle,
 				ownerOrganizationHandle,
 				vector,
 				title: object.title,
