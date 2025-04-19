@@ -9,7 +9,6 @@ export async function load({ params }) {
 	const postData = await db.query.jobPost.findFirst({
 		where: and(ilike(jobPost.handle, handle), ilike(jobPost.ownerOrganizationHandle, org))
 	});
-	console.log(postData);
 
 	return {
 		post: postData
