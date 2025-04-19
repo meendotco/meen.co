@@ -73,7 +73,7 @@
 		{#if data.user && data.user.organizationHandle === post?.ownerOrganizationHandle}
 			<div class="">
 				<p class="text-sm text-accent/50">Looks like you're the owner of this job post.</p>
-				<Button href={`/dashboard/jobs/${post?.id}`}>Edit Job</Button>
+				<Button href={`/dashboard/jobs/${post?.id}`}>See Applicants</Button>
 			</div>
 		{:else}
 			<Button
