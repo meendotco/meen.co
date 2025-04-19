@@ -65,6 +65,32 @@ export const organization = pgTable('organization', {
 	handle: text('handle').primaryKey()
 });
 
+export const organizationBilling = pgTable('organizationBilling', {
+	handle: text('handle')
+		.primaryKey()
+		.references(() => organization.handle, { onDelete: 'cascade' }),
+
+	stripeCustomerId: text('stripeCustomerId').notNull(),
+	stripeSubscriptionId: text('stripeSubscriptionId').notNull(),
+	stripePriceId: text('stripePriceId').notNull(),
+	subscriptionItemId: text('subscriptionItemId').notNull(),
+	currentQuantity: integer('currentQuantity').notNull()
+});
+
+export const invoice = pgTable('invoice', {
+	id: text('id').primaryKey(),
+	organizationHandle: text('organizationHandle').references(() => organization.handle, {
+		onDelete: 'cascade'
+	}),
+	amount: integer('amount').notNull(),
+	currency: text('currency').notNull(),
+	status: text('status').notNull(),
+	hostedInvoiceUrl: text('hostedInvoiceUrl'),
+	pdf: text('pdf'),
+	periodStart: timestamp('periodStart', { mode: 'date' }),
+	periodEnd: timestamp('periodEnd', { mode: 'date' })
+});
+
 export const orgUserRelations = relations(organization, ({ many }) => ({
 	users: many(users)
 }));

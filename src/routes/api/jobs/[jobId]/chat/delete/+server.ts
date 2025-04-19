@@ -9,7 +9,7 @@ export const POST = async ({ locals, params }) => {
 	const user = locals.user;
 
 	const userHasAccess = await db.query.jobPost.findFirst({
-		where: and(eq(jobPost.id, jobId), eq(jobPost.ownerId, user.id))
+		where: and(eq(jobPost.id, jobId), eq(jobPost.ownerOrganizationHandle, user.organizationHandle))
 	});
 	if (!userHasAccess) {
 		return json({ error: 'You do not have access to this job' }, { status: 403 });

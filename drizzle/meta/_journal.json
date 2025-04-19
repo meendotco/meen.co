@@ -162,6 +162,13 @@
       "when": 1745066303493,
       "tag": "0022_optimal_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1745083652502,
+      "tag": "0023_tiny_grim_reaper",
+      "breakpoints": true
     }
   ]
 }

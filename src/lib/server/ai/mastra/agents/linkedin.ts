@@ -24,6 +24,9 @@ Always add candidates you find and that can be a fit for the job.
 Don't add people who already work at the same company.
 
 Always include location in your search queries. If that is a factor.
+
+
+Always type something out for the user. Ask the user follow up questions.
 </instructions>
 <job_description>
 ${generateJobPostEmbeddingInputFull(job as JobData)}
@@ -40,7 +43,7 @@ export async function findCandidatesInteractive(job: typeof jobPost.$inferSelect
 	const agent = new Agent({
 		name: 'Recruiter Agent',
 		instructions: createSimpleAgent(job),
-		model: o3,
+		model: gemini2dot5pro,
 		tools: {
 			searchLinkedinTool,
 			addCandidateTool,

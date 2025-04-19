@@ -95,6 +95,7 @@ export const POST = async ({ locals, params, request }) => {
 		});
 
 		if (chunk.type === 'text-delta') {
+			console.log('chunk.textDelta', chunk.textDelta);
 			fullResponse += chunk.textDelta;
 		}
 		if (chunk.type === 'error') {
