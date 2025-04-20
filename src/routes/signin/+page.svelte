@@ -2,7 +2,6 @@
 	import { signIn } from '@auth/sveltekit/client';
 	import { Linkedin, LoaderCircle } from '@lucide/svelte';
 
-	import { page } from '$app/state';
 	import Logo from '$lib/components/Logo.svelte';
 	import { Button } from '$lib/components/ui/button';
 
