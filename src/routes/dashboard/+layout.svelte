@@ -69,7 +69,7 @@
 			style="margin-left: {sidebarCollapsed ? '80px' : '240px'};"
 		>
 			<div class="flex h-full flex-col">
-				<div class="flex items-center space-x-1 px-6 py-3">
+				<div class="absolute flex items-center space-x-1 px-6 py-3">
 					<Breadcrumb.Root>
 						<Breadcrumb.List class="flex items-center space-x-1 text-sm font-medium">
 							{#each page.url.pathname.split('/') as crumb, i (crumb)}

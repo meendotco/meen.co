@@ -40,7 +40,7 @@ export default ts.config(
 		},
 		rules: {
 			'no-undef': 'off',
-			'max-lines': ['warn', { max: 200, skipBlankLines: true, skipComments: true }],
+			'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
 			'no-console': 'off',
 			'simple-import-sort/imports': 'warn',
 			'simple-import-sort/exports': 'warn',

@@ -1,19 +1,19 @@
 import { json } from '@sveltejs/kit';
 import type { CoreMessage } from 'ai';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
 
 import { findCandidatesInteractive } from '@/server/ai/mastra/agents/linkedin';
 import { db } from '@/server/db';
 import { chat, chatMessage, jobPost } from '@/server/db/schema';
 import { broadcastToUsers } from '@/websocket/server.svelte.js';
-
 export const POST = async ({ locals, params, request }) => {
 	const jobId = params.jobId;
 	const user = locals.user;
 
 	const { message } = await request.json();
 
-	const messageId = message.id;
+	const messageId = uuidv4();
 	const job = await db.query.jobPost.findFirst({
 		where: eq(jobPost.id, jobId),
 		with: {
@@ -40,6 +40,7 @@ export const POST = async ({ locals, params, request }) => {
 		const [newChat] = await db
 			.insert(chat)
 			.values({
+				id: chatId,
 				jobPostId: job.id,
 				title: `Chat for ${job.title}`
 			})
@@ -50,16 +51,19 @@ export const POST = async ({ locals, params, request }) => {
 
 	const formattedMessages = Array.isArray(job.chat?.messages)
 		? job.chat.messages.map((message) => ({
+				id: message.id,
 				role: message.role,
 				content: message.content ?? 'No content'
 			}))
 		: [];
 
 	formattedMessages.push({
+		id: messageId,
 		role: 'user',
 		content: message
 	});
 	await db.insert(chatMessage).values({
+		id: messageId,
 		chatId: chatId,
 		role: 'user',
 		content: message
@@ -74,11 +78,12 @@ export const POST = async ({ locals, params, request }) => {
 	const agentStream = await agent.stream(validMessages as CoreMessage[]);
 
 	let fullResponse = '';
+	const assistantMessageId = uuidv4();
 
 	broadcastToUsers(locals.wss, [user.id], {
 		messageType: `${job.id}.messageStarted`,
 		data: {
-			appPayload: { jobId: job.id, messageId: messageId }
+			appPayload: { jobId: job.id, messageId: assistantMessageId }
 		}
 	});
 	for await (const chunk of agentStream.fullStream) {
@@ -89,7 +94,7 @@ export const POST = async ({ locals, params, request }) => {
 				chunk: chunk,
 				appPayload: {
 					jobId: job.id,
-					messageId: messageId
+					messageId: assistantMessageId
 				}
 			}
 		});
@@ -104,7 +109,7 @@ export const POST = async ({ locals, params, request }) => {
 	}
 
 	await db.insert(chatMessage).values({
-		id: messageId,
+		id: assistantMessageId,
 		chatId: chatId,
 		role: 'assistant',
 		content: fullResponse
@@ -113,9 +118,23 @@ export const POST = async ({ locals, params, request }) => {
 	broadcastToUsers(locals.wss, [user.id], {
 		messageType: `${job.id}.messageComplete`,
 		data: {
-			appPayload: { jobId: job.id, messageId: messageId }
+			appPayload: { jobId: job.id, messageId: assistantMessageId }
 		}
 	});
 
 	return json({ message: 'Job found', data: fullResponse });
+};
+export const DELETE = async ({ locals, params }) => {
+	const jobId = params.jobId;
+	const user = locals.user;
+
+	const userHasAccess = await db.query.jobPost.findFirst({
+		where: and(eq(jobPost.id, jobId), eq(jobPost.ownerOrganizationHandle, user.organizationHandle))
+	});
+	if (!userHasAccess) {
+		return json({ error: 'You do not have access to this job' }, { status: 403 });
+	}
+	await db.delete(chat).where(and(eq(chat.jobPostId, jobId), eq(chat.title, 'Recruiter Agent')));
+
+	return json({ message: 'Chat deleted' }, { status: 200 });
 };
