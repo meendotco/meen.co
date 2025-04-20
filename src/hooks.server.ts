@@ -1,6 +1,6 @@
 // src/hooks.server.ts
 import type { HandleServerError } from '@sveltejs/kit';
-import { type Handle, type RequestEvent } from '@sveltejs/kit';
+import { type Handle, redirect, type RequestEvent } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { eq } from 'drizzle-orm';
 
@@ -38,7 +38,7 @@ const authorizationHandle: Handle = async ({ event, resolve }) => {
 			(event.url.pathname.startsWith('/api') && !event.url.pathname.startsWith('/api/waitlist')) ||
 			event.url.pathname.startsWith('/dashboard')
 		) {
-			return new Response('Unauthorized', { status: 401 });
+			redirect(302, '/signin');
 		}
 	}
 
@@ -50,11 +50,11 @@ const authorizationHandle: Handle = async ({ event, resolve }) => {
 
 	if (event.url.pathname.startsWith('/api') || event.url.pathname.startsWith('/dashboard')) {
 		if (!auth || !auth.user || !auth.user.email) {
-			return new Response('Unauthorized', { status: 401 });
+			redirect(302, '/signin');
 		}
 
 		if (!user) {
-			return new Response('Unauthorized', { status: 401 });
+			redirect(302, '/signin');
 		}
 	}
 

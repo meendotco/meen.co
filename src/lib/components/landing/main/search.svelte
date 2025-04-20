@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Container from '$lib/components/landing/container.svelte';
 	import SectionBadge from '$lib/components/landing/section-badge.svelte';
-	import WaitList from '$lib/components/WaitList.svelte';
-	import { Button } from '$lib/components/ui/button';
+
 	const candidates = [
 		{
 			name: 'Sarah Chen',
@@ -92,7 +91,7 @@
 						/>
 					</div>
 					<div
-						class="bg-violet-600 hover:bg-violet-700 text-white font-medium px-6 py-3.5 transition-colors"
+						class="bg-violet-600 px-6 py-3.5 font-medium text-white transition-colors hover:bg-violet-700"
 					>
 						Search
 					</div>

@@ -1,24 +1,28 @@
 <script>
-	import { cn } from '$lib/utils';
+	import { ChartBar, Clipboard, Search } from '@lucide/svelte';
+
 	import Container from '$lib/components/landing/container.svelte';
 	import SectionBadge from '$lib/components/landing/section-badge.svelte';
-	import { ChartBar, Clipboard, Search } from '@lucide/svelte';
+	import { cn } from '$lib/utils';
 
 	const PERKS = [
 		{
 			icon: Search,
 			title: 'AI-Powered Search',
-			description: 'Natural language search that understands context and intent to find the perfect candidates'
+			description:
+				'Natural language search that understands context and intent to find the perfect candidates'
 		},
 		{
 			icon: ChartBar,
 			title: 'Smart Ranking',
-			description: 'Automatically rank and score candidates based on your specific requirements and criteria'
+			description:
+				'Automatically rank and score candidates based on your specific requirements and criteria'
 		},
 		{
 			icon: Clipboard,
 			title: 'ATS Integration',
-			description: 'Seamlessly connect with your existing ATS to enrich candidate data and streamline workflow'
+			description:
+				'Seamlessly connect with your existing ATS to enrich candidate data and streamline workflow'
 		}
 	];
 </script>
@@ -31,7 +35,8 @@
 				Discover the benefits
 			</h2>
 			<p class="mt-6 text-center text-base text-accent-foreground/80 md:text-lg">
-				Explore the powerful features and advantages that Meen offers to help you find the perfect candidates faster and streamline your talent acquisition process
+				Explore the powerful features and advantages that Meen offers to help you find the perfect
+				candidates faster and streamline your talent acquisition process
 			</p>
 		</div>
 	</Container>
