@@ -122,12 +122,7 @@
 				class="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-foreground/70 dark:border-white/10 dark:text-white/70 md:flex-row"
 			>
 				<div>
-					&copy; {new Date().getFullYear()} Meen AI. All rights reserved.
-				</div>
-				<div class="flex items-center">
-					<span>Made with</span>
-					<Heart size={14} class="mx-1 text-destructive" />
-					<span>by the Meen AI team</span>
+					&copy; {new Date().getFullYear()} Meen. All rights reserved.
 				</div>
 			</div>
 		</div>

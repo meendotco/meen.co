@@ -36,7 +36,7 @@
 			<Logo />
 			<span
 				class="hidden bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text px-1 font-bold text-transparent sm:inline-block"
-				>Meen AI</span
+				>Meen</span
 			>
 		</div>
 		{#if page.url.pathname == '/'}
