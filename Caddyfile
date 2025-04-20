@@ -1,0 +1,5 @@
+meen.co {
+    handle {
+        reverse_proxy http://localhost:3000
+    }
+}
