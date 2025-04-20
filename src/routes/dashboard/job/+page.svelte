@@ -14,12 +14,12 @@
 	let dialogOpen = $state(false);
 
 	function createJob() {
-		return goto('/dashboard/jobs/create');
+		return goto('/dashboard/job/create');
 	}
 
 	async function createJobByURL() {
 		jobIsCreating = true;
-		await fetch('/api/jobs/create/url', {
+		await fetch('/api/job/create/url', {
 			method: 'POST',
 			body: JSON.stringify({
 				url: jobURL
@@ -62,7 +62,7 @@
 					<div class="py-4">
 						<Input
 							type="url"
-							placeholder="https://www.linkedin.com/jobs/view/3724600000"
+							placeholder="https://www.linkedin.com/job/view/3724600000"
 							bind:value={jobURL}
 							class="transition-all duration-300 focus-visible:ring-primary/20"
 						/>
@@ -127,7 +127,7 @@
 					<Card
 						class="group overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 dark:border-border/30 dark:bg-card/80"
 					>
-						<a href={`/dashboard/jobs/${job.id}`} class="flex h-full flex-col justify-between p-6">
+						<a href={`/dashboard/job/${job.id}`} class="flex h-full flex-col justify-between p-6">
 							<div class="flex flex-col gap-4">
 								<div class="flex items-start gap-3">
 									<div

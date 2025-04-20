@@ -84,7 +84,7 @@
 					</div>
 					<div class="z-10 mt-6">
 						<a
-							href="/dashboard/jobs"
+							href="/dashboard/job"
 							class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-md transition-all hover:translate-y-[-2px] hover:bg-primary/90 hover:shadow-lg"
 						>
 							Get Started

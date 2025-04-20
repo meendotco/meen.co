@@ -26,7 +26,7 @@
 			label: 'Home'
 		},
 		{
-			href: '/dashboard/jobs',
+			href: '/dashboard/job',
 			icon: BriefcaseBusiness,
 			title: 'Jobs'
 		},

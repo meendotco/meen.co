@@ -182,7 +182,7 @@
 
 		isSaving = true;
 		try {
-			const response = await fetch('/api/jobs/create', {
+			const response = await fetch('/api/job/create', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -191,7 +191,7 @@
 			});
 
 			if (response.ok) {
-				window.location.href = '/dashboard/jobs';
+				window.location.href = '/dashboard/job';
 			} else {
 				const error = await response.json();
 				validationErrors = [error.message || 'Failed to create job posting'];
