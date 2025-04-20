@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { SignIn } from '@auth/sveltekit/components';
+	import { signIn } from '@auth/sveltekit/client';
 	import { Linkedin, LoaderCircle } from '@lucide/svelte';
 
 	import { page } from '$app/state';
 	import Logo from '$lib/components/Logo.svelte';
 	import { Button } from '$lib/components/ui/button';
 
+	function linkedin() {
+		signIn('linkedin', { callbackUrl: `/dashboard/job` });
+	}
 	let isLinkedinLoading = $state(false);
 </script>
 
@@ -30,23 +33,14 @@
 							type="button"
 							variant="tertiary"
 							disabled={isLinkedinLoading}
-							onclick={() => {
-								isLinkedinLoading = true;
-							}}
+							onclick={() => linkedin()}
 							class="w-full"
 						>
 							{#if isLinkedinLoading}
 								<LoaderCircle class="h-4 w-4 animate-spin" />
 							{:else}
 								<Linkedin class="h-4 w-4" />
-							{/if}
-							{#if page.params.redirect}
-								<SignIn
-									provider="linkedin"
-									redirect={`/auth/signin/linkedin?redirect=${page.params.redirect}`}
-								/>
-							{:else}
-								<SignIn provider="linkedin" redirect={`${page.url.origin}/dashboard`} />
+								<p>Sign in with LinkedIn</p>
 							{/if}
 						</Button>
 					</div>
