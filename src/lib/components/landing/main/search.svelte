@@ -2,7 +2,7 @@
 	import Container from '$lib/components/landing/container.svelte';
 	import SectionBadge from '$lib/components/landing/section-badge.svelte';
 	import WaitList from '$lib/components/WaitList.svelte';
-
+	import { Button } from '$lib/components/ui/button';
 	const candidates = [
 		{
 			name: 'Sarah Chen',
@@ -91,9 +91,11 @@
 							class="w-full flex-1 border-none bg-transparent px-4 py-3.5 text-foreground placeholder-foreground/50 focus:outline-none focus:ring-0 dark:text-white dark:placeholder-white/50"
 						/>
 					</div>
-					<WaitList
-						className="bg-violet-600 hover:bg-violet-700 text-white font-medium px-6 py-3.5 transition-colors"
-					/>
+					<div
+						class="bg-violet-600 hover:bg-violet-700 text-white font-medium px-6 py-3.5 transition-colors"
+					>
+						Search
+					</div>
 				</div>
 				<div class="mt-2 flex flex-wrap gap-2">
 					<span class="rounded-full bg-primary/20 px-2 py-1 text-xs font-medium text-primary"

@@ -6,6 +6,7 @@
 	import { Card } from '$lib/components/ui/card/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { Skeleton } from '$lib/components/ui/skeleton';
 
 	let { data } = $props();
 
@@ -31,101 +32,119 @@
 	}
 </script>
 
-<div class="container mx-auto flex flex-col gap-8 p-6">
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div>
-			<h1
-				class="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-4xl font-bold tracking-tight text-transparent"
-			>
-				Job Listings
-			</h1>
-			<p class="mt-1 text-muted-foreground">Manage and track your active recruitment campaigns</p>
-		</div>
-		<div class="flex flex-wrap items-center gap-3">
-			<Dialog.Root bind:open={dialogOpen}>
-				<Dialog.Trigger>
-					<Button
-						variant="outline"
-						class="border-primary/20 transition-all duration-300 hover:bg-primary/5"
-					>
-						<PlusCircle class="mr-2 h-4 w-4 text-primary" />
-						Add existing job
-					</Button>
-				</Dialog.Trigger>
-				<Dialog.Content class="sm:max-w-md">
-					<Dialog.Header>
-						<Dialog.Title class="text-xl">Import Existing Job</Dialog.Title>
-						<Dialog.Description class="text-muted-foreground">
-							Enter the URL of a job listing you'd like to import and analyze
-						</Dialog.Description>
-					</Dialog.Header>
-					<div class="py-4">
-						<Input
-							type="url"
-							placeholder="https://www.linkedin.com/job/view/3724600000"
-							bind:value={jobURL}
-							class="transition-all duration-300 focus-visible:ring-primary/20"
-						/>
-					</div>
-					<Dialog.Footer class="flex justify-end gap-2">
-						<Dialog.Close asChild>
-							<Button variant="outline">Cancel</Button>
-						</Dialog.Close>
+<div class="container mx-auto py-8">
+	<div class="mb-8 flex flex-col space-y-4">
+		<h1 class="text-4xl font-bold tracking-tight">Job Listings</h1>
+		<p class="text-muted-foreground">Manage and track your active recruitment campaigns</p>
+
+		<!-- Actions Bar -->
+		<div class="mt-6 flex justify-end">
+			<div class="flex flex-wrap items-center gap-3">
+				<Dialog.Root bind:open={dialogOpen}>
+					<Dialog.Trigger>
 						<Button
-							disabled={jobIsCreating}
-							onclick={createJobByURL}
-							class="group relative overflow-hidden"
+							variant="outline"
+							class="border-primary/20 transition-all duration-300 hover:bg-primary/5"
 						>
-							{#if jobIsCreating}
-								<span class="flex items-center">
-									<div
-										class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"
-									></div>
-									Adding...
-								</span>
-							{:else}
-								<span class="flex items-center">
-									<PlusCircle class="mr-2 h-4 w-4" />
-									Add job
-								</span>
-							{/if}
-							<span
-								class="absolute inset-0 translate-y-[100%] bg-primary/10 transition-transform duration-300 group-hover:translate-y-0"
-							></span>
+							<PlusCircle class="mr-2 h-4 w-4 text-primary" />
+							Add existing job
 						</Button>
-					</Dialog.Footer>
-				</Dialog.Content>
-			</Dialog.Root>
-			<Button
-				onclick={createJob}
-				class="bg-gradient-to-r from-primary to-primary/80 shadow-md transition-all duration-300 hover:from-primary/90 hover:to-primary/70 hover:shadow-lg"
-			>
-				<PlusCircle class="mr-2 h-4 w-4" />
-				Create New Job
-			</Button>
+					</Dialog.Trigger>
+					<Dialog.Content class="border border-border/40 bg-card/90 backdrop-blur-md sm:max-w-md">
+						<Dialog.Header>
+							<Dialog.Title class="text-xl font-semibold text-primary"
+								>Add existing job</Dialog.Title
+							>
+							<Dialog.Description class="text-muted-foreground">
+								Enter the URL of a job listing you'd like to import and analyze
+							</Dialog.Description>
+						</Dialog.Header>
+						<div class="py-4">
+							<Input
+								type="url"
+								placeholder="https://www.linkedin.com/job/view/3724600000"
+								bind:value={jobURL}
+								class="border-border/40 bg-background/60 transition-all duration-300 focus-visible:border-primary/30 focus-visible:ring-primary/20"
+							/>
+						</div>
+						<Dialog.Footer class="flex justify-end gap-2">
+							<Dialog.Close asChild>
+								<Button variant="outline" class="border-border/40 hover:bg-background/80"
+									>Cancel</Button
+								>
+							</Dialog.Close>
+							<Button
+								disabled={jobIsCreating}
+								onclick={createJobByURL}
+								class="bg-primary text-primary-foreground transition-all duration-300 hover:bg-primary/90"
+							>
+								{#if jobIsCreating}
+									<span class="flex items-center">
+										<div
+											class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
+										></div>
+										Importing...
+									</span>
+								{:else}
+									<span class="flex items-center">
+										<PlusCircle class="mr-2 h-4 w-4" />
+										Import
+									</span>
+								{/if}
+							</Button>
+						</Dialog.Footer>
+					</Dialog.Content>
+				</Dialog.Root>
+				<Button
+					onclick={createJob}
+					class="bg-primary text-primary-foreground transition-all duration-300 hover:bg-primary/90"
+				>
+					<PlusCircle class="mr-2 h-4 w-4" />
+					Create New Job
+				</Button>
+			</div>
 		</div>
 	</div>
 
+	<!-- Main Content Area -->
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#await data.streamed.jobs}
-			<div class="col-span-full flex items-center justify-center p-16">
-				<div class="flex flex-col items-center">
-					<div class="relative h-12 w-12">
+			<!-- Skeleton Loading UI -->
+			{#each Array(6) as _, i}
+				<Card
+					class="group overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+				>
+					<div class="flex h-full flex-col justify-between p-6">
+						<div class="flex flex-col gap-4">
+							<div class="mb-4 flex items-start gap-3">
+								<div class="rounded-full bg-primary/10 p-2">
+									<Skeleton class="h-5 w-5 rounded-full" />
+								</div>
+								<div>
+									<Skeleton class="h-5 w-40" />
+									<Skeleton class="mt-1 h-3 w-24" />
+								</div>
+							</div>
+							<div class="space-y-2">
+								<Skeleton class="h-3 w-full" />
+								<Skeleton class="h-3 w-5/6" />
+								<Skeleton class="h-3 w-4/6" />
+							</div>
+						</div>
 						<div
-							class="absolute inset-0 h-full w-full animate-ping rounded-full bg-primary/20 duration-1000"
-						></div>
-						<div
-							class="absolute inset-0 h-full w-full animate-spin rounded-full border-4 border-primary/30 border-t-primary"
-						></div>
+							class="mt-6 flex items-center justify-between border-t border-border/30 pt-4 text-xs"
+						>
+							<Skeleton class="h-3 w-24" />
+							<Skeleton class="h-5 w-16 rounded-full" />
+						</div>
 					</div>
-					<p class="mt-4 text-sm font-medium text-muted-foreground">Loading your job listings...</p>
-				</div>
-			</div>
+				</Card>
+			{/each}
 		{:then jobs}
 			{#if jobs.length > 0}
 				{#each jobs as job (job.id)}
 					<Card
-						class="group overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 dark:border-border/30 dark:bg-card/80"
+						class="group overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
 					>
 						<a href={`/dashboard/job/${job.id}`} class="flex h-full flex-col justify-between p-6">
 							<div class="flex flex-col gap-4">
@@ -180,7 +199,7 @@
 						<Briefcase class="h-12 w-12 text-primary" />
 					</div>
 					<div>
-						<h3 class="text-2xl font-medium">No job listings yet</h3>
+						<h3 class="text-2xl font-medium text-primary">No job listings yet</h3>
 						<p class="mt-2 text-muted-foreground">
 							Create your first job listing to start attracting top talent.
 						</p>
@@ -188,7 +207,7 @@
 
 					<Button
 						onclick={createJob}
-						class="mt-2 bg-gradient-to-r from-primary to-primary/80 shadow-md transition-all duration-300 hover:from-primary/90 hover:to-primary/70 hover:shadow-lg"
+						class="mt-2 bg-primary text-primary-foreground transition-all duration-300 hover:bg-primary/90"
 					>
 						<PlusCircle class="mr-2 h-4 w-4" />
 						<span>Create your first job</span>

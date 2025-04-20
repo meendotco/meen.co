@@ -55,7 +55,5 @@
 			</Button>
 		</div>
 	</Container>
-	<Container delay={0.3}>
-		<Search />
-	</Container>
+	<Search />
 </div>

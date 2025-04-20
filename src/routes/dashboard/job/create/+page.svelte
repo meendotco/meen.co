@@ -250,7 +250,7 @@
 	}
 </script>
 
-<div class="mx-auto max-w-[1200px] p-6">
+<div class="mx-auto w-full max-w-[1200px] p-6">
 	<div class="mb-8 flex items-center gap-4">
 		<Button variant="outline" onclick={() => window.history.back()}>← Back</Button>
 		<h1 class="text-2xl font-semibold text-foreground">Create New Position</h1>
