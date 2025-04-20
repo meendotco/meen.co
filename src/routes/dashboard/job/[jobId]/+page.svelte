@@ -2,7 +2,7 @@
 	import type { TextStreamPart } from 'ai';
 	import { formatDistanceToNow } from 'date-fns';
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { ArrowLeft, Send, Trash2, Building, MapPin } from 'lucide-svelte';
+	import { ArrowLeft, Building, MapPin, Send, Trash2 } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	import { page } from '$app/state';

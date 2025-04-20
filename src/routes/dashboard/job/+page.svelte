@@ -27,6 +27,8 @@
 			})
 		});
 
+		window.location.reload();
+
 		jobIsCreating = false;
 		dialogOpen = false;
 	}
