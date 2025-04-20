@@ -14,6 +14,7 @@
 		messages: MessageSelect[];
 		errorMessage: string | null;
 	}>();
+
 	function formatDate(date: Date | string | null) {
 		if (!date) return '';
 		const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -25,6 +26,7 @@
 			minute: '2-digit'
 		});
 	}
+
 	function scrollToMessage(id: string) {
 		const messageElement = document.getElementById(`message-${id}`);
 		if (messageElement) {
@@ -45,33 +47,58 @@
 	});
 </script>
 
-<div class=" h-screen space-y-4 overflow-y-auto">
+<div class="flex h-full flex-col space-y-4 overflow-y-auto px-0.5">
 	{#if messages.length !== 0}
 		{#each messages as msg (msg.id)}
 			<div class:flex-row-reverse={msg.role === 'user'} class="flex items-end gap-2">
-				<div
-					class:bg-primary={msg.role === 'user'}
-					class:text-primary-foreground={msg.role === 'user'}
-					class:bg-card={msg.role === 'assistant'}
-					class:text-card-foreground={msg.role === 'assistant'}
-					class="max-w-[75%] rounded-lg p-3 shadow-sm"
-				>
-					<div class="prose prose-sm dark:prose-invert max-w-none">
-						<Markdown md={msg.content ?? '​'} />
+				{#if msg.role === 'user'}
+					<div
+						class="relative max-w-[85%] rounded-2xl rounded-br-none bg-primary p-3 text-primary-foreground shadow-sm"
+					>
+						<div class="prose prose-sm dark:prose-invert max-w-none">
+							<Markdown md={msg.content ?? '​'} />
+						</div>
+						<p class="mt-1 text-right text-xs opacity-60">
+							{formatDate(msg.createdAt)}
+						</p>
+						<div id={`message-${msg.id}`}></div>
 					</div>
-					<p class="mt-1 text-right text-xs text-muted-foreground/80">
-						{formatDate(msg.createdAt)}
-					</p>
-
-					<div id={`message-${msg.id}`}></div>
-				</div>
+				{:else}
+					<div
+						class="relative max-w-[85%] rounded-2xl rounded-bl-none border border-border/50 bg-card p-3 text-card-foreground shadow-sm"
+					>
+						<div class="prose prose-sm dark:prose-invert max-w-none">
+							<Markdown md={msg.content ?? '​'} />
+						</div>
+						<p class="mt-1 text-right text-xs opacity-60">
+							{formatDate(msg.createdAt)}
+						</p>
+						<div id={`message-${msg.id}`}></div>
+					</div>
+				{/if}
 			</div>
 		{/each}
 	{:else}
-		<p class="text-muted-foreground">
-			Start chatting with the recruiter agent to find the best candidates for your job.
-		</p>
+		<div class="flex h-full flex-col items-center justify-center p-4 text-center">
+			<div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					class="h-6 w-6 text-primary"
+					><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg
+				>
+			</div>
+			<p class="text-sm text-muted-foreground">
+				Start chatting with the recruiter agent to find the best candidates for your job.
+			</p>
+		</div>
 	{/if}
+
 	{#if errorMessage}
 		<div
 			class="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive"

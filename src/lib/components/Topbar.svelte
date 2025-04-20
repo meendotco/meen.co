@@ -62,7 +62,7 @@
 				>
 					Dashboard
 				</a>
-				<UserMenu {user} isCollapsed={false} />
+				<UserMenu {user} isCollapsed={true} />
 			{:else}
 				<Button
 					variant="default"
