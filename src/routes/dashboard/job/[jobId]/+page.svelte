@@ -2,9 +2,10 @@
 	import type { TextStreamPart } from 'ai';
 	import { formatDistanceToNow } from 'date-fns';
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { Send, Trash2 } from 'lucide-svelte';
+	import { ArrowLeft, Send, Trash2 } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import CandidateCard from '$lib/components/CandidateCard.svelte';
 	import Messages from '$lib/components/Messages.svelte';
@@ -174,6 +175,9 @@
 		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane defaultSize={75} class="flex flex-col p-4">
 				<div class="flex-1 space-y-6 overflow-y-auto pr-2">
+					<Button variant="outline" onclick={() => goto('/dashboard/job')}>
+						<ArrowLeft class="h-4 w-4" />
+					</Button>
 					<Card>
 						<CardHeader>
 							<CardTitle>Job Details</CardTitle>
