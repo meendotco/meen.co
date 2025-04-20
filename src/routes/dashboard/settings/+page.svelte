@@ -1,14 +1,13 @@
 <script lang="ts">
+	import { Check, Linkedin } from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
+
+	import { Badge } from '@/components/ui/badge';
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-	import { Input } from '@/components/ui/input';
-	import { Skeleton } from '@/components/ui/skeleton';
 	import { Checkbox } from '@/components/ui/checkbox';
-	import { Badge } from '@/components/ui/badge';
-	import { Linkedin, Check } from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	import { enhance } from '$app/forms';
-	import { toast } from "svelte-sonner";
+	import { Skeleton } from '@/components/ui/skeleton';
 
 	interface UserPreferences {
 		darkMode: boolean;
@@ -16,7 +15,7 @@
 		emailUpdates: boolean;
 	}
 
-	let { data, form } = $props();
+	let { data } = $props();
 	let hasChanges = $state(false);
 	let isLoading = $state(true);
 	let isSaving = $state(false);
@@ -90,7 +89,7 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div class="space-y-6 p-6">
 	<div class="flex items-center justify-between">
 		<h2
 			class="bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent"

@@ -46,7 +46,7 @@
 	}
 </script>
 
-<div class="space-y-6">
+<div class="space-y-6 p-6">
 	<div class="flex items-center justify-between">
 		<h2 class="text-3xl font-bold tracking-tight">Search Candidates</h2>
 	</div>

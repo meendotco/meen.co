@@ -31,7 +31,7 @@
 	}
 </script>
 
-<div class="container mx-auto flex flex-col gap-8 py-8">
+<div class="container mx-auto flex flex-col gap-8 p-6">
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
 			<h1

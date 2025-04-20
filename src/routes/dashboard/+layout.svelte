@@ -69,22 +69,6 @@
 			style="margin-left: {sidebarCollapsed ? '80px' : '240px'};"
 		>
 			<div class="flex h-full flex-col">
-				<div class="absolute flex items-center space-x-1 px-6 py-3">
-					<Breadcrumb.Root>
-						<Breadcrumb.List class="flex items-center space-x-1 text-sm font-medium">
-							{#each page.url.pathname.split('/') as crumb, i (crumb)}
-								<Breadcrumb.Item class="flex items-center">
-									<Breadcrumb.Page class="font-semibold text-foreground/70" href={`/${crumb}`}
-										>{crumb}</Breadcrumb.Page
-									>
-								</Breadcrumb.Item>
-								{#if i < page.url.pathname.split('/').length - 1}
-									<Breadcrumb.Separator class="text-muted-foreground/50" />
-								{/if}
-							{/each}
-						</Breadcrumb.List>
-					</Breadcrumb.Root>
-				</div>
 				{@render children?.()}
 			</div>
 		</div>

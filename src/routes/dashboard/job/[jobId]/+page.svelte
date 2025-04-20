@@ -173,7 +173,7 @@
 	{#if job}
 		<Resizable.PaneGroup direction="horizontal" class="h-full">
 			<Resizable.Pane defaultSize={75} class="flex flex-col p-4">
-				<div class="flex-1 space-y-6 overflow-y-auto pr-2 pt-8">
+				<div class="flex-1 space-y-6 overflow-y-auto pr-2">
 					<Card>
 						<CardHeader>
 							<CardTitle>Job Details</CardTitle>

@@ -3,8 +3,7 @@
 	import { fade, fly, scale, slide } from 'svelte/transition';
 
 	let { data } = $props();
-	import Container from '$lib/components/landing/container.svelte';
-	import { Button } from '$lib/components/ui/button';
+
 	import { Card } from '$lib/components/ui/card';
 </script>
 
