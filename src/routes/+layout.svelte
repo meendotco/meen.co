@@ -76,13 +76,12 @@
 						</div>
 						<span
 							class="bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text font-bold text-transparent"
-							>Meen AI</span
+							>Meen</span
 						>
 					</div>
 					<p class="mt-2 text-sm text-foreground/70 dark:text-white/70">
 						Empowering the future through intelligent solutions.
 					</p>
-
 				</div>
 
 				<div>
@@ -117,7 +116,6 @@
 						</li>
 					</ul>
 				</div>
-
 			</div>
 
 			<div

@@ -94,7 +94,7 @@
 									type="text"
 									bind:value={subject}
 									class="w-full rounded-md border p-2"
-									placeholder="Meen AI"
+									placeholder="Meen"
 								/>
 							</div>
 							<div class="space-y-2">
@@ -104,7 +104,7 @@
 									rows="4"
 									bind:value={message}
 									class="w-full rounded-md border p-2"
-									placeholder="My name is Markus and I'm a recruiter at Meen AI."
+									placeholder="My name is Markus and I'm a recruiter at Meen."
 								/>
 							</div>
 							<Button class="mt-2 w-full" onclick={requestAccess}>Send Request</Button>
