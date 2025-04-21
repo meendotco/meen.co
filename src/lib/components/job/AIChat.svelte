@@ -164,8 +164,6 @@
 		if (!response.ok) {
 			toast.error('Error deleting messages');
 			messages = prevMessages;
-		} else {
-			toast.success('Messages deleted');
 		}
 	}
 </script>

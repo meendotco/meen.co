@@ -21,7 +21,7 @@ export interface Requirement {
 export interface Job {
 	id: string;
 	title: string;
-	department: string;
+	department: string | null;
 	location: string;
 	type: JobType;
 	status: JobStatus;
@@ -33,4 +33,6 @@ export interface Job {
 	benefits: string[];
 	tech_stack: string[];
 	remote_policy: string;
+	createdAt: Date;
+	isNew?: boolean;
 }

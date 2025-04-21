@@ -5,8 +5,9 @@ import { z } from 'zod';
 import { embedText, gpt4o } from '$lib/server/ai';
 import { generateJobPostEmbeddingInput } from '$lib/server/ai/format';
 import { db } from '$lib/server/db';
-import { candidates, jobPost, linkedInProfile } from '$lib/server/db/schema';
+import { candidates, jobPost, linkedInProfile, users } from '$lib/server/db/schema';
 import { getFullLinkedinProfile } from '$lib/server/linkedin';
+import { broadcastToUsersWithoutLocals } from '$lib/websocket/server.svelte';
 
 export interface JobData {
 	title: string;
@@ -70,27 +71,40 @@ export async function insertJob(
 			handle = `${handle}-${randomSuffix}`;
 		}
 
-		const post = await db
-			.insert(jobPost)
-			.values({
-				handle,
-				ownerOrganizationHandle,
-				vector,
-				title: object.title,
-				description: object.description,
-				department: object.department,
-				location: object.location,
-				type: object.type,
-				status,
-				priority: object.priority,
-				salary: object.salary,
-				remote_policy: object.remote_policy,
-				responsibilities: object.responsibilities,
-				requirements: object.requirements,
-				benefits: object.benefits,
-				tech_stack: object.tech_stack
+		const [post, userIds] = await Promise.all([
+			db
+				.insert(jobPost)
+				.values({
+					handle,
+					ownerOrganizationHandle,
+					vector,
+					title: object.title,
+					description: object.description,
+					department: object.department,
+					location: object.location,
+					type: object.type,
+					status,
+					priority: object.priority,
+					salary: object.salary,
+					remote_policy: object.remote_policy,
+					responsibilities: object.responsibilities,
+					requirements: object.requirements,
+					benefits: object.benefits,
+					tech_stack: object.tech_stack
+				})
+				.returning(),
+			db.query.users.findMany({
+				where: eq(users.organizationHandle, ownerOrganizationHandle)
 			})
-			.returning();
+		]);
+
+		broadcastToUsersWithoutLocals(
+			userIds.map((user) => user.id),
+			{
+				messageType: `job-created`,
+				data: post[0]
+			}
+		);
 
 		return post[0];
 	} catch (error) {
@@ -107,17 +121,14 @@ export async function addCandidate(
 	reasoning?: string,
 	eagerlyAdded: boolean = false
 ) {
-	console.log(`Starting addCandidate process for ${linkedinHandle} to job ${jobId}`);
 	try {
 		const job = await db.query.jobPost.findFirst({
 			where: eq(jobPost.id, jobId)
 		});
 
 		if (!job) {
-			console.log(`Job with ID ${jobId} not found`);
 			throw new Error(`Job with ID ${jobId} not found`);
 		}
-		console.log(`Found job: ${job.title}`);
 
 		const profileEntry = await db.query.linkedInProfile.findFirst({
 			where: eq(linkedInProfile.handle, linkedinHandle)
@@ -126,26 +137,21 @@ export async function addCandidate(
 		let profileId: string;
 
 		if (profileEntry) {
-			console.log(`Found existing LinkedIn profile for ${linkedinHandle}`);
 			profileId = profileEntry.id;
 		} else {
-			console.log(`No existing profile found for ${linkedinHandle}, fetching from LinkedIn`);
-			// Fetch profile data
 			try {
 				const profileData = await getFullLinkedinProfile(linkedinHandle);
 
 				if (!profileData) {
-					console.log(`Failed to fetch LinkedIn profile for ${linkedinHandle}`);
 					throw new Error('Failed to fetch LinkedIn profile');
 				}
-				console.log(`Successfully fetched LinkedIn profile data for ${linkedinHandle}`);
 
 				const newProfile = await db
 					.insert(linkedInProfile)
 					.values({
 						handle: linkedinHandle,
 						data: profileData,
-						expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days expiry
+						expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 					})
 					.onConflictDoUpdate({
 						target: linkedInProfile.handle,
@@ -157,115 +163,104 @@ export async function addCandidate(
 					.returning({ id: linkedInProfile.id });
 
 				if (!newProfile || newProfile.length === 0) {
-					console.log(`Failed to create LinkedIn profile entry for ${linkedinHandle}`);
 					throw new Error('Failed to create LinkedIn profile entry');
 				}
 				profileId = newProfile[0].id;
-				console.log(`Created new LinkedIn profile with ID ${profileId}`);
 			} catch (error) {
-				console.log(
-					`Error fetching LinkedIn profile: ${error instanceof Error ? error.message : String(error)}`
-				);
-				// Check if the error is the unique constraint violation
 				if (error instanceof Error && error.message.includes('linkedInProfile_handle_unique')) {
 					// If it is, try to find the existing profile again, as it might have been created by a concurrent request
 					const existingProfile = await db.query.linkedInProfile.findFirst({
 						where: eq(linkedInProfile.handle, linkedinHandle)
 					});
 					if (existingProfile) {
-						console.log(
-							`Concurrent profile creation detected for ${linkedinHandle}, using existing profile ID ${existingProfile.id}`
-						);
 						profileId = existingProfile.id;
-						// Jump to candidate creation logic
-						return createOrReturnCandidate(
-							jobId,
-							profileId,
-							matchScore,
-							reasoning,
-							eagerlyAdded,
-							linkedinHandle
-						);
+						return createOrReturnCandidate(jobId, profileId, matchScore, reasoning, eagerlyAdded);
 					} else {
-						// If profile still not found after the error, something else went wrong
-						console.log(`Profile ${linkedinHandle} not found even after unique constraint error.`);
 						return {
 							error: `Failed to retrieve LinkedIn profile after conflict: ${linkedinHandle}`
 						};
 					}
 				} else {
-					// If it's another error, return the generic message
 					return { error: `LinkedIn profile fetch failed: ${linkedinHandle}` };
 				}
 			}
 		}
 
-		// Moved candidate creation logic into a separate async function to handle reuse
-		return createOrReturnCandidate(
-			jobId,
-			profileId,
-			matchScore,
-			reasoning,
-			eagerlyAdded,
-			linkedinHandle
-		);
+		return createOrReturnCandidate(jobId, profileId, matchScore, reasoning, eagerlyAdded);
 	} catch (error) {
-		console.error(
-			`Error in addCandidate: ${error instanceof Error ? error.message : String(error)}`
-		);
 		throw new Error(
 			`Failed to add candidate: ${error instanceof Error ? error.message : String(error)}`
 		);
 	}
 }
 
-// Helper function to check/create candidate record
 async function createOrReturnCandidate(
 	jobId: string,
 	profileId: string,
 	matchScore: number | undefined,
 	reasoning: string | undefined,
-	eagerlyAdded: boolean,
-	linkedinHandle: string // Pass handle for the final return object
+	eagerlyAdded: boolean
 ) {
-	// Check if candidate already exists for this job
-	console.log(`Checking if candidate already exists for job ${jobId} and profile ${profileId}`);
-	const existingCandidate = await db.query.candidates.findFirst({
-		where: (candidates, { and }) =>
-			and(eq(candidates.jobPostId, jobId), eq(candidates.linkedInProfileId, profileId)),
-		with: {
-			linkedInProfile: true
-		}
-	});
+	const [existingCandidate, job, profileData] = await Promise.all([
+		db.query.candidates.findFirst({
+			where: (candidates, { and }) =>
+				and(eq(candidates.jobPostId, jobId), eq(candidates.linkedInProfileId, profileId)),
+			with: {
+				linkedInProfile: true
+			}
+		}),
+		db.query.jobPost.findFirst({
+			where: eq(jobPost.id, jobId)
+		}),
+		db.query.linkedInProfile.findFirst({
+			where: eq(linkedInProfile.id, profileId)
+		})
+	]);
 
 	if (existingCandidate) {
-		console.log(`Candidate already exists for job ${jobId}, returning existing record`);
 		return existingCandidate;
 	}
 
-	// Create new candidate entry
-	console.log(`Creating new candidate entry with match score ${matchScore}`);
-	const newCandidate = await db
-		.insert(candidates)
-		.values({
-			jobPostId: jobId,
-			linkedInProfileId: profileId,
-			matchScore: matchScore,
-			reasoning: reasoning,
-			eagerlyAdded: eagerlyAdded
+	if (!job) {
+		throw new Error('Job not found');
+	}
+
+	if (!profileData) {
+		throw new Error(`LinkedIn profile with id ${profileId} not found`);
+	}
+
+	const [newCandidate, userIds] = await Promise.all([
+		db
+			.insert(candidates)
+			.values({
+				jobPostId: jobId,
+				linkedInProfileId: profileId,
+				matchScore: matchScore,
+				reasoning: reasoning,
+				eagerlyAdded: eagerlyAdded
+			})
+			.returning(),
+		db.query.users.findMany({
+			where: eq(users.organizationHandle, job.ownerOrganizationHandle ?? '')
 		})
-		.returning();
+	]);
 
 	if (!newCandidate || newCandidate.length === 0) {
-		console.log(`Failed to add candidate to job post ${jobId}`);
 		throw new Error('Failed to add candidate to job post');
 	}
-	console.log(`Successfully added candidate with ID ${newCandidate[0].id}`);
 
-	// Return the created candidate with profile information
-	// We only have the handle readily available here, which is sufficient for the tool's output schema
-	return {
+	const candidateForBroadcast = {
 		...newCandidate[0],
-		linkedInProfile: { handle: linkedinHandle }
+		linkedInProfile: profileData
 	};
+
+	broadcastToUsersWithoutLocals(
+		userIds.map((user) => user.id),
+		{
+			messageType: `${job.id}:candidate-added`,
+			data: candidateForBroadcast
+		}
+	);
+
+	return candidateForBroadcast;
 }
