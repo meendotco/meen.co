@@ -169,6 +169,13 @@
       "when": 1745083652502,
       "tag": "0023_tiny_grim_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1745195012039,
+      "tag": "0024_naive_jubilee",
+      "breakpoints": true
     }
   ]
 }

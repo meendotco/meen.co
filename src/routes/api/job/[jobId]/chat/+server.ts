@@ -1,11 +1,11 @@
 import { json } from '@sveltejs/kit';
-import type { CoreMessage } from 'ai';
+import type { CoreMessage, ToolCallPart } from 'ai';
 import { and, asc, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { findCandidatesInteractive } from '@/server/ai/mastra/agents/linkedin';
 import { db } from '@/server/db';
-import { chat, chatMessage, jobPost } from '@/server/db/schema';
+import { chat, chatMessage, jobPost, messageChunk, toolcall } from '@/server/db/schema';
 import { broadcastToUsers } from '@/websocket/server.svelte.js';
 export const POST = async ({ locals, params, request }) => {
 	const jobId = params.jobId;
@@ -86,8 +86,10 @@ export const POST = async ({ locals, params, request }) => {
 			appPayload: { jobId: job.id, messageId: assistantMessageId }
 		}
 	});
+	const pendingToolCalls = new Map<string, ToolCallPart>();
+	const toolCallsToCreate = new Map<string, typeof toolcall.$inferInsert>();
+	const allMessageChunks = [];
 	for await (const chunk of agentStream.fullStream) {
-		console.log(chunk.type);
 		broadcastToUsers(locals.wss, [user.id], {
 			messageType: `${job.id}.messageChunk`,
 			data: {
@@ -99,10 +101,29 @@ export const POST = async ({ locals, params, request }) => {
 			}
 		});
 
+		allMessageChunks.push(chunk);
 		if (chunk.type === 'text-delta') {
 			console.log('chunk.textDelta', chunk.textDelta);
 			fullResponse += chunk.textDelta;
 		}
+
+		if (chunk.type === 'tool-call') {
+			pendingToolCalls.set(chunk.toolCallId, chunk);
+		}
+		if (chunk.type === 'tool-result') {
+			const toolCall = pendingToolCalls.get(chunk.toolCallId);
+			if (toolCall) {
+				const toolCallToCreate = {
+					id: chunk.toolCallId,
+					chatMessageId: assistantMessageId,
+					name: toolCall.toolName,
+					args: toolCall.args,
+					result: chunk.result
+				};
+				toolCallsToCreate.set(chunk.toolCallId, toolCallToCreate);
+			}
+		}
+
 		if (chunk.type === 'error') {
 			console.error(chunk.error);
 		}
@@ -121,6 +142,16 @@ export const POST = async ({ locals, params, request }) => {
 			appPayload: { jobId: job.id, messageId: assistantMessageId }
 		}
 	});
+	const promises = [
+		db.insert(toolcall).values(Array.from(toolCallsToCreate.values())),
+		db.insert(messageChunk).values(
+			allMessageChunks.map((chunk) => ({
+				chatMessageId: assistantMessageId,
+				chunk: chunk
+			}))
+		)
+	];
+	await Promise.allSettled(promises);
 
 	return json({ message: 'Job found', data: fullResponse });
 };
