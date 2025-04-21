@@ -36,11 +36,6 @@ export const users = pgTable('user', {
 	image: text('image'),
 	organizationHandle: text('organizationHandle').references(() => organization.handle, {
 		onDelete: 'cascade'
-	}),
-	preferences: jsonb('preferences').default({
-		darkMode: false,
-		notifications: false,
-		emailUpdates: false
 	})
 });
 

@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import type { Selected } from 'bits-ui';
+
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
@@ -59,27 +61,33 @@
 		'on-site': 'On-site'
 	} as const;
 
-	function updateFormData(updates: Partial<Job>) {
-		formData = {
-			...formData,
-			...updates
-		};
-	}
+	function handleSelectChange(name: string, e: Selected<string> | undefined) {
+		if (!e) return;
+		const value = e.value;
 
-	function handleSelectChange(name: string, value: { value: string; label: string }) {
 		let updates: Partial<Job> = {};
 		if (name.includes('.')) {
 			const [parent, child] = name.split('.');
-			updates = {
-				[parent]: {
-					...(formData[parent as keyof Job] as Record<string, any>),
-					[child]: value.value
-				}
-			};
+			if (parent === 'salary') {
+				updates = {
+					salary: {
+						...formData.salary,
+						[child]: child === 'currency' ? (value as Currency) : Number(value)
+					}
+				};
+			}
 		} else {
-			updates = {
-				[name]: value.value
-			};
+			if (name === 'type') {
+				updates = { [name]: value as JobType };
+			} else if (name === 'status') {
+				updates = { [name]: value as JobStatus };
+			} else if (name === 'priority') {
+				updates = { [name]: value as JobPriority };
+			} else if (name === 'remote_policy') {
+				updates = { [name]: value as keyof typeof REMOTE_POLICY_OPTIONS };
+			} else {
+				updates = { [name]: value };
+			}
 		}
 
 		formData = {
@@ -88,13 +96,19 @@
 		};
 	}
 
-	function handleRequirementChange(name: string, value: { value: string; label: string }) {
+	function handleRequirementChange(name: string, e: Selected<string> | undefined) {
+		if (!e) return;
+		const value = e.value;
+
 		const [parent, child] = name.split('.');
 		formData = {
 			...formData,
 			requirements: formData.requirements.map((req, index) => {
 				if (index === parseInt(parent)) {
-					return { ...req, [child]: value.value };
+					if (child === 'type') {
+						return { ...req, [child]: value as RequirementType };
+					}
+					return { ...req, [child]: value };
 				}
 				return req;
 			})
@@ -196,8 +210,7 @@
 				const error = await response.json();
 				validationErrors = [error.message || 'Failed to create job posting'];
 			}
-		} catch (error) {
-			console.error('Error saving job:', error);
+		} catch {
 			validationErrors = ['An unexpected error occurred while saving the job posting'];
 		} finally {
 			isSaving = false;
@@ -260,7 +273,7 @@
 		<!-- Progress Indicator -->
 		<div class="mb-10">
 			<div class="mb-2 flex items-center justify-between">
-				{#each ['Basic Info', 'Requirements', 'Review'] as step, index}
+				{#each ['Basic Info', 'Requirements', 'Review'] as step, index (index)}
 					<button
 						class="text-sm font-medium transition-colors {getStepIndex() >= index
 							? 'text-primary'
@@ -272,6 +285,7 @@
 				{/each}
 			</div>
 			<div class="relative h-2 overflow-hidden rounded-full bg-muted">
+				<!-- svelte-ignore element_invalid_self_closing_tag -->
 				<div
 					class="absolute left-0 top-0 h-full rounded-full bg-primary transition-all duration-300"
 					style="width: {(getStepIndex() / 2) * 100}%"
@@ -326,7 +340,8 @@
 							<p class="mb-2 text-sm text-muted-foreground">Employment type</p>
 							<Select
 								selected={formData.type}
-								onSelectedChange={(e) => handleSelectChange('type', e)}
+								onSelectedChange={(e: Selected<string> | undefined) =>
+									handleSelectChange('type', e)}
 							>
 								<SelectTrigger class="mt-1">
 									{formData.type.charAt(0).toUpperCase() + formData.type.slice(1) ||
@@ -346,14 +361,15 @@
 							<p class="mb-2 text-sm text-muted-foreground">Remote, hybrid, or on-site</p>
 							<Select
 								selected={formData.remote_policy}
-								onSelectedChange={(e) => handleSelectChange('remote_policy', e)}
+								onSelectedChange={(e: Selected<string> | undefined) =>
+									handleSelectChange('remote_policy', e)}
 							>
 								<SelectTrigger class="mt-1">
 									{formData.remote_policy.charAt(0).toUpperCase() +
 										formData.remote_policy.slice(1) || 'Select work policy'}
 								</SelectTrigger>
 								<SelectContent>
-									{#each Object.entries(REMOTE_POLICY_OPTIONS) as [value, label]}
+									{#each Object.entries(REMOTE_POLICY_OPTIONS) as [value, label] (value)}
 										<SelectItem {value}>{label}</SelectItem>
 									{/each}
 								</SelectContent>
@@ -365,7 +381,8 @@
 							<p class="mb-2 text-sm text-muted-foreground">Hiring urgency level</p>
 							<Select
 								selected={formData.priority}
-								onSelectedChange={(e) => handleSelectChange('priority', e)}
+								onSelectedChange={(e: Selected<string> | undefined) =>
+									handleSelectChange('priority', e)}
 							>
 								<SelectTrigger class="mt-1">
 									{formData.priority.charAt(0).toUpperCase() + formData.priority.slice(1) ||
@@ -388,7 +405,8 @@
 							<p class="mb-2 text-sm text-muted-foreground">Salary currency</p>
 							<Select
 								selected={formData.salary.currency}
-								onSelectedChange={(e) => handleSelectChange('salary.currency', e)}
+								onSelectedChange={(e: Selected<string> | undefined) =>
+									handleSelectChange('salary.currency', e)}
 								disabled={isSalaryOptional}
 							>
 								<SelectTrigger class="mt-1">
@@ -457,7 +475,7 @@
 							<div
 								class="mt-1 flex flex-wrap gap-2 rounded-md border border-input bg-background p-2"
 							>
-								{#each formData.responsibilities as resp, i}
+								{#each formData.responsibilities as resp, i (i)}
 									<div
 										class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm {showResponsibilitiesMock
 											? 'opacity-50'
@@ -511,7 +529,7 @@
 					<h2 class="text-xl font-semibold text-foreground">Job Requirements</h2>
 					<div>
 						<h3 class="mb-4 font-medium text-foreground">Requirements</h3>
-						{#each formData.requirements as req, index}
+						{#each formData.requirements as req, index (req.id)}
 							<div class="mb-4 rounded-xl border border-border bg-card p-4">
 								<div class="mb-3 grid grid-cols-1 gap-4 md:grid-cols-2">
 									<div>
@@ -519,7 +537,8 @@
 										<p class="mb-2 text-sm text-muted-foreground">Must have or Nice to have</p>
 										<Select
 											selected={req.type}
-											onSelectedChange={(e) => handleRequirementChange(`${index}.type`, e)}
+											onSelectedChange={(e: Selected<string> | undefined) =>
+												handleRequirementChange(`${index}.type`, e)}
 										>
 											<SelectTrigger class="mt-1">
 												{req.type.charAt(0).toUpperCase() + req.type.slice(1).replace(/-/g, ' ') ||
@@ -591,7 +610,7 @@
 						<Label for="benefits">Benefits</Label>
 						<p class="mb-2 text-sm text-muted-foreground">Company perks (press Enter to add)</p>
 						<div class="mt-1 flex flex-wrap gap-2 rounded-md border border-input bg-background p-2">
-							{#each formData.benefits as benefit, i}
+							{#each formData.benefits as benefit, i (i)}
 								<div
 									class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm {showBenefitsMock
 										? 'opacity-50'
@@ -640,7 +659,7 @@
 							Required technologies (press Enter to add)
 						</p>
 						<div class="mt-1 flex flex-wrap gap-2 rounded-md border border-input bg-background p-2">
-							{#each formData.tech_stack as tech, i}
+							{#each formData.tech_stack as tech, i (i)}
 								<div
 									class="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm {showTechStackMock
 										? 'opacity-50'
@@ -736,9 +755,7 @@
 							<div class="mt-6">
 								<p class="mb-1 text-sm text-muted-foreground">Salary Range</p>
 								<p class="text-foreground">
-									{formData.salary.currency}
-									{formData.salary.min.toLocaleString()} -{' '}
-									{formData.salary.max.toLocaleString()}
+									{`${formData.salary.currency} ${formData.salary.min.toLocaleString()} - ${formData.salary.max.toLocaleString()}`}
 								</p>
 							</div>
 						{/if}
@@ -747,7 +764,7 @@
 							<div class="mt-6">
 								<p class="mb-2 text-sm text-muted-foreground">Responsibilities</p>
 								<ul class="space-y-1">
-									{#each formData.responsibilities as resp}
+									{#each formData.responsibilities as resp, i (i)}
 										<li class="flex items-start gap-2 text-foreground">
 											<span class="mt-1 text-primary">•</span>
 											{resp}
@@ -761,7 +778,7 @@
 							<div class="mt-6">
 								<p class="mb-2 text-sm text-muted-foreground">Tech Stack</p>
 								<div class="flex flex-wrap gap-2">
-									{#each formData.tech_stack as tech}
+									{#each formData.tech_stack as tech, i (i)}
 										<span class="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
 											{tech}
 										</span>
@@ -777,7 +794,7 @@
 								Requirements ({formData.requirements.length})
 							</h3>
 							<div class="space-y-4">
-								{#each formData.requirements as req}
+								{#each formData.requirements as req (req.id)}
 									<div class="flex items-start gap-3">
 										<span
 											class="rounded px-2 py-1 text-xs font-medium {req.type === 'must-have'
@@ -806,7 +823,7 @@
 						<div class="rounded-xl border border-border bg-card p-6">
 							<h3 class="mb-6 font-medium text-foreground">Benefits</h3>
 							<ul class="space-y-2">
-								{#each formData.benefits as benefit}
+								{#each formData.benefits as benefit, i (i)}
 									<li class="flex items-start gap-2 text-foreground">
 										<span class="mt-1 text-primary">•</span>
 										{benefit}
@@ -824,7 +841,7 @@
 			{#if validationErrors.length > 0}
 				<div class="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
 					<ul class="list-inside list-disc">
-						{#each validationErrors as error}
+						{#each validationErrors as error, i (i)}
 							<li>{error}</li>
 						{/each}
 					</ul>

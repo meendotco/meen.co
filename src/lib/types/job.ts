@@ -1,8 +1,8 @@
 export type CreateStep = 'basic' | 'requirements' | 'review';
-export type JobType = 'full-time' | 'part-time' | 'contract' | 'internship';
-export type JobStatus = 'open' | 'in-progress' | 'filled' | 'on-hold' | 'closed';
-export type JobPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type Currency = 'USD' | 'EUR' | 'GBP';
+export type JobType = 'contract' | 'full-time' | 'internship' | 'part-time';
+export type JobStatus = 'closed' | 'filled' | 'in-progress' | 'on-hold' | 'open';
+export type JobPriority = 'high' | 'low' | 'medium' | 'urgent';
+export type Currency = 'EUR' | 'GBP' | 'USD';
 export type RequirementType = 'must-have' | 'nice-to-have';
 
 export interface Salary {

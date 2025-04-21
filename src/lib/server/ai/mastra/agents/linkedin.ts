@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 
-import { claude37Sonnet, gemini2dot5pro, gpt4o, o3, o4mini } from '@/server/ai';
+import { gemini2dot5pro } from '@/server/ai';
 import { jobPost } from '@/server/db/schema';
 import type { JobData } from '@/server/job';
 

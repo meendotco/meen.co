@@ -1,38 +1,28 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import type { InferSelectModel } from 'drizzle-orm';
-	import type { candidates, linkedInProfile } from '$lib/server/db/schema';
-	import { page } from '$app/stores';
-	import {
-		Card,
-		CardHeader,
-		CardTitle,
-		CardDescription,
-		CardContent,
-		CardFooter
-	} from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { Separator } from '$lib/components/ui/separator';
 	import {
 		ArrowLeft,
-		ExternalLink,
-		Mail,
-		Phone,
-		Calendar,
-		MapPin,
-		User,
 		Briefcase,
-		GraduationCap
+		Calendar,
+		ExternalLink,
+		GraduationCap,
+		Mail,
+		MapPin,
+		Phone,
+		User
 	} from 'lucide-svelte';
-	import { goto } from '$app/navigation';
+
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+
+	import type { PageData } from './$types';
 
 	let { data } = $props<{ data: PageData }>();
 	const { candidate } = data;
 
 	const profile = $derived(candidate);
 
-	function formatDate(dateString: string | undefined | null): string {
+	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return 'N/A';
 		const date = new Date(dateString);
 		return new Intl.DateTimeFormat('en-US', {
@@ -40,13 +30,6 @@
 			month: 'long',
 			day: 'numeric'
 		}).format(date);
-	}
-
-	function getScoreColor(score: number | null | undefined) {
-		if (score === undefined || score === null) return 'bg-gray-300 dark:bg-gray-700';
-		if (score >= 80) return 'bg-green-500';
-		if (score >= 60) return 'bg-yellow-500';
-		return 'bg-red-500';
 	}
 
 	function contactCandidate() {
@@ -170,7 +153,7 @@
 					</CardHeader>
 					<CardContent>
 						<div class="flex flex-wrap gap-2">
-							{#each profile.data.skills as skill}
+							{#each profile.data.skills as skill, i (i)}
 								<Badge
 									variant="outline"
 									class="border-primary/20 bg-primary/5 px-3 py-1.5 text-sm text-foreground hover:border-primary/30 hover:bg-primary/10"
@@ -197,7 +180,7 @@
 					</CardHeader>
 					<CardContent>
 						<div class="space-y-6">
-							{#each profile.data.experiences as exp, i}
+							{#each profile.data.experiences as exp, i (i)}
 								<div
 									class={i !== profile.data.experiences.length - 1
 										? 'ml-2 border-l-2 border-slate-200 pb-2 pl-4 dark:border-slate-700'
@@ -243,7 +226,7 @@
 					</CardHeader>
 					<CardContent>
 						<div class="space-y-6">
-							{#each profile.data.education as edu, i}
+							{#each profile.data.education as edu, i (i)}
 								<div
 									class={i !== profile.data.education.length - 1
 										? 'ml-2 border-l-2 border-slate-200 pb-2 pl-4 dark:border-slate-700'

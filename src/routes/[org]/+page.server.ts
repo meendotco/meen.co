@@ -1,8 +1,9 @@
 import { eq } from 'drizzle-orm';
-import type { PageServerLoad } from './$types';
 
 import { db } from '@/server/db';
 import { jobPost } from '@/server/db/schema';
+
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { org } = params;

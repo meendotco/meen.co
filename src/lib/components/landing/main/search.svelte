@@ -68,7 +68,6 @@
 			>
 				<div class="p-6 md:p-10">
 					<div class="relative mx-auto max-w-2xl">
-
 						<div
 							class="relative flex overflow-hidden rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm dark:border-transparent dark:bg-black/50"
 						>
@@ -120,6 +119,7 @@
 							<div
 								class="group/feature relative flex transform-gpu cursor-pointer flex-col rounded-lg border border-border bg-card/10 p-4 backdrop-blur-md dark:border-white/10 dark:bg-white/5"
 							>
+								<!-- svelte-ignore element_invalid_self_closing_tag -->
 								<div
 									class="pointer-events-none absolute inset-0 h-full w-full bg-gradient-to-t from-primary/25 to-transparent opacity-0 transition duration-200 group-hover/feature:opacity-100"
 								/>

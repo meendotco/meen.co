@@ -45,7 +45,7 @@
 				const data = await response.json();
 				errorMessage = data.message || 'Something went wrong. Please try again.';
 			}
-		} catch (error) {
+		} catch {
 			errorMessage = 'Failed to submit. Please try again later.';
 		} finally {
 			isSubmitting = false;
@@ -64,13 +64,7 @@
 		</div>
 	{:else}
 		<Dialog.Root>
-			<Dialog.Trigger
-				class={cn(
-					className
-				)}
-			>
-				Search
-			</Dialog.Trigger>
+			<Dialog.Trigger class={cn(className)}>Search</Dialog.Trigger>
 			<Dialog.Content class="sm:max-w-[450px]">
 				<Dialog.Header>
 					<Dialog.Title class="text-2xl font-bold text-primary">Join Our Waitlist</Dialog.Title>

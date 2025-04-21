@@ -119,7 +119,6 @@ export const broadcastToUsersWithoutLocals = (userIds: string[], message: WebSoc
 	const wss = getGlobalWss();
 	const messageStr = typeof message === 'string' ? message : JSON.stringify(message);
 
-	console.log('Current connected users: ', wss.clients);
 	wss.clients.forEach((client: WebSocket) => {
 		const extClient = client as ExtendedWebSocket;
 		if (extClient.readyState === 1 && extClient.userId && userIds.includes(extClient.userId)) {

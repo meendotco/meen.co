@@ -9,6 +9,7 @@
 	type ToolcallSelect = InferSelectModel<typeof toolcall>;
 	type MessageSelect = InferSelectModel<typeof chatMessage> & {
 		toolcalls: ToolcallSelect[];
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		messageChunks: Array<{ id: string; chunk: any }>;
 	};
 
@@ -36,6 +37,7 @@
 		}
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	function groupMessageChunks(chunks: Array<{ id: string; chunk: any }>) {
 		if (!chunks || !Array.isArray(chunks) || chunks.length === 0) {
 			return chunks;
@@ -122,7 +124,7 @@
 										<Markdown md={chunk.chunk.textDelta} />
 									{/if}
 									{#if chunk.chunk.type === 'tool-call'}
-										<div class="mt-2 space-y-1 border-t pt-2">
+										<div class="mt-2 space-y-1 pt-2">
 											<ToolCallDisplay toolcall={chunk.chunk} chunks={msg.messageChunks} />
 										</div>
 									{/if}

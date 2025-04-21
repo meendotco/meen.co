@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { CandidateData } from '$lib/types/candidate';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Card, CardContent } from '$lib/components/ui/card';
+	import type { CandidateData } from '$lib/types/candidate';
 
 	let { candidateData, b64 }: { candidateData: CandidateData; b64: string } = $props();
 
@@ -21,8 +21,7 @@
 
 <Card class="overflow-hidden transition-all duration-200 hover:shadow-md">
 	<CardContent class="p-0">
-		<div class="h-8 bg-gradient-to-r from-primary/10 to-primary/5"></div>
-		<div class="relative px-4 pb-4 pt-1">
+		<div class="relative mt-5 px-4 pb-4 pt-6">
 			<div class="flex items-start gap-3">
 				<div class="relative -mt-6">
 					{#if b64}

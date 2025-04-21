@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import { ChartBar, Clipboard, Search } from '@lucide/svelte';
 
 	import Container from '$lib/components/landing/container.svelte';
@@ -39,7 +38,6 @@
 				Discover the benefits
 			</h2>
 			<p class="mt-6 text-center text-base text-muted-foreground md:text-lg">
-
 				Explore the powerful features and advantages that Meen offers to help you find the perfect
 				candidates faster and streamline your talent acquisition process
 			</p>
@@ -60,10 +58,12 @@
 						)}
 					>
 						{#if index < 3}
+							<!-- svelte-ignore element_invalid_self_closing_tag -->
 							<div
 								class="pointer-events-none absolute inset-0 h-full w-full bg-gradient-to-t from-primary/25 to-transparent opacity-0 transition duration-300 group-hover/feature:opacity-100"
 							/>
 						{:else}
+							<!-- svelte-ignore element_invalid_self_closing_tag -->
 							<div
 								class="pointer-events-none absolute inset-0 h-full w-full bg-gradient-to-b from-primary/25 to-transparent opacity-0 transition duration-300 group-hover/feature:opacity-100"
 							/>
@@ -81,6 +81,7 @@
 								</div>
 							</div>
 							<div class="font-heading relative z-10 mb-2 px-10 text-lg font-medium">
+								<!-- svelte-ignore element_invalid_self_closing_tag -->
 								<div
 									class="absolute -inset-y-0 left-0 h-6 w-1.5 origin-center rounded-br-full rounded-tr-full bg-primary/30 transition-all duration-500 group-hover/feature:h-8 group-hover/feature:bg-primary"
 								/>

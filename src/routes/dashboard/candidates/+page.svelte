@@ -145,8 +145,7 @@
 			{#each [...Array(4).keys()] as i (i)}
 				<Card class="overflow-hidden transition-all duration-200 hover:shadow-md">
 					<CardContent class="p-0">
-						<div class="h-8 bg-gradient-to-r from-primary/10 to-primary/5"></div>
-						<div class="relative px-4 pb-4 pt-1">
+						<div class="relative mt-6 px-4 pb-4 pt-1">
 							<div class="flex items-start gap-3">
 								<div class="relative -mt-6">
 									<Skeleton class="border-3 h-12 w-12 rounded-full border-background shadow-sm" />

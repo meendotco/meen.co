@@ -1,8 +1,14 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '@/server/db';
 import { accessRequest } from '@/server/db/schema';
+
+const schema = z.object({
+	companyName: z.string().min(1),
+	message: z.string().min(1)
+});
 
 export const POST = async ({ request, locals }: RequestEvent) => {
 	try {
@@ -10,9 +16,9 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 			return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
 		}
 
-		const { companyName, message } = await request.json();
+		const body = await request.json();
+		const { companyName, message } = schema.parse(body);
 
-		// Check if a request already exists for this user
 		const existingRequest = await db
 			.select()
 			.from(accessRequest)

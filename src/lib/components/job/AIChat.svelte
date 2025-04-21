@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { TextStreamPart } from 'ai';
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { uuid } from 'drizzle-orm/gel-core';
 	import { Send, Trash2 } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -18,6 +17,7 @@
 
 	type MessageChunk = {
 		id: string;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		chunk: TextStreamPart<any>;
 	};
 

@@ -45,8 +45,7 @@
 				const data = await response.json();
 				errorMessage = data.message || 'Something went wrong. Please try again.';
 			}
-		} catch (err) {
-			console.error('Waitlist submission error:', err);
+		} catch {
 			errorMessage = 'Failed to submit. Please try again later.';
 		} finally {
 			isSubmitting = false;
