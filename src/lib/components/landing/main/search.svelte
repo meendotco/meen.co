@@ -28,7 +28,7 @@
 
 	function search() {
 		scrollTo({
-			top: document.getElementById('contact')?.offsetTop + 125,
+			top: document.getElementById('contact')?.offsetTop,
 			behavior: 'smooth'
 		});
 	}

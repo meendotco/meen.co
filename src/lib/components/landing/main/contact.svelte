@@ -55,7 +55,7 @@
 
 <div id="contact" class="mt-24"></div>
 
-<div class="relative flex w-full flex-col items-center justify-center py-12 md:py-16 lg:py-24">
+<div class="relative flex w-full flex-col items-center justify-center">
 	<Container>
 		<div
 			class="relative mx-auto flex w-full flex-col items-center justify-center overflow-hidden rounded-3xl px-4 text-center md:px-0"

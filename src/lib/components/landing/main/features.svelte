@@ -23,9 +23,9 @@
 		{
 			id: 'integration',
 			icon: Clipboard,
-			title: 'ATS Integration',
+			title: 'Simple Integration',
 			description:
-				'Seamlessly connect with your existing ATS to enrich candidate data and streamline workflow'
+				'Seamlessly integrate your existing job posts with Meen to find the perfect candidates'
 		}
 	];
 </script>
@@ -37,10 +37,7 @@
 			<h2 class="font-heading mt-6 text-2xl font-medium !leading-snug md:text-4xl lg:text-5xl">
 				Discover the benefits
 			</h2>
-			<p class="mt-6 text-center text-base text-muted-foreground md:text-lg">
-				Explore the powerful features and advantages that Meen offers to help you find the perfect
-				candidates faster and streamline your talent acquisition process
-			</p>
+			<p class="mt-6 text-center text-base text-muted-foreground md:text-lg"></p>
 		</div>
 	</Container>
 	<Container>
