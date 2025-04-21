@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { and, asc, eq } from 'drizzle-orm';
 
-import { chat, chatMessage, jobPost } from '@/server/db/schema';
+import { chat, chatMessage, jobPost, messageChunk } from '@/server/db/schema';
 import { db } from '$lib/server/db';
 export const ssr = false;
 export const load = async ({ locals, params }) => {
@@ -20,7 +20,10 @@ export const load = async ({ locals, params }) => {
 				with: {
 					messages: {
 						with: {
-							toolcalls: true
+							toolcalls: true,
+							messageChunks: {
+								orderBy: asc(messageChunk.createdAt)
+							}
 						},
 						orderBy: asc(chatMessage.createdAt)
 					}

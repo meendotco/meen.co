@@ -174,7 +174,6 @@ export const authenticators = pgTable(
 		}
 	]
 );
-
 export const chat = pgTable('chat', {
 	id: text('id')
 		.primaryKey()
@@ -196,6 +195,17 @@ export const chatMessage = pgTable('chatMessage', {
 		.references(() => chat.id, { onDelete: 'cascade' }),
 	role: text('role').notNull(),
 	content: text('content'),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow()
+});
+
+export const messageChunk = pgTable('messageChunk', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	chatMessageId: text('chatMessageId')
+		.notNull()
+		.references(() => chatMessage.id, { onDelete: 'cascade' }),
+	chunk: jsonb('chunk'),
 	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow()
 });
 
@@ -225,7 +235,15 @@ export const chatMessageRelations = relations(chatMessage, ({ one, many }) => ({
 		fields: [chatMessage.chatId],
 		references: [chat.id]
 	}),
-	toolcalls: many(toolcall)
+	toolcalls: many(toolcall),
+	messageChunks: many(messageChunk)
+}));
+
+export const messageChunkRelations = relations(messageChunk, ({ one }) => ({
+	chatMessage: one(chatMessage, {
+		fields: [messageChunk.chatMessageId],
+		references: [chatMessage.id]
+	})
 }));
 
 export const toolcallRelations = relations(toolcall, ({ one }) => ({
