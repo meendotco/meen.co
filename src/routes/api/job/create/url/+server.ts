@@ -1,14 +1,20 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { db } from '$lib/server/db';
 import { jobPost } from '$lib/server/db/schema';
 import { insertJob } from '$lib/server/job';
 import { getJobDataFromURL } from '$lib/server/search/index';
 
+const schema = z.object({
+	url: z.string().url()
+});
+
 export const POST = async ({ request, locals }: RequestEvent) => {
 	try {
-		const { url } = await request.json();
+		const body = await request.json();
+		const { url } = schema.parse(body);
 
 		const jobData = await getJobDataFromURL(url);
 		if (!jobData) {

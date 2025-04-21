@@ -1,11 +1,17 @@
 import { cosineDistance, desc, gt, sql } from 'drizzle-orm';
+import { z } from 'zod';
 
 import { embedText } from '@/server/ai';
 import { db } from '@/server/db';
 import { linkedInProfile } from '@/server/db/schema';
 
+const schema = z.object({
+	query: z.string().min(1).max(100)
+});
+
 export const POST = async ({ request }) => {
-	const { query } = await request.json();
+	const body = await request.json();
+	const { query } = schema.parse(body);
 
 	const embedding = await embedText(query);
 

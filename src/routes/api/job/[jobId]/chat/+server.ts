@@ -2,16 +2,23 @@ import { json } from '@sveltejs/kit';
 import type { CoreMessage, ToolCallPart } from 'ai';
 import { and, asc, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
 
 import { findCandidatesInteractive } from '@/server/ai/mastra/agents/linkedin';
 import { db } from '@/server/db';
 import { chat, chatMessage, jobPost, messageChunk, toolcall } from '@/server/db/schema';
 import { broadcastToUsers } from '@/websocket/server.svelte.js';
+
+const schema = z.object({
+	message: z.string().min(1).max(1000)
+});
+
 export const POST = async ({ locals, params, request }) => {
 	const jobId = params.jobId;
 	const user = locals.user;
 
-	const { message } = await request.json();
+	const body = await request.json();
+	const { message } = schema.parse(body);
 
 	const messageId = uuidv4();
 	const job = await db.query.jobPost.findFirst({
