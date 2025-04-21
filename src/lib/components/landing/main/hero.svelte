@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { ArrowRight } from '@lucide/svelte';
-	import Container from '$lib/components/landing/container.svelte';
+
 	import BlurText from '$lib/components/landing/blur-text.svelte';
+	import Container from '$lib/components/landing/container.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import Search from '$lib/components/landing/main/search.svelte';
 </script>
 
-<div class="relative z-40 mx-auto my-24 flex w-full max-w-5xl flex-col items-center text-center">
+<div
+	class="md:pb-18 lg:pb-26 relative z-40 mx-auto mb-0 mt-24 flex w-full max-w-5xl flex-col items-center pb-14 text-center"
+>
 	<Container delay={0.0}>
 		<div
-			class="mx-auto flex w-max cursor-pointer select-none items-center gap-2.5 rounded-full border border-foreground/10 py-1 pl-2 pr-1 backdrop-blur-lg hover:border-foreground/15"
+			class="mx-auto flex w-max cursor-pointer select-none items-center gap-2.5 rounded-full border border-primary/20 bg-primary/5 py-1 pl-2 pr-1 backdrop-blur-lg hover:border-primary/30"
 		>
 			<div class="relative flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary/40">
 				<div
@@ -24,7 +26,7 @@
 				></div>
 			</div>
 			<span
-				class="animate-text-gradient animate-background-shine inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#b2a8fd] via-[#8678f9] to-[#c7d2fe] bg-[200%_auto] bg-clip-text text-sm text-transparent"
+				class="animate-text-gradient inline-flex animate-background-shine items-center justify-center gap-2 bg-gradient-to-r from-primary/90 via-primary to-primary/70 bg-[200%_auto] bg-clip-text text-sm text-transparent"
 			>
 				Build for the future
 				<span
@@ -37,23 +39,27 @@
 		</div>
 	</Container>
 	<BlurText
-		word={'Find the Right Fit in Seconds'}
+		word="Find the Right Fit in Seconds"
 		className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent py-2 md:py-0 lg:!leading-snug font-medium racking-[-0.0125em] mt-6 font-heading"
 	/>
 	<Container delay={0.1}>
-		<p class="mx-auto mt-4 max-w-2xl text-sm text-accent-foreground/60 sm:text-base lg:text-lg">
-			Elevate your hiring with AI-powered sourcing and screening. <span
-				class="hidden sm:inline"
+		<p
+			class="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base lg:text-lg"
+		>
+			Elevate your hiring with AI-powered sourcing and screening. <span class="hidden sm:inline"
 				>Meen is your all-in-one talent acquisition solution.</span
 			>
 		</p>
 	</Container>
 	<Container delay={0.2}>
 		<div class="mt-8 flex items-center justify-center md:gap-x-6">
-			<Button asChild size="lg">
+			<Button
+				asChild
+				size="lg"
+				class="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 transition-all duration-300 before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent hover:scale-105 hover:from-primary/90 hover:to-primary hover:shadow-lg"
+			>
 				<a href="/signin"> Get Started </a>
 			</Button>
 		</div>
 	</Container>
-	<Search />
 </div>

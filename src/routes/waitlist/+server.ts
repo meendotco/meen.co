@@ -1,3 +1,4 @@
+import type { RequestEvent } from '@sveltejs/kit';
 import { z } from 'zod';
 
 import { waitListEmail } from '@/server/mail';
@@ -10,7 +11,7 @@ const waitlistSchema = z.object({
 	role: z.string().optional()
 });
 
-export const POST = async ({ request }) => {
+export const POST = async ({ request }: RequestEvent) => {
 	const body = await request.json();
 	const { email, name, company, companySize, role } = waitlistSchema.parse(body);
 	if (email) {

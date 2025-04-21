@@ -20,12 +20,6 @@
 
 	const routes = [
 		{
-			href: '/dashboard',
-			icon: LayoutDashboard,
-			title: 'Dashboard',
-			label: 'Home'
-		},
-		{
 			href: '/dashboard/job',
 			icon: BriefcaseBusiness,
 			title: 'Jobs'
