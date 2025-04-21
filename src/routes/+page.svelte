@@ -3,7 +3,6 @@
 	import Features from '@/components/landing/main/features.svelte';
 	import Hero from '@/components/landing/main/hero.svelte';
 	import Search from '@/components/landing/main/search.svelte';
-	import Solution from '@/components/landing/main/solution.svelte';
 </script>
 
 <section
@@ -13,7 +12,6 @@
 		<Hero />
 		<Search />
 		<Features />
-		<Solution />
 		<Contact />
 	</div>
 </section>

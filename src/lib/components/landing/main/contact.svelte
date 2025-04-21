@@ -53,10 +53,9 @@
 	}
 </script>
 
-<div
-	id="contact"
-	class="relative flex w-full flex-col items-center justify-center py-12 md:py-16 lg:py-24"
->
+<div id="contact" class="mt-24"></div>
+
+<div class="relative flex w-full flex-col items-center justify-center">
 	<Container>
 		<div
 			class="relative mx-auto flex w-full flex-col items-center justify-center overflow-hidden rounded-3xl px-4 text-center md:px-0"
@@ -67,13 +66,11 @@
 			<div class="z-20 flex w-full flex-col items-center justify-center pt-12 md:pt-16">
 				<SectionBadge title="Join Waitlist" />
 				<h2 class="font-heading mt-6 text-2xl font-medium !leading-snug md:text-4xl lg:text-5xl">
-					Be the first to know <span class="text-violet-500 dark:text-violet-400"
-						>when we launch</span
-					>
+					Get access to <span class="text-violet-500 dark:text-violet-400">Meen</span>
 				</h2>
 				<p class="mx-auto mt-6 max-w-xl text-center text-base text-muted-foreground md:text-lg">
-					Join our exclusive waitlist to gain early access to our platform. Fill out the form below
-					and we'll notify you when we're ready.
+					We are currently rolling out to select users. Fill out the form below and we'll send you a
+					personal demo.
 				</p>
 
 				<div class="mx-auto mt-12 w-full max-w-2xl pb-12 md:pb-16">
@@ -211,7 +208,9 @@
 								</div>
 
 								<div class="flex items-center justify-between gap-4">
-									<p class="text-xs text-muted-foreground">We'll notify you when we launch</p>
+									<p class="text-xs text-muted-foreground">
+										Note: this data is not shared with anyone and is stored on EU servers.
+									</p>
 									<Button
 										type="submit"
 										disabled={isSubmitting}
