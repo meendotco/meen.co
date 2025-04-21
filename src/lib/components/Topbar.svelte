@@ -35,7 +35,7 @@
 		<div class="flex items-center space-x-2">
 			<Logo />
 			<span
-				class="hidden bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text px-1 font-bold text-transparent sm:inline-block"
+				class="hidden px-1 font-semibold text-primary sm:inline-block"
 				>Meen</span
 			>
 		</div>
@@ -44,7 +44,7 @@
 				{#each routes as route (route.href)}
 					<a
 						href={route.href}
-						class="px-3 py-2 text-sm text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
+						class="px-3 py-2 text-sm font-medium text-foreground/70 transition-colors hover:text-primary dark:text-white/80 dark:hover:text-primary"
 					>
 						{route.label}
 					</a>

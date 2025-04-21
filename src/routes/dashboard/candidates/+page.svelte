@@ -142,7 +142,7 @@
 
 	<div class="grid gap-4">
 		{#await data.candidates}
-			{#each Array(4) as _, i}
+			{#each [...Array(4).keys()] as i (i)}
 				<Card class="overflow-hidden transition-all duration-200 hover:shadow-md">
 					<CardContent class="p-0">
 						<div class="h-8 bg-gradient-to-r from-primary/10 to-primary/5"></div>

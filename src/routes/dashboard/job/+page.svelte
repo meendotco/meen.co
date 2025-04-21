@@ -112,7 +112,7 @@
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#await data.streamed.jobs}
 			<!-- Skeleton Loading UI -->
-			{#each Array(6) as _, i}
+			{#each [...Array(6).keys()] as i (i)}
 				<Card
 					class="group overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
 				>

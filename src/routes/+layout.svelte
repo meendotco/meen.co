@@ -1,49 +1,14 @@
 <script lang="ts">
 	import '../app.css';
 
-	import { Heart } from 'lucide-svelte';
 	import { ModeWatcher } from 'mode-watcher';
 
 	import { page } from '$app/state';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
+	import Logo from '$lib/components/Logo.svelte';
 	import Topbar from '$lib/components/Topbar.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	let { data, children } = $props();
-
-	let email = $state('');
-	let isSubmitting = $state(false);
-
-	async function submitToWaitlist() {
-		isSubmitting = true;
-
-		try {
-			const response = await fetch('/waitlist', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					email
-				})
-			});
-
-			if (response.ok) {
-				email = '';
-			} else {
-				console.error(await response.json());
-			}
-		} catch (error) {
-			console.error(error);
-		} finally {
-			isSubmitting = false;
-		}
-	}
-
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Enter') {
-			submitToWaitlist();
-		}
-	}
 </script>
 
 <ModeWatcher />
@@ -56,7 +21,7 @@
 	{@render children?.()}
 	{#if page.url.pathname === '/'}
 		<div
-			class="absolute inset-0 mt-[-2px] h-full bg-[linear-gradient(to_right,rgba(23,23,23,0.4)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,23,23,0.4)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]"
+			class="absolute inset-0 mt-[-2px] h-full bg-[linear-gradient(to_right,rgba(23,23,23,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,23,23,0.05)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:bg-[linear-gradient(to_right,rgba(23,23,23,0.6)_1px,transparent_1px),linear-gradient(to_bottom,rgba(23,23,23,0.6)_1px,transparent_1px)]"
 		></div>
 	{/if}
 </div>
@@ -69,15 +34,8 @@
 			<div class="grid grid-cols-1 gap-8 pt-8 md:grid-cols-4">
 				<div class="md:col-span-1">
 					<div class="flex items-center space-x-2">
-						<div class="relative">
-							<div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-								<span class="text-lg font-bold text-primary-foreground">M</span>
-							</div>
-						</div>
-						<span
-							class="bg-gradient-to-r from-primary via-purple-400 to-indigo-400 bg-clip-text font-bold text-transparent"
-							>Meen</span
-						>
+						<Logo />
+						<span class="font-semibold">Meen</span>
 					</div>
 					<p class="mt-2 text-sm text-foreground/70 dark:text-white/70">
 						Empowering the future through intelligent solutions.
