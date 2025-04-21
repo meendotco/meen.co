@@ -1,22 +1,19 @@
-import { error } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 
-import { organization } from '@/server/db/schema';
+import { accounts, organization } from '@/server/db/schema';
 import { db } from '$lib/server/db';
 
-import type { PageServerLoad } from './$types';
-
-export const load = (async ({ locals }) => {
-	const userOrganization = await db.query.organization.findFirst({
+export const load = async ({ locals }) => {
+	const userOrganization = db.query.organization.findFirst({
 		where: eq(organization.handle, locals.user.organizationHandle),
 		with: {
 			users: true
 		}
 	});
 
-	if (!userOrganization) {
-		throw error(404, 'Organization not found');
-	}
+	const userAccounts = db.query.accounts.findMany({
+		where: eq(accounts.userId, locals.user.id)
+	});
 
-	return { userOrganization };
-}) satisfies PageServerLoad;
+	return { userOrganization, userAccounts };
+};

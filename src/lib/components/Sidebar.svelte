@@ -2,7 +2,7 @@
 	import { BriefcaseBusiness, ChevronLeft, ChevronRight, Search, Settings } from 'lucide-svelte';
 	import { createEventDispatcher } from 'svelte';
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Logo from '$lib/components/Logo.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import UserMenu from '$lib/components/UserMenu.svelte';
@@ -68,7 +68,7 @@
 					href={route.href}
 					class={cn(
 						'flex h-10 items-center gap-3 rounded-md px-3 transition-colors',
-						$page.url.pathname === route.href
+						page.url.pathname.startsWith(route.href)
 							? 'bg-primary text-primary-foreground'
 							: 'text-foreground/70 hover:text-primary dark:text-white/70 dark:hover:text-primary'
 					)}

@@ -176,6 +176,13 @@
       "when": 1745195012039,
       "tag": "0024_naive_jubilee",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1745234992389,
+      "tag": "0025_furry_leo",
+      "breakpoints": true
     }
   ]
 }
