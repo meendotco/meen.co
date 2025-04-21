@@ -37,9 +37,7 @@
 						<Logo />
 						<span class="font-semibold">Meen</span>
 					</div>
-					<p class="mt-2 text-sm text-foreground/70 dark:text-white/70">
-						Empowering the future through intelligent solutions.
-					</p>
+					<p class="mt-2 text-sm text-foreground/70 dark:text-white/70">AI powered Hiring.</p>
 				</div>
 
 				<div>
