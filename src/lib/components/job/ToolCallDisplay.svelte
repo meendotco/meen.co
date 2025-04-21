@@ -73,12 +73,6 @@
 			class="h-3.5 w-3.5 flex-shrink-0 transition-transform {expanded ? 'rotate-90' : ''}"
 		/>
 
-		{#if status() === 'success'}
-			<CheckCircle class="h-4 w-4 flex-shrink-0 text-green-500" />
-		{:else if status() === 'pending'}
-			<LoaderCircle class="h-4 w-4 flex-shrink-0 animate-spin text-amber-500" />
-		{/if}
-
 		<div class="flex min-w-0 items-center gap-2">
 			{#if toolName() === 'addCandidate' || toolName() === 'addCandidateTool'}
 				<Badge
@@ -119,9 +113,9 @@
 
 		<span class="ml-auto flex-shrink-0 text-[10px] text-muted-foreground">
 			{#if status() === 'success'}
-				<span class="text-green-600 dark:text-green-400">✓</span>
+				<CheckCircle class="h-4 w-4 flex-shrink-0 text-green-500" />
 			{:else if status() === 'pending'}
-				<span class="text-amber-600 dark:text-amber-400">⋯</span>
+				<LoaderCircle class="h-4 w-4 flex-shrink-0 animate-spin text-amber-500" />
 			{/if}
 		</span>
 	</div>
