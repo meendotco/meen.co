@@ -2,6 +2,7 @@
 	import type { InferSelectModel } from 'drizzle-orm';
 	import { onMount } from 'svelte';
 
+	import ToolCallDisplay from '$lib/components/job/ToolCallDisplay.svelte';
 	import Markdown from '$lib/markdown/Markdown.svelte';
 	import type { chatMessage, toolcall } from '$lib/server/db/schema';
 
@@ -67,9 +68,23 @@
 					<div
 						class="relative max-w-[85%] rounded-2xl rounded-bl-none border border-border/50 bg-card p-3 text-card-foreground shadow-sm"
 					>
-						<div class="prose prose-sm dark:prose-invert max-w-none">
-							<Markdown md={msg.content ?? '​'} />
-						</div>
+						{#if msg.content}
+							<div class="prose prose-sm dark:prose-invert max-w-none">
+								<Markdown md={msg.content} />
+							</div>
+						{/if}
+						{#if msg.toolcalls && msg.toolcalls.length > 0}
+							<div class="mt-2 space-y-1 border-t pt-2">
+								{#each msg.toolcalls as toolCall (toolCall.id)}
+									<ToolCallDisplay toolcall={toolCall} />
+								{/each}
+							</div>
+						{/if}
+						{#if !msg.content && (!msg.toolcalls || msg.toolcalls.length === 0)}
+							<div class="prose prose-sm dark:prose-invert max-w-none">
+								<Markdown md="&nbsp;" />
+							</div>
+						{/if}
 						<p class="mt-1 text-right text-xs opacity-60">
 							{formatDate(msg.createdAt)}
 						</p>

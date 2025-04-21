@@ -7,8 +7,8 @@
 	import { toggleMode } from 'mode-watcher';
 
 	import { Button } from '@/components/ui/button';
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	let { user, isCollapsed } = $props();
 </script>
 
