@@ -1,4 +1,5 @@
 <script lang="ts">
+
 	import { ChartBar, Clipboard, Search } from '@lucide/svelte';
 
 	import Container from '$lib/components/landing/container.svelte';
@@ -38,6 +39,7 @@
 				Discover the benefits
 			</h2>
 			<p class="mt-6 text-center text-base text-muted-foreground md:text-lg">
+
 				Explore the powerful features and advantages that Meen offers to help you find the perfect
 				candidates faster and streamline your talent acquisition process
 			</p>

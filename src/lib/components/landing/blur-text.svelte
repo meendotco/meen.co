@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { blur, fade, fly } from 'svelte/transition';
 	import { cn } from '$lib/utils';
 
-	export let word: string | any = '';
+	export let word: any | string = '';
 	export let className = '';
 	export let duration = 1;
 	export let variant: any = null;

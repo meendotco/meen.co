@@ -68,6 +68,7 @@
 			>
 				<div class="p-6 md:p-10">
 					<div class="relative mx-auto max-w-2xl">
+
 						<div
 							class="relative flex overflow-hidden rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm dark:border-transparent dark:bg-black/50"
 						>

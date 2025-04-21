@@ -3,6 +3,7 @@
 
 	import BlurText from '$lib/components/landing/blur-text.svelte';
 	import Container from '$lib/components/landing/container.svelte';
+
 	import { Button } from '$lib/components/ui/button';
 </script>
 
@@ -27,6 +28,7 @@
 			</div>
 			<span
 				class="animate-text-gradient inline-flex animate-background-shine items-center justify-center gap-2 bg-gradient-to-r from-primary/90 via-primary to-primary/70 bg-[200%_auto] bg-clip-text text-sm text-transparent"
+
 			>
 				Build for the future
 				<span
@@ -46,6 +48,7 @@
 		<p
 			class="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base lg:text-lg"
 		>
+
 			Elevate your hiring with AI-powered sourcing and screening. <span class="hidden sm:inline"
 				>Meen is your all-in-one talent acquisition solution.</span
 			>

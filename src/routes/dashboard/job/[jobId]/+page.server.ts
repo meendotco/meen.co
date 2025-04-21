@@ -3,6 +3,7 @@ import { and, asc, eq } from 'drizzle-orm';
 
 import { chat, chatMessage, jobPost } from '@/server/db/schema';
 import { db } from '$lib/server/db';
+export const ssr = false;
 export const load = async ({ locals, params }) => {
 	const job = await db.query.jobPost.findFirst({
 		where: and(
