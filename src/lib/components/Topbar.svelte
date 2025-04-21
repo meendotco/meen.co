@@ -34,10 +34,7 @@
 	>
 		<div class="flex items-center space-x-2">
 			<Logo />
-			<span
-				class="hidden px-1 font-semibold text-primary sm:inline-block"
-				>Meen</span
-			>
+			<span class="hidden px-1 font-semibold text-primary sm:inline-block">Meen</span>
 		</div>
 		{#if page.url.pathname == '/'}
 			<nav class="hidden items-center space-x-4 md:flex">

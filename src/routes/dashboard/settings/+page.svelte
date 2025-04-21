@@ -42,8 +42,7 @@
 
 			originalPreferences = { ...data.user.preferences } as UserPreferences;
 			hasChanges = false;
-		} catch (error) {
-			console.error('Failed to load user preferences:', error);
+		} catch {
 			toast.error('Failed to load settings', {
 				description: 'Please refresh the page to try again'
 			});
@@ -84,9 +83,7 @@
 			toast.success('Preferences saved', {
 				description: 'Your settings have been updated successfully'
 			});
-		} catch (error) {
-			console.error('Failed to save preferences:', error);
-
+		} catch {
 			toast.error('Error saving preferences', {
 				description: 'Please try again later'
 			});

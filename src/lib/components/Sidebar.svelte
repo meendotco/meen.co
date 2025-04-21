@@ -1,12 +1,5 @@
 <script lang="ts">
-	import {
-		BriefcaseBusiness,
-		ChevronLeft,
-		ChevronRight,
-		LayoutDashboard,
-		Search,
-		Settings
-	} from 'lucide-svelte';
+	import { BriefcaseBusiness, ChevronLeft, ChevronRight, Search, Settings } from 'lucide-svelte';
 	import { createEventDispatcher } from 'svelte';
 
 	import { page } from '$app/stores';
@@ -70,7 +63,7 @@
 
 		<!-- Navigation -->
 		<nav class="flex flex-1 flex-col gap-2 p-4">
-			{#each routes as route}
+			{#each routes as route (route.href)}
 				<a
 					href={route.href}
 					class={cn(

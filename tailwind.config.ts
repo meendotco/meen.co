@@ -1,5 +1,4 @@
 import type { Config } from 'tailwindcss';
-import { fontFamily } from 'tailwindcss/defaultTheme';
 import tailwindcssAnimate from 'tailwindcss-animate';
 
 const config: Config = {
@@ -101,7 +100,7 @@ const config: Config = {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'caret-blink': 'caret-blink 1.25s ease-out infinite',
 				'background-shine': 'background-shine 2s linear infinite',
-				'grid': 'grid 15s linear infinite'
+				grid: 'grid 15s linear infinite'
 			}
 		}
 	},

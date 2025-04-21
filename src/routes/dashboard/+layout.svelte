@@ -3,12 +3,9 @@
 	import { toast } from 'svelte-sonner';
 
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import * as Breadcrumb from '$lib/components/ui/breadcrumb';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { Textarea } from '$lib/components/ui/textarea';
 	let success = $state(false);
 	let { data, children } = $props();

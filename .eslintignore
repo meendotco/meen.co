@@ -8,3 +8,4 @@ package
 vite.config.js.timestamp-* 
 drizzle
 lib/components/ui
+lib/client/chat/ChatHandler.ts

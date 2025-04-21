@@ -1,9 +1,10 @@
 import { error } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
-import type { PageServerLoad } from './$types';
 
-import { jobPost, candidates } from '@/server/db/schema';
+import { candidates, jobPost } from '@/server/db/schema';
 import { db } from '$lib/server/db';
+
+import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params }) => {
 	const job = await db.query.jobPost.findFirst({

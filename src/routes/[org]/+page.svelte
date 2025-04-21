@@ -1,7 +1,5 @@
 <script lang="ts">
-	import type { jobPost } from '@/server/db/schema';
-	import { Briefcase, MapPin, Calendar } from 'lucide-svelte';
-	import { fade } from 'svelte/transition';
+	import { Briefcase, Calendar, MapPin } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	import { Skeleton } from '$lib/components/ui/skeleton';
@@ -46,7 +44,7 @@
 	<!-- Job listings grid with consistent sizing -->
 	<div class="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
 		{#if loading}
-			{#each Array(6) as _, i}
+			{#each Array(6), i (i)}
 				<div class="h-64 rounded-lg border border-border/50 bg-[#0B0B0B] p-4 shadow-sm">
 					<Skeleton class="mb-3 h-7 w-3/4" />
 					<Skeleton class="mb-3 h-4 w-full" />
@@ -74,7 +72,7 @@
 				</p>
 			</div>
 		{:else}
-			{#each jobs as job}
+			{#each jobs as job (job.id)}
 				<div
 					class="relative flex h-64 flex-col rounded-lg border border-border/50 bg-[#0B0B0B] p-4 shadow-sm"
 				>

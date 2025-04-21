@@ -3,7 +3,7 @@ import { and, ilike } from 'drizzle-orm';
 import { db } from '@/server/db';
 import { jobPost } from '@/server/db/schema';
 
-export async function load({ params, locals }) {
+export async function load({ params }) {
 	const { org, handle } = params;
 
 	const postData = await db.query.jobPost.findFirst({

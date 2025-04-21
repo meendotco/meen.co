@@ -19,15 +19,13 @@ export const POST = async ({ request, locals }: RequestEvent) => {
 			const job = await insertJob(jobDataString, locals.user.organizationHandle);
 
 			return new Response(JSON.stringify(job), { status: 201 });
-		} catch (dbError: any) {
-			console.error('Database error:', dbError);
-			return new Response(JSON.stringify({ error: 'Database error', details: dbError.message }), {
+		} catch {
+			return new Response(JSON.stringify({ error: 'Database error' }), {
 				status: 500
 			});
 		}
-	} catch (error: any) {
-		console.error('Error creating job:', error);
-		return new Response(JSON.stringify({ error: 'Failed to create job', details: error.message }), {
+	} catch {
+		return new Response(JSON.stringify({ error: 'Failed to create job' }), {
 			status: 500
 		});
 	}

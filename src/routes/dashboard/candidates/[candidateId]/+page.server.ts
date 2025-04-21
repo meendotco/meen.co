@@ -1,11 +1,12 @@
 import { error } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
-import type { PageServerLoad } from './$types';
+import { eq } from 'drizzle-orm';
 
 import { linkedInProfile } from '@/server/db/schema';
 import { db } from '$lib/server/db';
 
-export const load = (async ({ locals, params }) => {
+import type { PageServerLoad } from './$types';
+
+export const load = (async ({ params }) => {
 	const candidate = await db.query.linkedInProfile.findFirst({
 		where: eq(linkedInProfile.handle, params.candidateId)
 	});

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { CandidateData } from '$lib/types/candidate';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Card, CardContent } from '$lib/components/ui/card';
+	import type { CandidateData } from '$lib/types/candidate';
 
 	let { candidateData, b64 }: { candidateData: CandidateData; b64: string } = $props();
 

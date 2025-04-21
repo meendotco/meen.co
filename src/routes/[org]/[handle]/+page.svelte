@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { LinkedinIcon, MapPin, Briefcase, Globe, DollarSign, Calendar } from 'lucide-svelte';
+	import { Briefcase, Calendar, DollarSign, Globe, LinkedinIcon, MapPin } from 'lucide-svelte';
+
 	import { Button } from '$lib/components/ui/button';
-	import { fade } from 'svelte/transition';
 
 	let { data } = $props();
 	const post = $derived(data.post);
@@ -9,10 +9,9 @@
 	function applyWithLinkedin() {
 		// This would typically redirect to a LinkedIn OAuth flow or open a modal
 		// For now, we'll just log the action
-		console.log('Applying with LinkedIn for job:', post?.id);
 		// You would implement the actual LinkedIn integration here
 	}
-	
+
 	function formatDate(date: Date | string | null) {
 		if (!date) return 'Posted 4/19/2025';
 		return (
@@ -85,7 +84,7 @@
 					</span>
 				{/if}
 			</div>
-			
+
 			<div class="text-xs text-muted-foreground">
 				<span class="flex items-center gap-1">
 					<Calendar class="h-3 w-3" />
@@ -128,11 +127,13 @@
 				<p class="text-sm text-muted-foreground">{post.tech_stack}</p>
 			</div>
 		{/if}
-		
+
 		<div class="mt-auto pt-4">
 			{#if data.user && data.user.organizationHandle === post?.ownerOrganizationHandle}
 				<div class="rounded bg-[#27272A]/50 px-4 py-3">
-					<p class="mb-2 text-xs text-muted-foreground">Looks like you're the owner of this job post.</p>
+					<p class="mb-2 text-xs text-muted-foreground">
+						Looks like you're the owner of this job post.
+					</p>
 					<Button href={`/dashboard/job/${post?.id}`} variant="default" size="sm">
 						See Applicants
 					</Button>
@@ -146,7 +147,7 @@
 					Apply with LinkedIn
 				</Button>
 			{/if}
-			
+
 			{#if post?.priority === 'High'}
 				<div class="absolute right-2 top-2">
 					<span class="rounded-full bg-[#6D2EE0]/20 px-2 py-0.5 text-xs font-medium text-[#7E3AF2]">

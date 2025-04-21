@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 import type { JobData } from '@/server/job';

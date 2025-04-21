@@ -1,17 +1,9 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 
-	export let word: any | string = '';
+	export let word: string = '';
 	export let className = '';
 	export let duration = 1;
-	export let variant: any = null;
-
-	const defaultVariants = {
-		hidden: { filter: 'blur(10px)', opacity: 0, y: -20 },
-		visible: { filter: 'blur(0px)', opacity: 1, y: 0 }
-	};
-
-	const combinedVariants = variant || defaultVariants;
 
 	// Prepare the content for rendering
 	$: lines = typeof word === 'string' ? word.split('\n') : [word];
@@ -38,7 +30,7 @@
 	class={cn(className, 'text-center tracking-[-0.02em] drop-shadow-sm')}
 >
 	{#if typeof word === 'string'}
-		{#each lines as line, index}
+		{#each lines as line, index (index)}
 			<span>
 				{line}
 				{#if index < lines.length - 1}

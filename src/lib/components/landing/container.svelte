@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion';
+
 	import { cn } from '$lib/utils';
 
 	export let customClass = '';
@@ -7,7 +8,7 @@
 	export let reverse = false;
 	export let simple = false;
 
-	const containerAnimation = (node: HTMLElement) => {
+	const containerAnimation = () => {
 		const initialY = reverse ? -20 : 20;
 
 		return {
