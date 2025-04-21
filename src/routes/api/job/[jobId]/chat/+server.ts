@@ -165,7 +165,24 @@ export const DELETE = async ({ locals, params }) => {
 	if (!userHasAccess) {
 		return json({ error: 'You do not have access to this job' }, { status: 403 });
 	}
+
+	const job = await db.query.jobPost.findFirst({
+		where: eq(jobPost.id, jobId),
+		with: {
+			chat: true
+		}
+	});
+	if (!job) {
+		return json({ error: 'Job not found' }, { status: 404 });
+	}
+	const chatId = job.chat?.id;
+	if (!chatId) {
+		return json({ error: 'Chat not found' }, { status: 404 });
+	}
 	await db.delete(chat).where(and(eq(chat.jobPostId, jobId), eq(chat.title, 'Recruiter Agent')));
+	await db.delete(chatMessage).where(eq(chatMessage.chatId, chatId));
+	await db.delete(messageChunk).where(eq(messageChunk.chatMessageId, chatId));
+	await db.delete(toolcall).where(eq(toolcall.chatMessageId, chatId));
 
 	return json({ message: 'Chat deleted' }, { status: 200 });
 };

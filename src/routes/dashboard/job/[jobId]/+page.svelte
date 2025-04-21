@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { TextStreamPart } from 'ai';
 	import type { InferSelectModel } from 'drizzle-orm';
 
 	import AIChat from '$lib/components/job/AIChat.svelte'; // Added import
@@ -21,15 +22,19 @@
 		linkedInProfile as linkedInProfileTable,
 		toolcall as toolcallTable
 	} from '$lib/server/db/schema';
-
 	type JobPostSelect = InferSelectModel<typeof jobPostTable>;
 	type LinkedInProfileSelect = InferSelectModel<typeof linkedInProfileTable>;
 	type CandidateSelect = InferSelectModel<typeof candidatesTable> & {
 		linkedInProfile: LinkedInProfileSelect | null;
 	};
+	type MessageChunk = {
+		id: string;
+		chunk: TextStreamPart<any>;
+	};
 	type ToolcallSelect = InferSelectModel<typeof toolcallTable>;
 	type MessageSelect = InferSelectModel<typeof chatMessageTable> & {
 		toolcalls: ToolcallSelect[];
+		messageChunks: MessageChunk[];
 	};
 	type ChatSelect = InferSelectModel<typeof chatTable> & {
 		messages: MessageSelect[];

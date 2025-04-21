@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { TextStreamPart } from 'ai';
 	import type { InferSelectModel } from 'drizzle-orm';
+	import { uuid } from 'drizzle-orm/gel-core';
 	import { Send, Trash2 } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
 
 	import { page } from '$app/state';
 	import Messages from '$lib/components/Messages.svelte';
@@ -14,9 +16,15 @@
 	} from '$lib/server/db/schema';
 	import { socket } from '$lib/websocket/client.svelte.js';
 
+	type MessageChunk = {
+		id: string;
+		chunk: TextStreamPart<any>;
+	};
+
 	type ToolcallSelect = InferSelectModel<typeof toolcallTable>;
 	type MessageSelect = InferSelectModel<typeof chatMessageTable> & {
 		toolcalls: ToolcallSelect[];
+		messageChunks: MessageChunk[];
 	};
 
 	let {
@@ -43,7 +51,8 @@
 			role: 'user',
 			createdAt: new Date(),
 			chatId: chatId,
-			toolcalls: []
+			toolcalls: [],
+			messageChunks: []
 		};
 		messages.push(newMessage);
 
@@ -92,12 +101,20 @@
 					};
 					messages[messageIndex].toolcalls.push(newToolCall);
 				}
+				messages[messageIndex].messageChunks.push({
+					id: crypto.randomUUID(),
+					chunk: chunk
+				});
 				if (chunk.type === 'error') {
 					chatDisabled = false;
 					errorMessage =
 						typeof chunk.error === 'object' && chunk.error
 							? `${(chunk.error as Record<string, string>).name || 'Error'}: ${(chunk.error as Record<string, string>).reason || 'Unknown error'}`
 							: 'An unknown error occurred';
+				}
+				if (chunk.type === 'finish') {
+					chatDisabled = false;
+					errorMessage = null;
 				}
 			}
 		);
@@ -115,7 +132,8 @@
 					role: 'assistant',
 					createdAt: new Date(),
 					chatId: chatId,
-					toolcalls: []
+					toolcalls: [],
+					messageChunks: []
 				} satisfies MessageSelect);
 			}
 		);
@@ -144,7 +162,10 @@
 			method: 'DELETE'
 		});
 		if (!response.ok) {
+			toast.error('Error deleting messages');
 			messages = prevMessages;
+		} else {
+			toast.success('Messages deleted');
 		}
 	}
 </script>

@@ -1,25 +1,33 @@
 <script lang="ts">
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { CheckCircle, LoaderCircle, TriangleAlert } from 'lucide-svelte';
+	import { CheckCircle, ChevronRight, LoaderCircle } from 'lucide-svelte';
 
 	import { Badge } from '$lib/components/ui/badge';
-	import type { toolcall as ToolcallSchema } from '$lib/server/db/schema';
-
+	import { type toolcall as ToolcallSchema } from '$lib/server/db/schema';
 	type ToolcallSelect = InferSelectModel<typeof ToolcallSchema>;
 
-	let { toolcall: toolCallProp } = $props<{
-		toolcall: ToolcallSelect;
+	let { toolcall: toolCallProp, chunks } = $props<{
+		toolcall:
+			| ToolcallSelect
+			| {
+					args: Record<string, unknown>;
+					type: string;
+					toolName: string;
+					toolCallId: string;
+			  };
+		chunks: [];
 	}>();
 
+	let expanded = $state(false);
+	const currentToolCallId = $state(toolCallProp.toolCallId);
+
 	const status = $derived(() => {
-		if (toolCallProp.result !== undefined && toolCallProp.result !== null) {
-			return 'success';
+		for (const chunk of chunks) {
+			if (chunk.chunk.toolCallId === currentToolCallId && chunk.chunk.type === 'tool-result') {
+				return 'success';
+			}
 		}
-		// Simplified: Assume error if result is explicitly null, otherwise pending.
-		// This might need refinement if the backend provides more status info.
-		if (toolCallProp.result === null) {
-			return 'error';
-		}
+
 		return 'pending';
 	});
 
@@ -27,48 +35,160 @@
 	function getArg(key: string): boolean | number | string | null | undefined {
 		return toolCallProp.args?.[key];
 	}
+
+	// Normalize tool name between different formats
+	const toolName = $derived(() => {
+		return 'name' in toolCallProp ? toolCallProp.name : toolCallProp.toolName;
+	});
+
+	function toggleExpanded() {
+		expanded = !expanded;
+	}
+
+	// Get concise summary for minimal view
+	const argSummary = $derived(() => {
+		if (toolName() === 'addCandidate' || toolName() === 'addCandidateTool') {
+			return getArg('handle') ? `${getArg('handle')}` : '';
+		} else if (toolName() === 'searchInternet' || toolName() === 'searchLinkedinTool') {
+			const query = getArg('query');
+			if (query && typeof query === 'string') {
+				return query.length > 20 ? `"${query.substring(0, 20)}..."` : `"${query}"`;
+			}
+			return '';
+		} else if (toolName() === 'fetchLinkedinProfile') {
+			return getArg('profile_url') ? 'LinkedIn' : '';
+		}
+		return '';
+	});
 </script>
 
-<div
-	class="my-1 flex items-center gap-2 rounded border bg-muted/50 p-2 text-xs text-muted-foreground shadow-sm"
+<button
+	class="my-1.5 flex cursor-pointer flex-col rounded-md border bg-card/60 shadow-sm transition-colors hover:bg-card"
+	onclick={toggleExpanded}
+	tabindex="0"
+	aria-expanded={expanded}
 >
-	{#if status() === 'success'}
-		<CheckCircle class="h-4 w-4 flex-shrink-0 text-green-500" />
-	{:else if status() === 'pending'}
-		<LoaderCircle class="h-4 w-4 flex-shrink-0 animate-spin text-muted-foreground" />
-	{:else if status() === 'error'}
-		<TriangleAlert class="h-4 w-4 flex-shrink-0 text-destructive" />
-	{/if}
+	<div class="flex items-center gap-1.5 p-2">
+		<ChevronRight
+			class="h-3.5 w-3.5 flex-shrink-0 transition-transform {expanded ? 'rotate-90' : ''}"
+		/>
 
-	<div class="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1">
-		<span class="font-medium">Tool:</span>
-		<Badge variant="secondary" class="font-mono">{toolCallProp.name}</Badge>
-
-		{#if toolCallProp.name === 'addCandidate'}
-			{#if getArg('handle')}
-				<span class="truncate">handle: {getArg('handle')}</span>
-			{/if}
-			{#if getArg('score') !== undefined}
-				<span class="truncate">score: {getArg('score')}</span>
-			{/if}
-		{:else if toolCallProp.name === 'searchInternet'}
-			{#if getArg('query')}
-				<span class="truncate">query: "{getArg('query')}"</span>
-			{/if}
-		{:else if toolCallProp.name === 'fetchLinkedinProfile'}
-			{#if getArg('profile_url')}
-				<span class="truncate">url: {getArg('profile_url')}</span>
-			{/if}
-		{:else}
-			<!-- Generic fallback for other tools - maybe show arg count? -->
-			{#if toolCallProp.args && Object.keys(toolCallProp.args).length > 0}
-				<span>({Object.keys(toolCallProp.args).length} args)</span>
-			{/if}
+		{#if status() === 'success'}
+			<CheckCircle class="h-4 w-4 flex-shrink-0 text-green-500" />
+		{:else if status() === 'pending'}
+			<LoaderCircle class="h-4 w-4 flex-shrink-0 animate-spin text-amber-500" />
 		{/if}
 
-		{#if status() === 'success' && toolCallProp.result !== true}
-			<!-- Optionally show simple result if not just 'true' -->
-			<!-- <span class="ml-auto font-mono text-[10px]">{JSON.stringify(toolCallProp.result)}</span> -->
-		{/if}
+		<div class="flex min-w-0 items-center gap-2">
+			{#if toolName() === 'addCandidate' || toolName() === 'addCandidateTool'}
+				<Badge
+					variant="outline"
+					class="whitespace-nowrap border-primary bg-primary/10 text-primary dark:border-primary dark:text-primary"
+					>Adding Candidate</Badge
+				>
+			{:else if toolName() === 'searchInternet'}
+				<Badge
+					variant="outline"
+					class="whitespace-nowrap border-primary bg-primary/10 text-primary dark:border-primary dark:text-primary"
+					>Searching</Badge
+				>
+			{:else if toolName() === 'fetchLinkedinProfile'}
+				<Badge
+					variant="outline"
+					class="whitespace-nowrap border-primary bg-primary/10 text-primary dark:border-primary dark:text-primary"
+					>LinkedIn Profile</Badge
+				>
+			{:else if toolName() === 'searchLinkedinTool'}
+				<Badge
+					variant="outline"
+					class="whitespace-nowrap border-primary bg-primary/10 text-primary dark:border-primary dark:text-primary"
+					>Search</Badge
+				>
+			{:else}
+				<Badge
+					variant="outline"
+					class="whitespace-nowrap border-gray-200 bg-gray-500/10 dark:border-gray-800"
+					>{toolName()}</Badge
+				>
+			{/if}
+
+			{#if argSummary()}
+				<span class="max-w-[120px] truncate text-xs">{argSummary()}</span>
+			{/if}
+		</div>
+
+		<span class="ml-auto flex-shrink-0 text-[10px] text-muted-foreground">
+			{#if status() === 'success'}
+				<span class="text-green-600 dark:text-green-400">✓</span>
+			{:else if status() === 'pending'}
+				<span class="text-amber-600 dark:text-amber-400">⋯</span>
+			{/if}
+		</span>
 	</div>
-</div>
+
+	{#if expanded}
+		<div class="border-t border-border/50 p-2 text-xs">
+			<div class="flex min-w-0 flex-wrap items-start gap-x-3 gap-y-1.5">
+				{#if toolName() === 'addCandidate' || toolName() === 'addCandidateTool'}
+					{#if getArg('handle')}
+						<div class="flex items-center gap-1">
+							<span class="font-medium text-muted-foreground">handle:</span>
+							<span class="font-mono">{getArg('handle')}</span>
+						</div>
+					{/if}
+					{#if getArg('match_score') !== undefined || getArg('score') !== undefined}
+						<div class="flex items-center gap-1">
+							<span class="font-medium text-muted-foreground">score:</span>
+							<span class="font-mono">{getArg('match_score') ?? getArg('score')}</span>
+						</div>
+					{/if}
+					{#if getArg('reasoning')}
+						<div class="mt-1 flex w-full items-start gap-1">
+							<span class="font-medium text-muted-foreground">reason:</span>
+							<span class="italic">{getArg('reasoning')}</span>
+						</div>
+					{/if}
+				{:else if toolName() === 'searchInternet'}
+					{#if getArg('query')}
+						<div class="flex items-center gap-1">
+							<span class="font-medium text-muted-foreground">query:</span>
+							<span class="italic">"{getArg('query')}"</span>
+						</div>
+					{/if}
+				{:else if toolName() === 'fetchLinkedinProfile'}
+					{#if getArg('profile_url')}
+						<div class="flex items-center gap-1">
+							<span class="font-medium text-muted-foreground">url:</span>
+							<span class="truncate font-mono">{getArg('profile_url')}</span>
+						</div>
+					{/if}
+				{:else if toolName() === 'searchLinkedinTool'}
+					{#if getArg('query')}
+						<div class="flex items-center gap-1">
+							<span class="font-medium text-muted-foreground">query:</span>
+							<span class="italic">"{getArg('query')}"</span>
+						</div>
+					{/if}
+				{:else if toolCallProp.args && Object.keys(toolCallProp.args).length > 0}
+					{#each Object.entries(toolCallProp.args) as [key, value] (key)}
+						<div class="flex items-center gap-1">
+							<span class="font-medium text-muted-foreground">{key}:</span>
+							<span class="truncate font-mono">{JSON.stringify(value)}</span>
+						</div>
+					{/each}
+				{/if}
+
+				{#if status() === 'success' && toolCallProp.result !== true && toolCallProp.result !== undefined}
+					<div class="mt-1.5 w-full border-t border-border/50 pt-1.5">
+						<span class="text-[10px] font-medium text-muted-foreground">Result:</span>
+						<span class="mt-0.5 block max-w-full truncate pl-2 font-mono text-[10px]">
+							{typeof toolCallProp.result === 'object'
+								? JSON.stringify(toolCallProp.result)
+								: String(toolCallProp.result)}
+						</span>
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
+</button>

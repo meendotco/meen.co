@@ -9,6 +9,7 @@
 	type ToolcallSelect = InferSelectModel<typeof toolcall>;
 	type MessageSelect = InferSelectModel<typeof chatMessage> & {
 		toolcalls: ToolcallSelect[];
+		messageChunks: Array<{ id: string; chunk: any }>;
 	};
 
 	let { messages, errorMessage } = $props<{
@@ -33,6 +34,51 @@
 		if (messageElement) {
 			messageElement.scrollIntoView({ behavior: 'smooth' });
 		}
+	}
+
+	function groupMessageChunks(chunks: Array<{ id: string; chunk: any }>) {
+		if (!chunks || !Array.isArray(chunks) || chunks.length === 0) {
+			return chunks;
+		}
+
+		const result = [];
+		let currentTextContent = '';
+		let currentTextId = '';
+
+		for (let i = 0; i < chunks.length; i++) {
+			const chunk = chunks[i];
+
+			if (chunk.chunk.type === 'text-delta' && typeof chunk.chunk.textDelta === 'string') {
+				// Accumulate text content
+				if (currentTextId === '') {
+					currentTextId = chunk.id;
+				}
+				currentTextContent += chunk.chunk.textDelta;
+			} else {
+				// If we have accumulated text, push it as a text chunk
+				if (currentTextContent) {
+					result.push({
+						id: currentTextId,
+						chunk: { type: 'text-delta', textDelta: currentTextContent }
+					});
+					currentTextContent = '';
+					currentTextId = '';
+				}
+
+				// Push the non-text chunk
+				result.push(chunk);
+			}
+		}
+
+		// Don't forget any remaining text content
+		if (currentTextContent) {
+			result.push({
+				id: currentTextId,
+				chunk: { type: 'text-delta', textDelta: currentTextContent }
+			});
+		}
+
+		return result;
 	}
 
 	$effect(() => {
@@ -68,21 +114,23 @@
 					<div
 						class="relative max-w-[85%] rounded-2xl rounded-bl-none border border-border/50 bg-card p-3 text-card-foreground shadow-sm"
 					>
-						{#if msg.content}
+						{#if msg.messageChunks?.length}
+							{@const groupedChunks = groupMessageChunks(msg.messageChunks)}
+							{#each groupedChunks as chunk (chunk.id)}
+								<div class="prose prose-sm dark:prose-invert max-w-none">
+									{#if chunk.chunk.type === 'text-delta'}
+										<Markdown md={chunk.chunk.textDelta} />
+									{/if}
+									{#if chunk.chunk.type === 'tool-call'}
+										<div class="mt-2 space-y-1 border-t pt-2">
+											<ToolCallDisplay toolcall={chunk.chunk} chunks={msg.messageChunks} />
+										</div>
+									{/if}
+								</div>
+							{/each}
+						{:else}
 							<div class="prose prose-sm dark:prose-invert max-w-none">
-								<Markdown md={msg.content} />
-							</div>
-						{/if}
-						{#if msg.toolcalls && msg.toolcalls.length > 0}
-							<div class="mt-2 space-y-1 border-t pt-2">
-								{#each msg.toolcalls as toolCall (toolCall.id)}
-									<ToolCallDisplay toolcall={toolCall} />
-								{/each}
-							</div>
-						{/if}
-						{#if !msg.content && (!msg.toolcalls || msg.toolcalls.length === 0)}
-							<div class="prose prose-sm dark:prose-invert max-w-none">
-								<Markdown md="&nbsp;" />
+								<Markdown md={msg.content ?? '​'} />
 							</div>
 						{/if}
 						<p class="mt-1 text-right text-xs opacity-60">
