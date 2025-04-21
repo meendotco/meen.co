@@ -124,7 +124,7 @@
 										<Markdown md={chunk.chunk.textDelta} />
 									{/if}
 									{#if chunk.chunk.type === 'tool-call'}
-										<div class="mt-2 space-y-1 border-t pt-2">
+										<div class="mt-2 space-y-1 pt-2">
 											<ToolCallDisplay toolcall={chunk.chunk} chunks={msg.messageChunks} />
 										</div>
 									{/if}

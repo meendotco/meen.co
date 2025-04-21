@@ -28,9 +28,6 @@
 				<ArrowLeft class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
 			</Button>
 			<h1 class="truncate text-base font-medium sm:text-lg">{job?.title || 'Job Details'}</h1>
-			{#if job?.priority}
-				<Badge variant="outline" class="hidden shrink-0 sm:inline-flex">{job.priority}</Badge>
-			{/if}
 		</div>
 		<div>
 			{#if jobCreatedAtFormatted}
