@@ -1,12 +1,54 @@
 <script lang="ts">
-	import { Building2, Check, Linkedin } from 'lucide-svelte';
+	import { Building2, Check, Linkedin, User } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 
 	import { Badge } from '@/components/ui/badge';
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 	import { Skeleton } from '@/components/ui/skeleton';
+	import OrganizationManageDialog from '$lib/components/dashboard/OrganizationManageDialog.svelte';
+	import type { Organization, OrganizationUpdatePayload } from '$lib/types/organization';
 
 	let { data } = $props();
+
+	let showOrgDialog = $state(false);
+	let currentOrganization = $state<Organization | null>(null);
+
+	function openManageOrg(org: Organization) {
+		currentOrganization = org;
+		showOrgDialog = true;
+	}
+
+	async function handleOrgSave(event: CustomEvent<OrganizationUpdatePayload>) {
+		const payload = event.detail;
+		try {
+			const response = await fetch('/api/organization', {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					handle: currentOrganization?.handle,
+					...payload
+				})
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || 'Failed to update organization settings');
+			}
+
+			showOrgDialog = false;
+
+			toast.success('Organization settings updated successfully');
+
+			// to reload the organization image on the organization card
+			if (currentOrganization) {
+				currentOrganization.logo = payload.logo;
+				currentOrganization.theme = payload.theme;
+			}
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to update organization');
+		}
+	}
 </script>
 
 <div class="container mx-auto max-w-5xl py-8">
@@ -28,6 +70,12 @@
 								alt="Profile"
 								class="h-12 w-12 rounded-full object-cover"
 							/>
+						{:else}
+							<div
+								class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary"
+							>
+								<User size={24} />
+							</div>
 						{/if}
 						<div>
 							<p class="font-medium">{data.user?.name || 'Unknown User'}</p>
@@ -64,7 +112,19 @@
 								<div
 									class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"
 								>
-									<Building2 size={20} />
+									{#if organization.logo}
+										<img
+											src={currentOrganization
+												? organization.logo !== currentOrganization.logo
+													? currentOrganization.logo
+													: organization.logo
+												: organization.logo}
+											alt="Logo"
+											class="h-8 w-8 rounded-full object-cover"
+										/>
+									{:else}
+										<Building2 size={20} />
+									{/if}
 								</div>
 								<div>
 									<p class="font-medium">{organization.handle}</p>
@@ -73,7 +133,11 @@
 									</div>
 								</div>
 							</div>
-							<Button variant="outline" disabled class="h-8 text-xs">Manage</Button>
+							<Button
+								variant="outline"
+								class="h-8 text-xs"
+								onclick={() => openManageOrg(organization)}>Manage</Button
+							>
 						</div>
 						<div class="text-sm text-muted-foreground">
 							Organization ID: <span class="font-mono">{organization.handle}</span>
@@ -151,3 +215,11 @@
 		</CardContent>
 	</Card>
 </div>
+
+<!-- Organization Management Dialog -->
+<OrganizationManageDialog
+	open={showOrgDialog}
+	organization={currentOrganization}
+	on:close={() => (showOrgDialog = false)}
+	on:save={handleOrgSave}
+/>

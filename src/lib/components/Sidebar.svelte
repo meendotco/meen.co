@@ -53,7 +53,9 @@
 					>
 
 					{#if user?.organizationHandle}
-						<Badge>{user?.organizationHandle}</Badge>
+						<a href={`/${user?.organizationHandle}`}>
+							<Badge class="select-none">{user?.organizationHandle}</Badge>
+						</a>
 					{:else}
 						<Badge variant="secondary" class="justify-center text-xs">no org</Badge>
 					{/if}

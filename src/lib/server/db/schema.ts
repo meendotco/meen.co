@@ -57,7 +57,9 @@ export const accessRequestRelations = relations(accessRequest, ({ one }) => ({
 	})
 }));
 export const organization = pgTable('organization', {
-	handle: text('handle').primaryKey()
+	handle: text('handle').primaryKey(),
+	logo: text('logo'),
+	theme: text('theme')
 });
 
 export const organizationBilling = pgTable('organizationBilling', {
@@ -327,6 +329,7 @@ export const candidates = pgTable(
 		reasoning: text('reasoning'),
 		eagerlyAdded: boolean('eagerlyAdded').notNull().default(false),
 		matchScore: integer('matchScore'),
+		applied: boolean('applied').notNull().default(false),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
 	},

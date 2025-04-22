@@ -9,7 +9,7 @@ import type { Job } from '@/types/job';
 export const POST = async ({ request, locals }: RequestEvent) => {
 	try {
 		const jobData: Job = await request.json();
-		console.log(jobData);
+
 		if (!locals.user) {
 			return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
 		}

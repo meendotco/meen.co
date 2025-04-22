@@ -5,14 +5,17 @@
 
 	let { data } = $props();
 	const post = $derived(data.post);
+	const themeColor = $derived(data.orgData?.theme);
 
 	function applyWithLinkedin() {
-		// This would typically redirect to a LinkedIn OAuth flow or open a modal
-		// For now, we'll just log the action
-		// You would implement the actual LinkedIn integration here
+		// TODO: Implement LinkedIn OAuth flow and add candidate to job post with applied true in the db to make the applicants has priority to be seen by the recruiter
+		// let currentPostId = post?.id;
+		// signIn('linkedin', {
+		// 	callbackUrl: `/dashboard/job/${currentPostId}`
+		// });
 	}
 
-	function formatDate(date: Date | string | null) {
+	function formatDate(date: Date | string | null | undefined) {
 		if (!date) return 'Posted 4/19/2025';
 		return (
 			'Posted ' +
@@ -56,29 +59,31 @@
 		<p class="text-muted-foreground">{post?.department || 'Job Details'}</p>
 	</div>
 
-	<div class="relative flex flex-col rounded-lg border border-border/50 bg-[#0B0B0B] p-6 shadow-sm">
+	<div
+		class="relative flex flex-col rounded-lg border border-border/50 bg-card p-6 shadow-sm dark:bg-[#0B0B0B]"
+	>
 		<div class="mb-6">
 			<div class="mb-4 flex flex-wrap gap-2 text-xs">
 				{#if post?.location}
-					<span class="flex items-center gap-1 rounded-md bg-[#27272A] px-2 py-1">
+					<span class="flex items-center gap-1 rounded-md bg-muted px-2 py-1 dark:bg-[#27272A]">
 						<MapPin class="h-3 w-3" />
 						<span>{post.location}</span>
 					</span>
 				{/if}
 				{#if post?.type}
-					<span class="flex items-center gap-1 rounded-md bg-[#27272A] px-2 py-1">
+					<span class="flex items-center gap-1 rounded-md bg-muted px-2 py-1 dark:bg-[#27272A]">
 						<Briefcase class="h-3 w-3" />
 						<span>{post.type}</span>
 					</span>
 				{/if}
 				{#if post?.remote_policy}
-					<span class="flex items-center gap-1 rounded-md bg-[#27272A] px-2 py-1">
+					<span class="flex items-center gap-1 rounded-md bg-muted px-2 py-1 dark:bg-[#27272A]">
 						<Globe class="h-3 w-3" />
 						<span>{post.remote_policy}</span>
 					</span>
 				{/if}
 				{#if post?.salary}
-					<span class="flex items-center gap-1 rounded-md bg-[#27272A] px-2 py-1">
+					<span class="flex items-center gap-1 rounded-md bg-muted px-2 py-1 dark:bg-[#27272A]">
 						<DollarSign class="h-3 w-3" />
 						<span>{post.salary}</span>
 					</span>
@@ -130,18 +135,23 @@
 
 		<div class="mt-auto pt-4">
 			{#if data.user && data.user.organizationHandle === post?.ownerOrganizationHandle}
-				<div class="rounded bg-[#27272A]/50 px-4 py-3">
+				<div class="rounded bg-muted/70 px-4 py-3 dark:bg-[#27272A]/50">
 					<p class="mb-2 text-xs text-muted-foreground">
 						Looks like you're the owner of this job post.
 					</p>
-					<Button href={`/dashboard/job/${post?.id}`} variant="default" size="sm">
+					<Button
+						href={`/dashboard/job/${post?.id}`}
+						style={themeColor ? `background-color: ${themeColor};` : ''}
+						variant="default"
+						size="sm"
+					>
 						See Applicants
 					</Button>
 				</div>
 			{:else}
 				<Button
-					on:click={applyWithLinkedin}
-					class="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+					onclick={applyWithLinkedin}
+					class="flex items-center gap-2 bg-[#0077B5] text-primary-foreground hover:bg-[#0077B5]/90"
 				>
 					<LinkedinIcon class="h-4 w-4" />
 					Apply with LinkedIn
@@ -150,7 +160,9 @@
 
 			{#if post?.priority === 'High'}
 				<div class="absolute right-2 top-2">
-					<span class="rounded-full bg-[#6D2EE0]/20 px-2 py-0.5 text-xs font-medium text-[#7E3AF2]">
+					<span
+						class="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-[#6D2EE0]/20 dark:text-[#7E3AF2]"
+					>
 						{post.priority}
 					</span>
 				</div>
