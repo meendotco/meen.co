@@ -45,6 +45,7 @@
 	async function sendMessage(messageToSend: string) {
 		if (!messageToSend.trim() || chatDisabled || !chatId) return;
 
+		chatDisabled = true;
 		const newMessage: MessageSelect = {
 			id: crypto.randomUUID(),
 			content: messageToSend,
@@ -56,10 +57,17 @@
 		};
 		messages.push(newMessage);
 
-		await fetch(`/api/job/${jobId}/chat`, {
-			method: 'POST',
-			body: JSON.stringify({ message: messageToSend })
-		});
+		try {
+			const response = await fetch(`/api/job/${jobId}/chat`, {
+				method: 'POST',
+				body: JSON.stringify({ message: messageToSend })
+			});
+			if (!response.ok) {
+				errorMessage = 'Failed to send message';
+			}
+		} catch {
+			errorMessage = 'Failed to send message';
+		}
 		message = '';
 	}
 
@@ -79,9 +87,11 @@
 			(data: { chunk: TextStreamPart<any>; appPayload: { jobId: string; messageId: string } }) => {
 				const chunk = data.chunk;
 				const messageId = data.appPayload.messageId;
-				const messageIndex = messages.findIndex((m) => m.id === messageId);
 
-				if (messageIndex === -1) return;
+				const messageIndex = messages.findIndex((m) => m.id === messageId);
+				if (messageIndex === -1) {
+					return;
+				}
 
 				if (chunk.type === 'text-delta' && typeof chunk.textDelta === 'string') {
 					if (messages[messageIndex].content === null) {
@@ -124,7 +134,9 @@
 			(data: { appPayload: { jobId: string; messageId: string } }) => {
 				chatDisabled = true;
 				errorMessage = null;
-				if (!chatId) return;
+				if (!chatId) {
+					return;
+				}
 
 				messages.push({
 					id: data.appPayload.messageId,
@@ -155,13 +167,20 @@
 	});
 
 	async function deleteMessages() {
-		if (!jobId || !chatId) return;
+		if (!jobId || !chatId) {
+			return;
+		}
 		const prevMessages = messages;
 		messages = [];
-		const response = await fetch(`/api/job/${jobId}/chat`, {
-			method: 'DELETE'
-		});
-		if (!response.ok) {
+		try {
+			const response = await fetch(`/api/job/${jobId}/chat`, {
+				method: 'DELETE'
+			});
+			if (!response.ok) {
+				toast.error('Error deleting messages');
+				messages = prevMessages;
+			}
+		} catch {
 			toast.error('Error deleting messages');
 			messages = prevMessages;
 		}

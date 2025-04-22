@@ -9,10 +9,7 @@
 	import JobHeader from '$lib/components/job/JobHeader.svelte';
 	import JobOverviewCard from '$lib/components/job/JobOverviewCard.svelte';
 	import JobRequirementsBenefitsCard from '$lib/components/job/JobRequirementsBenefitsCard.svelte';
-	// Removed Messages import
-	// Removed Button import
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
-	// Removed Input import
 	import * as Resizable from '$lib/components/ui/resizable';
 	import type {
 		candidates as candidatesTable,
@@ -46,10 +43,10 @@
 	};
 
 	let { data } = $props<{ data: { job: FullJobData } }>();
-	let job = $derived(data.job);
+	let job = $state(data.job);
 	let candidates = $derived<CandidateSelect[]>(job?.candidates ?? []);
 	let initialMessages = $derived<MessageSelect[]>(data.job?.chat?.messages ?? []);
-	let chatId = $derived(data.job?.chat?.id ?? null);
+	let chatId = $state(data.job?.chat?.id);
 </script>
 
 <div class="flex h-screen flex-col overflow-hidden bg-background">
@@ -74,7 +71,6 @@
 			<Resizable.Handle withHandle />
 
 			<Resizable.Pane defaultSize={30} minSize={20} maxSize={35} class="flex h-full flex-col">
-				<!-- Original AI Chat Panel Removed -->
 				<AIChat jobId={job.id} {chatId} {initialMessages} />
 			</Resizable.Pane>
 		</Resizable.PaneGroup>

@@ -36,10 +36,17 @@ export const load = async ({ locals, params }) => {
 		throw error(404, 'Job not found');
 	}
 	if (!job?.chat) {
-		await db.insert(chat).values({
-			jobPostId: job.id,
-			title: 'Recruiter Agent'
-		});
+		const newChat = await db
+			.insert(chat)
+			.values({
+				jobPostId: job.id,
+				title: 'Recruiter Agent'
+			})
+			.returning();
+		job.chat = {
+			...newChat[0],
+			messages: []
+		};
 	}
 	return { job };
 };
