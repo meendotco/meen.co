@@ -15,44 +15,31 @@
 {#if user?.email}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
-			{#if page.url.pathname.startsWith('/dashboard')}
-				<div class="flex items-center gap-3 transition-all duration-200 hover:bg-foreground/5">
-					<Button
-						variant="ghost"
-						size="icon"
-						class="avatar-button transition-all duration-200 hover:bg-foreground/5"
-					>
-						<div class="avatar">
-							{#if user?.image}
-								<img
-									src={user.image}
-									alt={user.name || 'User'}
-									class="h-full w-full rounded-full object-cover"
-								/>
-							{:else}
-								<User class="avatar-icon" strokeWidth={1.5} />
-							{/if}
-						</div>
-					</Button>
-					{#if !isCollapsed && user}
-						<div class="flex flex-col overflow-hidden">
-							<span class="truncate text-sm font-medium text-foreground">{user.name || 'User'}</span
-							>
-							<span class="truncate text-[11px] text-muted-foreground">{user.email || ''}</span>
-						</div>
-					{/if}
-				</div>
-			{:else}
+			<div class="flex items-center gap-3 transition-all duration-200 hover:bg-foreground/5">
 				<Button
 					variant="ghost"
 					size="icon"
 					class="avatar-button transition-all duration-200 hover:bg-foreground/5"
 				>
 					<div class="avatar">
-						<User class="avatar-icon" strokeWidth={1.5} />
+						{#if user?.image}
+							<img
+								src={user.image}
+								alt={user.name || 'User'}
+								class="h-full w-full rounded-full object-cover"
+							/>
+						{:else}
+							<User class="avatar-icon" strokeWidth={1.5} />
+						{/if}
 					</div>
 				</Button>
-			{/if}
+				{#if !isCollapsed && user}
+					<div class="flex flex-col overflow-hidden">
+						<span class="truncate text-sm font-medium text-foreground">{user.name || 'User'}</span>
+						<span class="truncate text-[11px] text-muted-foreground">{user.email || ''}</span>
+					</div>
+				{/if}
+			</div>
 		</DropdownMenu.Trigger>
 
 		<DropdownMenu.Content class="dropdown-content" sideOffset={8}>
