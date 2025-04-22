@@ -100,6 +100,7 @@
 							</Dialog.Description>
 						</Dialog.Header>
 						<div class="py-4">
+							<p class="p-2 text-sm font-semibold">Job post URL:</p>
 							<Input
 								type="url"
 								placeholder="https://www.linkedin.com/job/view/3724600000"

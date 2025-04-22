@@ -45,9 +45,16 @@
 					<ul class="space-y-2 text-sm">
 						<li>
 							<a
-								href="mailto:hello@meen.ai"
+								href="mailto:hash@meen.co"
 								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
-								>Contact us</a
+								>Contact Sales</a
+							>
+						</li>
+						<li>
+							<a
+								href="mailto:markus@meen.co"
+								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
+								>Contact Technical</a
 							>
 						</li>
 					</ul>
