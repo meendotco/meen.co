@@ -8,7 +8,7 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ params }) => {
 	const candidate = await db.query.linkedInProfile.findFirst({
-		where: eq(linkedInProfile.handle, params.candidateId)
+		where: eq(linkedInProfile.id, params.candidateId)
 	});
 
 	if (!candidate) {

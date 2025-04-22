@@ -194,7 +194,7 @@
 				<CandidateCard candidateData={candidate.data} b64={candidate.profileImageB64 || ''}>
 					<div slot="actions" class="flex flex-col gap-2">
 						<Button
-							href={`/dashboard/candidates/${candidate.handle}`}
+							href={`/dashboard/candidates/${candidate.id}`}
 							variant="outline"
 							size="sm"
 							class="transition-colors hover:bg-primary/5"
