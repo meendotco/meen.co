@@ -3,7 +3,6 @@
 	import { page } from '$app/state';
 
 	import Logo from './Logo.svelte';
-	import UserMenu from './UserMenu.svelte';
 	let { user } = $props();
 
 	const showTopbar = true;
@@ -51,15 +50,13 @@
 
 		<div class="flex items-center space-x-2">
 			{#if user}
-				<a
+				<Button
+					variant="default"
 					href="/dashboard"
-					class="px-3 py-2 text-sm font-medium {page.url.pathname.startsWith('/dashboard')
-						? 'text-primary'
-						: 'text-foreground/70'} transition-colors hover:text-primary dark:hover:text-primary"
+					class="rounded-full bg-primary text-sm text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90"
 				>
 					Dashboard
-				</a>
-				<UserMenu {user} isCollapsed={true} />
+				</Button>
 			{:else}
 				<Button
 					variant="default"

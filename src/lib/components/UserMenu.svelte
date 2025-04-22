@@ -41,7 +41,6 @@
 				{/if}
 			</div>
 		</DropdownMenu.Trigger>
-
 		<DropdownMenu.Content class="dropdown-content" sideOffset={8}>
 			<div class="px-3 py-2">
 				<p class="text-base font-medium text-foreground dark:text-white">My Profile</p>

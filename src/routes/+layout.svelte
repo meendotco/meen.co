@@ -16,7 +16,7 @@
 <ErrorBoundary />
 <div class="min-h-screen bg-background">
 	{#if (page.url.pathname.startsWith('/') || page.url.pathname.startsWith('/about')) && !page.route?.id?.startsWith('/[org]') && !page.route?.id?.startsWith('/dashboard')}
-		<Topbar user={data.user} />
+		<Topbar user={data?.user} />
 	{/if}
 	{@render children?.()}
 	{#if page.url.pathname === '/'}
