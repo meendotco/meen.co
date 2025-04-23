@@ -24,7 +24,6 @@
 	} from '$lib/server/db/schema';
 	import { socket } from '$lib/websocket/client.svelte';
 	import { onMount } from 'svelte';
-
 	type JobPostSelect = InferSelectModel<typeof jobPostTable>;
 	type LinkedInProfileSelect = InferSelectModel<typeof linkedInProfileTable>;
 	type CandidateSelect = InferSelectModel<typeof candidatesTable> & {
@@ -53,16 +52,23 @@
 	let candidates = $derived<CandidateSelect[]>(job?.candidates ?? []);
 	let initialMessages = $derived<MessageSelect[]>(data.job?.chat?.messages ?? []);
 	let chatId = $state(data.job?.chat?.id);
-	let view = $state<'list' | 'table'>('list');
+	let view = $state<'list' | 'table'>(data.job.view);
 
 	onMount(() => {
 		socket.on(`${job.id}:candidate-added`, (candidate: CandidateSelect) => {
-			console.log('candidate-added', candidate);
 			if (!candidates.some((c) => c.id === candidate.id)) {
 				candidates.unshift({ ...candidate, isNew: true });
 			}
 		});
 	});
+
+	async function changeView(setView: 'list' | 'table') {
+		view = setView;
+		await fetch(`/api/job/${job.id}/view`, {
+			method: 'POST',
+			body: JSON.stringify({ view: setView })
+		});
+	}
 </script>
 
 <div class="flex h-screen flex-col overflow-hidden bg-background">
@@ -81,8 +87,8 @@
 						<JobDetailsCard {job} />
 
 						<div class="flex gap-2">
-							<Button variant="outline" onclick={() => (view = 'list')}>List View</Button>
-							<Button variant="outline" onclick={() => (view = 'table')}>Table View</Button>
+							<Button variant="outline" onclick={() => changeView('list')}>List View</Button>
+							<Button variant="outline" onclick={() => changeView('table')}>Table View</Button>
 							<AddCandidateDialog jobId={job.id} />
 						</div>
 
