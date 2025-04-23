@@ -15,7 +15,7 @@
 <Toaster />
 <ErrorBoundary />
 <div class="min-h-screen bg-background">
-	{#if (page.url.pathname.startsWith('/') || page.url.pathname.startsWith('/about')) && !page.route?.id?.startsWith('/[org]') && !page.route?.id?.startsWith('/dashboard')}
+	{#if !page.url.pathname.startsWith('/dashboard') && !page.route?.id?.startsWith('/[org]') && !page.route?.id?.startsWith('/privacy') && !page.route?.id?.startsWith('/terms')}
 		<Topbar user={data?.user} />
 	{/if}
 	{@render children?.()}
@@ -66,6 +66,7 @@
 						<li>
 							<a
 								href="/privacy"
+								target="_blank"
 								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
 								>Privacy policy</a
 							>
@@ -73,6 +74,7 @@
 						<li>
 							<a
 								href="/terms"
+								target="_blank"
 								class="text-foreground/70 transition-colors hover:text-primary dark:text-white/70 dark:hover:text-primary"
 								>Terms of service</a
 							>
