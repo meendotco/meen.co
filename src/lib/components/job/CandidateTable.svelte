@@ -1,15 +1,17 @@
 <script lang="ts">
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { ArrowUpDown, CheckIcon, PlusIcon } from 'lucide-svelte';
+	import { ArrowUpDown, PlusIcon, Trash, Trash2 } from 'lucide-svelte';
 	import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
 	import * as Table from '$lib/components/ui/table';
 	import type {
 		candidates as candidatesTable,
+		customField as customFieldTable,
+		customFieldValue as customFieldValueTable,
 		linkedInProfile as linkedInProfileTable
 	} from '$lib/server/db/schema';
 
@@ -20,59 +22,185 @@
 		linkedInProfile: LinkedInProfileSelect | null;
 		matchScore?: number | null;
 		reasoning?: string | null;
+		customFieldValues?: CustomFieldValueSelect[] | null;
 	};
+	type CustomFieldValueSelect = InferSelectModel<typeof customFieldValueTable> & {
+		customField: CustomFieldSelect;
+	};
+	type CustomFieldSelect = InferSelectModel<typeof customFieldTable>;
+	let {
+		candidates,
+		jobId,
+		customFields: customFieldsProp
+	} = $props<{
+		candidates: CandidateSelect[];
+		jobId: string;
+		customFields: CustomFieldSelect[];
+	}>();
 
-	let { candidates } = $props<{ candidates: CandidateSelect[] }>();
-
-	type SortKey = 'matchScore' | 'name' | 'title';
+	// Updated SortKey to allow sorting by custom field names (strings)
+	type SortKey = string | 'matchScore' | 'name' | 'title';
 	type SortDirection = 'asc' | 'desc';
 
 	let sortKey = $state<SortKey>('matchScore');
 	let sortDirection = $state<SortDirection>('desc');
 
-	let customFields = $state<{ name: string; type: 'number' | 'text' }[]>([]);
+	let customFields = $state<CustomFieldSelect[]>(customFieldsProp);
 	let newFieldName = $state('');
+	let newFieldDescription = $state('');
+	let newFieldType = $state<'boolean' | 'date' | 'number' | 'text'>('text');
 	let isAddDialogOpen = $state(false);
+	// State to track which delete dialog is open (using field ID as key)
+	let deleteDialogStates = $state<Record<string, boolean>>({});
 
 	const sortedCandidates: CandidateSelect[] = $derived.by(() => {
-		return [...candidates].sort((a: CandidateSelect, b: CandidateSelect) => {
-			const aProfileData = a.linkedInProfile?.data;
-			const bProfileData = b.linkedInProfile?.data;
-			const aName = `${aProfileData?.first_name ?? ''} ${aProfileData?.last_name ?? ''}`.trim();
-			const bName = `${bProfileData?.first_name ?? ''} ${bProfileData?.last_name ?? ''}`.trim();
-			const aTitle = aProfileData?.headline ?? '';
-			const bTitle = bProfileData?.headline ?? '';
-			const aScore = a.matchScore ?? -Infinity;
-			const bScore = b.matchScore ?? -Infinity;
+		// Get local copies of state for the derivation
+		const currentSortKey = sortKey;
+		const currentSortDirection = sortDirection;
 
+		return [...candidates].sort((a: CandidateSelect, b: CandidateSelect) => {
 			let comparison = 0;
 
-			if (sortKey === 'name') {
+			// Predefined keys
+			if (currentSortKey === 'name') {
+				const aProfileData = a.linkedInProfile?.data;
+				const bProfileData = b.linkedInProfile?.data;
+				const aName = `${aProfileData?.first_name ?? ''} ${aProfileData?.last_name ?? ''}`.trim();
+				const bName = `${bProfileData?.first_name ?? ''} ${bProfileData?.last_name ?? ''}`.trim();
 				comparison = aName.localeCompare(bName);
-			} else if (sortKey === 'title') {
+			} else if (currentSortKey === 'title') {
+				const aTitle = a.linkedInProfile?.data?.headline ?? '';
+				const bTitle = b.linkedInProfile?.data?.headline ?? '';
 				comparison = aTitle.localeCompare(bTitle);
-			} else if (sortKey === 'matchScore') {
+			} else if (currentSortKey === 'matchScore') {
+				// Handle null/undefined scores safely, treating them as lowest
+				const aScore = a.matchScore ?? -Infinity;
+				const bScore = b.matchScore ?? -Infinity;
 				comparison = aScore - bScore;
+			} else {
+				// --- Custom Field Sorting ---
+				const aValueData = a.customFieldValues?.find(
+					(cfv) => cfv.customField?.name === currentSortKey
+				);
+				const bValueData = b.customFieldValues?.find(
+					(cfv) => cfv.customField?.name === currentSortKey
+				);
+
+				const aValue = aValueData?.value;
+				const bValue = bValueData?.value;
+				const fieldType = aValueData?.customField?.type ?? bValueData?.customField?.type ?? 'text'; // Determine type
+
+				// Default values for comparison if one value is missing
+				const valA = aValue ?? (fieldType === 'number' ? -Infinity : '');
+				const valB = bValue ?? (fieldType === 'number' ? -Infinity : '');
+
+				switch (fieldType) {
+					case 'number': {
+						const numA = valA === -Infinity ? -Infinity : parseFloat(String(valA));
+						const numB = valB === -Infinity ? -Infinity : parseFloat(String(valB));
+						comparison = (isNaN(numA) ? -Infinity : numA) - (isNaN(numB) ? -Infinity : numB);
+						break;
+					}
+					case 'date': {
+						const dateA = new Date(String(valA));
+						const dateB = new Date(String(valB));
+						// Handle invalid dates by treating them as very early dates
+						const timeA = isNaN(dateA.getTime()) ? -Infinity : dateA.getTime();
+						const timeB = isNaN(dateB.getTime()) ? -Infinity : dateB.getTime();
+						comparison = timeA - timeB;
+						break;
+					}
+					case 'boolean': {
+						// Treat 'true' as 1, 'false' or others as 0 for comparison
+						const boolA = String(valA).toLowerCase() === 'true' ? 1 : 0;
+						const boolB = String(valB).toLowerCase() === 'true' ? 1 : 0;
+						comparison = boolA - boolB;
+						break;
+					}
+					case 'text':
+					default:
+						comparison = String(valA).localeCompare(String(valB));
+						break;
+				}
 			}
 
-			return sortDirection === 'asc' ? comparison : -comparison;
+			return currentSortDirection === 'asc' ? comparison : -comparison;
 		});
 	});
 
 	function sortBy(key: SortKey) {
 		if (sortKey === key) {
+			console.log('re-sorting');
 			sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
 		} else {
+			console.log('sorting by new key', key);
 			sortKey = key;
 			sortDirection = 'asc';
 		}
 	}
 
-	function addField() {
-		if (!newFieldName.trim()) return; // Prevent adding empty field names
-		customFields.push({ type: 'text', name: newFieldName.trim() });
-		newFieldName = ''; // Reset input
-		isAddDialogOpen = false; // Close dialog
+	async function addField() {
+		const name = newFieldName.trim();
+		const description = newFieldDescription.trim();
+		const type = newFieldType;
+
+		if (!name || !description) return;
+
+		// REMOVED: customFields.push({ type, name, description }); // This caused type error
+
+		// const originalFieldName = newFieldName; // Keep track for potential revert if needed - Removed as revert logic is removed
+		newFieldName = '';
+		newFieldDescription = '';
+		newFieldType = 'text';
+		isAddDialogOpen = false;
+
+		try {
+			const response = await fetch(`/api/job/${jobId}/customfield`, {
+				method: 'POST',
+				body: JSON.stringify({ name, description, type })
+			});
+
+			if (!response.ok) {
+				console.error('Failed to add custom field:', await response.text());
+				// Consider adding UI feedback here
+			} else {
+				const data = await response.json();
+				console.log('Custom field added:', data);
+				// --- Trigger data refresh ---
+				// Option 1: Full page reload (simple but less smooth)
+				window.location.reload();
+				// Option 2: Invalidate specific data (needs SvelteKit knowledge)
+				// import { invalidate } from '$app/navigation';
+				// invalidate((url) => url.pathname === `/dashboard/job/${jobId}`); // Adjust predicate if needed
+			}
+		} catch (error) {
+			console.error('Error sending request:', error);
+			// Consider adding UI feedback here
+		}
+	}
+
+	async function deleteField(fieldId: string) {
+		console.log(`Attempting to delete field: ${fieldId}`);
+		try {
+			const response = await fetch(`/api/job/${jobId}/customfield/${fieldId}`, {
+				method: 'DELETE'
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				console.error('Failed to delete custom field:', response.status, errorData);
+				// Add user feedback here (e.g., toast notification)
+			} else {
+				console.log('Custom field deleted successfully');
+				// Close the specific dialog
+				deleteDialogStates[fieldId] = false;
+				// Refresh data
+				window.location.reload(); // Or use invalidate
+			}
+		} catch (error) {
+			console.error('Error sending delete request:', error);
+			// Add user feedback here
+		}
 	}
 
 	const totalColspan = $derived(4 + customFields.length);
@@ -101,9 +229,46 @@
 			</Table.Head>
 			<Table.Head>Reasoning</Table.Head>
 
-			{#each customFields as field (field.name)}
+			{#each customFields as field (field.id)}
 				<Table.Head>
-					{field.name}
+					<div class="flex items-center justify-between">
+						<Button
+							variant="ghost"
+							onclick={() => sortBy(field.name)}
+							class="h-auto flex-grow justify-start p-0 text-left"
+						>
+							{field.name}
+							<ArrowUpDown class="ml-2 h-4 w-4" />
+						</Button>
+						<Dialog.Root bind:open={deleteDialogStates[field.id]}>
+							<Dialog.Trigger asChild let:builder>
+								<Button
+									builders={[builder]}
+									variant="ghost"
+									size="icon"
+									class="ml-1 h-6 w-6 shrink-0 hover:bg-red-300 dark:hover:bg-red-500"
+									aria-label={`Delete field ${field.name}`}
+									onclick={() => (deleteDialogStates[field.id] = true)}
+								>
+									<Trash2 class="h-4 w-4 text-destructive" />
+								</Button>
+							</Dialog.Trigger>
+							<Dialog.Content>
+								<h4 class="text-lg font-semibold">Delete Custom Field</h4>
+								<p>
+									Are you sure you want to delete the field "{field.name}"? All associated data for
+									this field will be permanently removed. This action cannot be undone.
+								</p>
+								<Dialog.Footer>
+									<Button variant="outline" onclick={() => (deleteDialogStates[field.id] = false)}
+										>Cancel</Button
+									>
+									<Button variant="destructive" onclick={() => deleteField(field.id)}>Delete</Button
+									>
+								</Dialog.Footer>
+							</Dialog.Content>
+						</Dialog.Root>
+					</div>
 				</Table.Head>
 			{/each}
 
@@ -129,9 +294,34 @@
 							<Input
 								id="name"
 								bind:value={newFieldName}
-								placeholder="e.g., 'Contacted Date'"
+								placeholder="e.g., 'Years of Experience'"
 								class="col-span-3"
 							/>
+							<p>Field Description</p>
+							<Input
+								id="description"
+								bind:value={newFieldDescription}
+								placeholder="e.g., 'The number of years of experience the candidate has'"
+								class="col-span-3"
+							/>
+							<p>Field Type</p>
+							<Select.Root
+								onSelectedChange={(selected) => {
+									if (selected) {
+										newFieldType = selected.value as typeof newFieldType;
+									}
+								}}
+							>
+								<Select.Trigger class="w-[180px]">
+									<Select.Value placeholder="Select field type..." />
+								</Select.Trigger>
+								<Select.Content>
+									<Select.Item value="text">Text</Select.Item>
+									<Select.Item value="number">Number</Select.Item>
+									<Select.Item value="boolean">Boolean</Select.Item>
+									<Select.Item value="date">Date</Select.Item>
+								</Select.Content>
+							</Select.Root>
 						</div>
 						<Dialog.Footer>
 							<Button variant="outline" onclick={() => (isAddDialogOpen = false)}>Cancel</Button>
@@ -165,11 +355,24 @@
 					<Table.Cell class="text-center">
 						{candidate.reasoning != null ? candidate.reasoning : 'N/A'}
 					</Table.Cell>
-					{#each customFields as field (field.name)}
+					{#each customFields as field (field.id)}
+						{@const fieldValue = candidate.customFieldValues?.find(
+							(cfv) => cfv.customFieldId === field.id
+						)?.value}
 						{#if field.type === 'number'}
-							<Table.Cell class="text-center">N/A</Table.Cell>
+							<Table.Cell class="text-center">{fieldValue ?? 'N/A'}</Table.Cell>
 						{:else if field.type === 'text'}
-							<Table.Cell>N/A</Table.Cell>
+							<Table.Cell>{fieldValue ?? 'N/A'}</Table.Cell>
+						{:else if field.type === 'boolean'}
+							<Table.Cell class="text-center"
+								>{fieldValue != null ? String(fieldValue) : 'N/A'}</Table.Cell
+							>
+						{:else if field.type === 'date'}
+							<Table.Cell class="text-center"
+								>{fieldValue ? new Date(fieldValue).toLocaleDateString() : 'N/A'}</Table.Cell
+							>
+						{:else}
+							<Table.Cell>{fieldValue ?? 'N/A'}</Table.Cell>
 						{/if}
 					{/each}
 				</Table.Row>

@@ -183,6 +183,13 @@
       "when": 1745234992389,
       "tag": "0025_furry_leo",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1745414682745,
+      "tag": "0026_cuddly_kitty_pryde",
+      "breakpoints": true
     }
   ]
 }

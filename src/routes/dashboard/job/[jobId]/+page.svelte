@@ -63,7 +63,7 @@
 						</div>
 						<JobDescriptionCard {job} />
 						<JobDetailsCard {job} />
-						<CandidateTable {candidates} />
+						<CandidateTable {candidates} jobId={job.id} customFields={job.customFields} />
 					</div>
 				</div>
 			</Resizable.Pane>

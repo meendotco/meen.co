@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -292,7 +293,7 @@ export const linkedInProfile = pgTable(
 			.primaryKey()
 			.$defaultFn(() => crypto.randomUUID()),
 		handle: text('handle').notNull().unique(),
-		data: jsonb('data').notNull(),
+		data: jsonb('data').$type<PersonEndpointResponse>().notNull(),
 		profileImageB64: text('profileImageB64'),
 		vector: vector('vector', { dimensions: 1536 }),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
@@ -355,6 +356,7 @@ export const customField = pgTable(
 			.notNull()
 			.references(() => jobPost.id, { onDelete: 'cascade' }),
 		name: text('name').notNull(),
+		description: text('description').notNull(),
 		type: text('type').$type<CustomFieldType>().notNull(),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
@@ -385,6 +387,10 @@ export const customFieldValueRelations = relations(customFieldValue, ({ one }) =
 	customField: one(customField, {
 		fields: [customFieldValue.customFieldId],
 		references: [customField.id]
+	}),
+	candidate: one(candidates, {
+		fields: [customFieldValue.candidateId],
+		references: [candidates.id]
 	})
 }));
 
