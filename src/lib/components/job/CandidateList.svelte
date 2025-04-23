@@ -24,15 +24,6 @@
 	let candidateList = $state<CandidateSelect[]>(
 		initialCandidates.map((c: CandidateSelect) => ({ ...c, isNew: false }))
 	);
-
-	onMount(() => {
-		socket.on(`${jobId}:candidate-added`, (candidate: CandidateSelect) => {
-			console.log('candidate-added', candidate);
-			if (!candidateList.some((c) => c.id === candidate.id)) {
-				candidateList.unshift({ ...candidate, isNew: true });
-			}
-		});
-	});
 </script>
 
 <div>

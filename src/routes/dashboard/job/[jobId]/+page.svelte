@@ -13,6 +13,7 @@
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import * as Resizable from '$lib/components/ui/resizable';
+	import AddCandidateDialog from '$lib/components/job/AddCandidateDialog.svelte';
 	import type {
 		candidates as candidatesTable,
 		chat as chatTable,
@@ -21,6 +22,9 @@
 		linkedInProfile as linkedInProfileTable,
 		toolcall as toolcallTable
 	} from '$lib/server/db/schema';
+	import { socket } from '$lib/websocket/client.svelte';
+	import { onMount } from 'svelte';
+
 	type JobPostSelect = InferSelectModel<typeof jobPostTable>;
 	type LinkedInProfileSelect = InferSelectModel<typeof linkedInProfileTable>;
 	type CandidateSelect = InferSelectModel<typeof candidatesTable> & {
@@ -50,6 +54,15 @@
 	let initialMessages = $derived<MessageSelect[]>(data.job?.chat?.messages ?? []);
 	let chatId = $state(data.job?.chat?.id);
 	let view = $state<'list' | 'table'>('list');
+
+	onMount(() => {
+		socket.on(`${job.id}:candidate-added`, (candidate: CandidateSelect) => {
+			console.log('candidate-added', candidate);
+			if (!candidates.some((c) => c.id === candidate.id)) {
+				candidates.unshift({ ...candidate, isNew: true });
+			}
+		});
+	});
 </script>
 
 <div class="flex h-screen flex-col overflow-hidden bg-background">
@@ -67,8 +80,11 @@
 						<JobDescriptionCard {job} />
 						<JobDetailsCard {job} />
 
-						<Button variant="outline" onclick={() => (view = 'list')}>List View</Button>
-						<Button variant="outline" onclick={() => (view = 'table')}>Table View</Button>
+						<div class="flex gap-2">
+							<Button variant="outline" onclick={() => (view = 'list')}>List View</Button>
+							<Button variant="outline" onclick={() => (view = 'table')}>Table View</Button>
+							<AddCandidateDialog jobId={job.id} />
+						</div>
 
 						{#if view === 'list'}
 							<CandidateList {candidates} jobId={job.id} />
