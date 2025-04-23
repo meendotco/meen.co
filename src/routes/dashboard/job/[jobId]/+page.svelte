@@ -3,7 +3,7 @@
 	import type { InferSelectModel } from 'drizzle-orm';
 
 	import AIChat from '$lib/components/job/AIChat.svelte'; // Added import
-	import CandidateList from '$lib/components/job/CandidateList.svelte';
+	import CandidateTable from '$lib/components/job/CandidateTable.svelte'; // Changed import
 	import JobDescriptionCard from '$lib/components/job/JobDescriptionCard.svelte';
 	import JobDetailsCard from '$lib/components/job/JobDetailsCard.svelte';
 	import JobHeader from '$lib/components/job/JobHeader.svelte';
@@ -63,7 +63,7 @@
 						</div>
 						<JobDescriptionCard {job} />
 						<JobDetailsCard {job} />
-						<CandidateList {candidates} jobId={job.id} />
+						<CandidateTable {candidates} jobId={job.id} customFields={job.customFields} />
 					</div>
 				</div>
 			</Resizable.Pane>

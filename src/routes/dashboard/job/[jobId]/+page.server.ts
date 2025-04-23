@@ -13,7 +13,12 @@ export const load = async ({ locals, params }) => {
 		with: {
 			candidates: {
 				with: {
-					linkedInProfile: true
+					linkedInProfile: true,
+					customFieldValues: {
+						with: {
+							customField: true
+						}
+					}
 				}
 			},
 			chat: {
@@ -28,7 +33,8 @@ export const load = async ({ locals, params }) => {
 						orderBy: asc(chatMessage.createdAt)
 					}
 				}
-			}
+			},
+			customFields: true
 		}
 	});
 

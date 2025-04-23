@@ -40,7 +40,15 @@ export default ts.config(
 		},
 		rules: {
 			'no-undef': 'off',
-			'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
+			'max-lines': [
+				'warn',
+				{
+					max: 300,
+					skipBlankLines: true,
+					skipComments: true,
+					skipCodeBlocks: true // Skip JavaScript code blocks in Svelte files
+				}
+			],
 			'no-console': 'off',
 			'simple-import-sort/imports': 'warn',
 			'simple-import-sort/exports': 'warn',

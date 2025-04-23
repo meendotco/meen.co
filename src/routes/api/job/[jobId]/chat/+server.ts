@@ -150,7 +150,9 @@ export const POST = async ({ locals, params, request }) => {
 		}
 	});
 	const promises = [
-		db.insert(toolcall).values(Array.from(toolCallsToCreate.values())),
+		toolCallsToCreate.size > 0
+			? db.insert(toolcall).values(Array.from(toolCallsToCreate.values()))
+			: Promise.resolve(),
 		db.insert(messageChunk).values(
 			allMessageChunks.map((chunk) => ({
 				chatMessageId: assistantMessageId,

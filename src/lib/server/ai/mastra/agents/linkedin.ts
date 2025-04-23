@@ -48,7 +48,7 @@ Always type something out for the user. Ask the user follow up questions.
 
 <assessment>
 - When you add a candidate and assess them. Write out what makes them unique and a good fit for the job.
-</assesment
+</assesment>
 
 <job_description>
 ${generateJobPostEmbeddingInputFull(job as JobData)}
