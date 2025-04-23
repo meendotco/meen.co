@@ -92,10 +92,16 @@ export const POST = async ({ params, request, locals }) => {
 
 		console.log('Created new custom field:', newCustomField);
 
-		for (const candidate of job.candidates) {
-			console.log(`Generating value for candidate: ${candidate.id}`);
+		// Process candidates in batches of 10
+		const batchSize = 10;
+		for (let i = 0; i < job.candidates.length; i += batchSize) {
+			const batch = job.candidates.slice(i, i + batchSize);
 
-			const prompt = `
+			// Process each candidate in the current batch
+			for (const candidate of batch) {
+				console.log(`Generating value for candidate: ${candidate.id}`);
+
+				const prompt = `
 <task>
   Generate a human-readable value for the custom field "${newCustomField.name}" (${newCustomField.description}) for this candidate based on their LinkedIn profile.
 </task>
@@ -112,52 +118,58 @@ ${generateLinkedInProfileEmbeddingInput(candidate.linkedInProfile.data)}
   Ensure the output is clear, concise, and easily understood by humans.
 </output_requirements>
 `;
-			const value = await generateObject({
-				model: o3Mini,
-				schema: z.object({
-					value:
-						type === 'boolean'
-							? z.boolean()
-							: type === 'number'
-								? z.number()
-								: type === 'date'
-									? z.string().datetime()
-									: z.string()
-				}),
-				prompt: prompt
-			});
+				const value = await generateObject({
+					model: o3Mini,
+					schema: z.object({
+						value:
+							type === 'boolean'
+								? z.boolean()
+								: type === 'number'
+									? z.number()
+									: type === 'date'
+										? z.string().datetime()
+										: z.string()
+					}),
+					prompt: prompt
+				});
 
-			console.log(`Generated value for candidate ${candidate.id}:`, value.object.value);
+				console.log(`Generated value for candidate ${candidate.id}:`, value.object.value);
 
-			const [newValRecord] = await db
-				.insert(customFieldValue)
-				.values({
-					id: uuidv4(),
-					customFieldId: newCustomField.id,
-					candidateId: candidate.id,
-					value: String(value.object.value)
-				})
-				.returning();
+				const [newValRecord] = await db
+					.insert(customFieldValue)
+					.values({
+						id: uuidv4(),
+						customFieldId: newCustomField.id,
+						candidateId: candidate.id,
+						value: String(value.object.value)
+					})
+					.returning();
 
-			// Fetch the newly created value with its relation to send complete data
-			const valueToBroadcast = await db.query.customFieldValue.findFirst({
-				where: eq(customFieldValue.id, newValRecord.id),
-				with: {
-					customField: true // Ensure the nested customField is included
-				}
-			});
-
-			if (valueToBroadcast) {
-				broadcastToUsers(locals.wss, people ?? [], {
-					messageType: `${jobId}.customFieldValueCreated`, // Use job-specific channel
-					data: {
-						// Send the fetched record directly
-						customFieldValue: valueToBroadcast
+				// Fetch the newly created value with its relation to send complete data
+				const valueToBroadcast = await db.query.customFieldValue.findFirst({
+					where: eq(customFieldValue.id, newValRecord.id),
+					with: {
+						customField: true // Ensure the nested customField is included
 					}
 				});
+
+				if (valueToBroadcast) {
+					broadcastToUsers(locals.wss, people ?? [], {
+						messageType: `${jobId}.customFieldValueCreated`, // Use job-specific channel
+						data: {
+							// Send the fetched record directly
+							customFieldValue: valueToBroadcast
+						}
+					});
+				}
+
+				console.log(`Saved custom field value for candidate ${candidate.id}`);
 			}
 
-			console.log(`Saved custom field value for candidate ${candidate.id}`);
+			// Log batch completion
+			console.log(
+				`Completed batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(job.candidates.length / batchSize)}`
+			);
 		}
 
 		console.log('POST /api/job/[jobId]/customfield - Completed successfully');

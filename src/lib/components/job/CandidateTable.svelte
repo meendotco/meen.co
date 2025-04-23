@@ -428,35 +428,35 @@
 				{@const reasoning = candidate.reasoning != null ? String(candidate.reasoning) : 'N/A'}
 
 				<Table.Row>
-					{#if fullName !== 'N/A' && fullName.length > 100}
+					{#if fullName !== 'N/A' && fullName.length > 50}
 						<Table.Cell
 							class="cursor-pointer font-medium"
 							onclick={() => showFullContent(fullName)}
 						>
-							{fullName.slice(0, 100)}... (click to see more)
+							{fullName.slice(0, 50)}...
 						</Table.Cell>
 					{:else}
 						<Table.Cell class="font-medium">{fullName}</Table.Cell>
 					{/if}
 
-					{#if headline !== 'N/A' && headline.length > 100}
+					{#if headline !== 'N/A' && headline.length > 50}
 						<Table.Cell class="cursor-pointer" onclick={() => showFullContent(headline)}>
-							{headline.slice(0, 100)}... (click to see more)
+							{headline.slice(0, 50)}...
 						</Table.Cell>
 					{:else}
 						<Table.Cell>{headline}</Table.Cell>
 					{/if}
 
 					<Table.Cell class="text-center">
-						{candidate.matchScore != null ? `${candidate.matchScore}/100` : 'N/A'}
+						{candidate.matchScore != null ? `${candidate.matchScore}/50` : 'N/A'}
 					</Table.Cell>
 
-					{#if reasoning !== 'N/A' && reasoning.length > 100}
+					{#if reasoning !== 'N/A' && reasoning.length > 50}
 						<Table.Cell
 							class="cursor-pointer text-center"
 							onclick={() => showFullContent(reasoning)}
 						>
-							{reasoning.slice(0, 100)}... (click to see more)
+							{reasoning.slice(0, 50)}...
 						</Table.Cell>
 					{:else}
 						<Table.Cell class="text-center">{reasoning}</Table.Cell>
@@ -467,7 +467,7 @@
 							(cfv) => cfv.customFieldId === field.id
 						)?.value}
 						{@const displayValue = fieldValue != null ? String(fieldValue) : 'N/A'}
-						{@const isLong = displayValue !== 'N/A' && displayValue.length > 100}
+						{@const isLong = displayValue !== 'N/A' && displayValue.length > 50}
 
 						{#if field.type === 'boolean'}
 							<Table.Cell class="text-center">{displayValue}</Table.Cell>
@@ -480,7 +480,7 @@
 								class="cursor-pointer {field.type === 'number' ? 'text-center' : ''}"
 								onclick={() => showFullContent(fieldValue)}
 							>
-								{displayValue.slice(0, 100)}... (click to see more)
+								{displayValue.slice(0, 50)}...
 							</Table.Cell>
 						{:else}
 							<Table.Cell class={field.type === 'number' ? 'text-center' : ''}>
