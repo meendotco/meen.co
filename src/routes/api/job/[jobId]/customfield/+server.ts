@@ -72,7 +72,7 @@ export const POST = async ({ params, request }) => {
 									? z.string().datetime()
 									: z.string()
 				}),
-				prompt: `Generate a value for the custom field ${newCustomField.name} and ${newCustomField.description} for the candidate: \n\n${generateLinkedInProfileEmbeddingInput(candidate.linkedInProfile.data)}`
+				prompt: `Generate a human-readable value for the custom field "${newCustomField.name}" (${newCustomField.description}) for this candidate based on their LinkedIn profile: \n\n${generateLinkedInProfileEmbeddingInput(candidate.linkedInProfile.data)}\n\nEnsure the output is clear, concise, and easily understood by humans.`
 			});
 
 			console.log(`Generated value for candidate ${candidate.id}:`, value.object.value);

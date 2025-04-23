@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { ArrowUpDown, PlusIcon, Trash, Trash2 } from 'lucide-svelte';
+	import { ArrowUpDown, PlusIcon, Trash2 } from 'lucide-svelte';
 	import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 	import { Button } from '$lib/components/ui/button';
@@ -52,6 +52,10 @@
 	let isAddDialogOpen = $state(false);
 	// State to track which delete dialog is open (using field ID as key)
 	let deleteDialogStates = $state<Record<string, boolean>>({});
+
+	// State for reusable cell content dialog
+	let isCellDialogOpen = $state(false);
+	let dialogContent = $state<string | null>(null);
 
 	const sortedCandidates: CandidateSelect[] = $derived.by(() => {
 		// Get local copies of state for the derivation
@@ -204,6 +208,13 @@
 	}
 
 	const totalColspan = $derived(4 + customFields.length);
+
+	function showFullContent(content: string | null | undefined) {
+		if (content) {
+			dialogContent = String(content); // Ensure it's a string
+			isCellDialogOpen = true;
+		}
+	}
 </script>
 
 <Table.Root>
@@ -336,43 +347,70 @@
 		{#if sortedCandidates.length > 0}
 			{#each sortedCandidates as candidate (candidate.id)}
 				{@const profileData = candidate.linkedInProfile?.data}
+				{@const fullName =
+					`${profileData?.first_name ?? ''} ${profileData?.last_name ?? ''}`.trim() || 'N/A'}
+				{@const headline = profileData?.headline ?? 'N/A'}
+				{@const reasoning = candidate.reasoning != null ? String(candidate.reasoning) : 'N/A'}
+
 				<Table.Row>
-					<Table.Cell class="font-medium">
-						{`${profileData?.first_name ?? ''} ${profileData?.last_name ?? ''}`.trim() || 'N/A'}
-					</Table.Cell>
-					<Table.Cell>
-						{#if profileData?.headline}
-							{profileData.headline.length > 50
-								? `${profileData.headline.slice(0, 50)}...`
-								: profileData.headline}
-						{:else}
-							N/A
-						{/if}
-					</Table.Cell>
+					{#if fullName !== 'N/A' && fullName.length > 100}
+						<Table.Cell
+							class="cursor-pointer font-medium"
+							onclick={() => showFullContent(fullName)}
+						>
+							{fullName.slice(0, 100)}... (click to see more)
+						</Table.Cell>
+					{:else}
+						<Table.Cell class="font-medium">{fullName}</Table.Cell>
+					{/if}
+
+					{#if headline !== 'N/A' && headline.length > 100}
+						<Table.Cell class="cursor-pointer" onclick={() => showFullContent(headline)}>
+							{headline.slice(0, 100)}... (click to see more)
+						</Table.Cell>
+					{:else}
+						<Table.Cell>{headline}</Table.Cell>
+					{/if}
+
 					<Table.Cell class="text-center">
-						{candidate.matchScore != null ? candidate.matchScore : 'N/A'}/100
+						{candidate.matchScore != null ? `${candidate.matchScore}/100` : 'N/A'}
 					</Table.Cell>
-					<Table.Cell class="text-center">
-						{candidate.reasoning != null ? candidate.reasoning : 'N/A'}
-					</Table.Cell>
+
+					{#if reasoning !== 'N/A' && reasoning.length > 100}
+						<Table.Cell
+							class="cursor-pointer text-center"
+							onclick={() => showFullContent(reasoning)}
+						>
+							{reasoning.slice(0, 100)}... (click to see more)
+						</Table.Cell>
+					{:else}
+						<Table.Cell class="text-center">{reasoning}</Table.Cell>
+					{/if}
+
 					{#each customFields as field (field.id)}
 						{@const fieldValue = candidate.customFieldValues?.find(
 							(cfv) => cfv.customFieldId === field.id
 						)?.value}
-						{#if field.type === 'number'}
-							<Table.Cell class="text-center">{fieldValue ?? 'N/A'}</Table.Cell>
-						{:else if field.type === 'text'}
-							<Table.Cell>{fieldValue ?? 'N/A'}</Table.Cell>
-						{:else if field.type === 'boolean'}
-							<Table.Cell class="text-center"
-								>{fieldValue != null ? String(fieldValue) : 'N/A'}</Table.Cell
-							>
+						{@const displayValue = fieldValue != null ? String(fieldValue) : 'N/A'}
+						{@const isLong = displayValue !== 'N/A' && displayValue.length > 100}
+
+						{#if field.type === 'boolean'}
+							<Table.Cell class="text-center">{displayValue}</Table.Cell>
 						{:else if field.type === 'date'}
 							<Table.Cell class="text-center"
 								>{fieldValue ? new Date(fieldValue).toLocaleDateString() : 'N/A'}</Table.Cell
 							>
+						{:else if isLong}
+							<Table.Cell
+								class="cursor-pointer {field.type === 'number' ? 'text-center' : ''}"
+								onclick={() => showFullContent(fieldValue)}
+							>
+								{displayValue.slice(0, 100)}... (click to see more)
+							</Table.Cell>
 						{:else}
-							<Table.Cell>{fieldValue ?? 'N/A'}</Table.Cell>
+							<Table.Cell class={field.type === 'number' ? 'text-center' : ''}>
+								{displayValue}
+							</Table.Cell>
 						{/if}
 					{/each}
 				</Table.Row>
@@ -386,3 +424,15 @@
 		{/if}
 	</Table.Body>
 </Table.Root>
+
+<!-- Reusable Dialog for Full Cell Content -->
+<Dialog.Root bind:open={isCellDialogOpen}>
+	<Dialog.Content class="max-w-xl">
+		<Dialog.Header>
+			<Dialog.Title>Full Value</Dialog.Title>
+		</Dialog.Header>
+		<div class="mt-4 max-h-[60vh] overflow-y-auto whitespace-pre-wrap break-words">
+			{dialogContent}
+		</div>
+	</Dialog.Content>
+</Dialog.Root>
