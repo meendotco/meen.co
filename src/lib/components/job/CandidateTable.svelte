@@ -4,8 +4,9 @@
 	import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
-	import * as Popover from '$lib/components/ui/popover';
+	import { Label } from '$lib/components/ui/label';
 	import * as Table from '$lib/components/ui/table';
 	import type {
 		candidates as candidatesTable,
@@ -30,8 +31,8 @@
 	let sortDirection = $state<SortDirection>('desc');
 
 	let customFields = $state<{ name: string; type: 'number' | 'text' }[]>([]);
-	let isPopoverOpen = $state(false);
 	let newFieldName = $state('');
+	let isAddDialogOpen = $state(false);
 
 	const sortedCandidates: CandidateSelect[] = $derived.by(() => {
 		return [...candidates].sort((a: CandidateSelect, b: CandidateSelect) => {
@@ -68,8 +69,13 @@
 	}
 
 	function addField() {
-		customFields.push({ type: 'text', name: 'New Field' });
+		if (!newFieldName.trim()) return; // Prevent adding empty field names
+		customFields.push({ type: 'text', name: newFieldName.trim() });
+		newFieldName = ''; // Reset input
+		isAddDialogOpen = false; // Close dialog
 	}
+
+	const totalColspan = $derived(4 + customFields.length);
 </script>
 
 <Table.Root>
@@ -102,9 +108,37 @@
 			{/each}
 
 			<Table.Head class="w-auto text-right">
-				<Button onclick={() => addField()} variant="outline" size="sm">
-					<PlusIcon class="mr-1 h-4 w-4" /> Add Field
-				</Button>
+				<Dialog.Root bind:open={isAddDialogOpen}>
+					<Dialog.Trigger asChild let:builder>
+						<Button
+							onclick={() => (isAddDialogOpen = true)}
+							builders={[builder]}
+							variant="outline"
+							size="sm"
+						>
+							<PlusIcon class="mr-1 h-4 w-4" /> Add Field
+						</Button>
+					</Dialog.Trigger>
+					<Dialog.Content>
+						<Dialog.Header>
+							<Dialog.Title>Add Custom Field</Dialog.Title>
+							<Dialog.Description>Enter the name for the new custom field.</Dialog.Description>
+						</Dialog.Header>
+						<div class="grid gap-4 py-4">
+							<p>Field Name</p>
+							<Input
+								id="name"
+								bind:value={newFieldName}
+								placeholder="e.g., 'Contacted Date'"
+								class="col-span-3"
+							/>
+						</div>
+						<Dialog.Footer>
+							<Button variant="outline" onclick={() => (isAddDialogOpen = false)}>Cancel</Button>
+							<Button onclick={addField}>Add Field</Button>
+						</Dialog.Footer>
+					</Dialog.Content>
+				</Dialog.Root>
 			</Table.Head>
 		</Table.Row>
 	</Table.Header>
@@ -142,7 +176,7 @@
 			{/each}
 		{:else}
 			<Table.Row>
-				<Table.Cell colspan={totalColspan + 1} class="h-24 text-center text-muted-foreground">
+				<Table.Cell colspan={totalColspan} class="h-24 text-center text-muted-foreground">
 					No candidates found for this job yet.
 				</Table.Cell>
 			</Table.Row>
