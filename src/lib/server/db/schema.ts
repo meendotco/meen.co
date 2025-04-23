@@ -26,6 +26,8 @@ const pool = postgres(DATABASE_URL, { max: 1 });
 
 export const db = drizzle(pool);
 
+type CustomFieldType = 'boolean' | 'date' | 'number' | 'text';
+
 export const users = pgTable('user', {
 	id: text('id')
 		.primaryKey()
@@ -283,18 +285,6 @@ export const jobPost = pgTable(
 	]
 );
 
-export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
-	ownerOrganization: one(organization, {
-		fields: [jobPost.ownerOrganizationHandle],
-		references: [organization.handle]
-	}),
-	candidates: many(candidates),
-	chat: one(chat, {
-		fields: [jobPost.id],
-		references: [chat.jobPostId]
-	})
-}));
-
 export const linkedInProfile = pgTable(
 	'linkedInProfile',
 	{
@@ -343,7 +333,7 @@ export const linkedInProfileRelations = relations(linkedInProfile, ({ many }) =>
 	candidates: many(candidates)
 }));
 
-export const candidateRelations = relations(candidates, ({ one }) => ({
+export const candidateRelations = relations(candidates, ({ one, many }) => ({
 	jobPost: one(jobPost, {
 		fields: [candidates.jobPostId],
 		references: [jobPost.id]
@@ -351,7 +341,71 @@ export const candidateRelations = relations(candidates, ({ one }) => ({
 	linkedInProfile: one(linkedInProfile, {
 		fields: [candidates.linkedInProfileId],
 		references: [linkedInProfile.id]
+	}),
+	customFieldValues: many(customFieldValue)
+}));
+
+export const customField = pgTable(
+	'customField',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		jobPostId: text('jobPostId')
+			.notNull()
+			.references(() => jobPost.id, { onDelete: 'cascade' }),
+		name: text('name').notNull(),
+		type: text('type').$type<CustomFieldType>().notNull(),
+		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+	},
+	(table) => [index('customField_jobPostId_idx').on(table.jobPostId)]
+);
+
+export const customFieldValue = pgTable(
+	'customFieldValue',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		customFieldId: text('customFieldId')
+			.notNull()
+			.references(() => customField.id, { onDelete: 'cascade' }),
+		candidateId: text('candidateId')
+			.notNull()
+			.references(() => candidates.id, { onDelete: 'cascade' }),
+		value: text('value'),
+		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+	},
+	(table) => [index('customFieldValue_customFieldId_idx').on(table.customFieldId)]
+);
+
+export const customFieldValueRelations = relations(customFieldValue, ({ one }) => ({
+	customField: one(customField, {
+		fields: [customFieldValue.customFieldId],
+		references: [customField.id]
 	})
+}));
+
+export const customFieldRelations = relations(customField, ({ one }) => ({
+	jobPost: one(jobPost, {
+		fields: [customField.jobPostId],
+		references: [jobPost.id]
+	})
+}));
+
+export const jobPostRelations = relations(jobPost, ({ one, many }) => ({
+	ownerOrganization: one(organization, {
+		fields: [jobPost.ownerOrganizationHandle],
+		references: [organization.handle]
+	}),
+	candidates: many(candidates),
+	chat: one(chat, {
+		fields: [jobPost.id],
+		references: [chat.jobPostId]
+	}),
+	customFields: many(customField)
 }));
 
 export const waitlist = pgTable('waitlist', {
