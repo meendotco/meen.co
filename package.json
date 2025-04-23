@@ -95,6 +95,7 @@
 		"nanoid": "^5.1.5",
 		"pnpm": "^10.9.0",
 		"postgres": "^3.4.5",
+		"posthog-js": "^1.236.5",
 		"proxycurl-js-linkedin-profile-scraper": "^1.0.2",
 		"rehype-highlight": "^7.0.2",
 		"rehype-katex": "^7.0.1",
