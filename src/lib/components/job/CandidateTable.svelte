@@ -291,52 +291,60 @@
 							builders={[builder]}
 							variant="outline"
 							size="sm"
+							class="flex items-center gap-1"
 						>
-							<PlusIcon class="mr-1 h-4 w-4" /> Add Field
+							<PlusIcon class="h-4 w-4" /> Add Field
 						</Button>
 					</Dialog.Trigger>
-					<Dialog.Content>
+					<Dialog.Content class="sm:max-w-md">
 						<Dialog.Header>
-							<Dialog.Title>Add Custom Field</Dialog.Title>
-							<Dialog.Description>Enter the name for the new custom field.</Dialog.Description>
+							<Dialog.Title class="text-lg font-semibold">Add Custom Field</Dialog.Title>
+							<Dialog.Description class="text-sm text-muted-foreground">
+								Let our AI generate a value for this field based on the candidate's LinkedIn
+								profile.
+							</Dialog.Description>
 						</Dialog.Header>
-						<div class="grid gap-4 py-4">
-							<p>Field Name</p>
-							<Input
-								id="name"
-								bind:value={newFieldName}
-								placeholder="e.g., 'Years of Experience'"
-								class="col-span-3"
-							/>
-							<p>Field Description</p>
-							<Input
-								id="description"
-								bind:value={newFieldDescription}
-								placeholder="e.g., 'The number of years of experience the candidate has'"
-								class="col-span-3"
-							/>
-							<p>Field Type</p>
-							<Select.Root
-								onSelectedChange={(selected) => {
-									if (selected) {
-										newFieldType = selected.value as typeof newFieldType;
-									}
-								}}
-							>
-								<Select.Trigger class="w-[180px]">
-									<Select.Value placeholder="Select field type..." />
-								</Select.Trigger>
-								<Select.Content>
-									<Select.Item value="text">Text</Select.Item>
-									<Select.Item value="number">Number</Select.Item>
-									<Select.Item value="boolean">Boolean</Select.Item>
-									<Select.Item value="date">Date</Select.Item>
-								</Select.Content>
-							</Select.Root>
+						<div class="grid gap-4 py-3">
+							<div class="grid gap-2">
+								<label for="name" class="text-sm font-medium">Field Name</label>
+								<Input
+									id="name"
+									bind:value={newFieldName}
+									placeholder="e.g., 'Years of Experience'"
+								/>
+							</div>
+							<div class="grid gap-2">
+								<label for="description" class="text-sm font-medium">Field Description</label>
+								<Input
+									id="description"
+									bind:value={newFieldDescription}
+									placeholder="e.g., 'The number of years of experience the candidate has'"
+								/>
+							</div>
+							<div class="grid gap-2">
+								<label for="fieldType" class="text-sm font-medium">Field Type</label>
+								<Select.Root
+									onSelectedChange={(selected) => {
+										if (selected) {
+											newFieldType = selected.value as typeof newFieldType;
+										}
+									}}
+								>
+									<Select.Trigger id="fieldType" class="w-full">
+										<Select.Value placeholder="Select field type..." />
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="text">Text</Select.Item>
+										<Select.Item value="number">Number</Select.Item>
+										<Select.Item value="boolean">Boolean</Select.Item>
+										<Select.Item value="date">Date</Select.Item>
+									</Select.Content>
+								</Select.Root>
+							</div>
 						</div>
-						<Dialog.Footer>
+						<Dialog.Footer class="flex justify-end gap-2 pt-2">
 							<Button variant="outline" onclick={() => (isAddDialogOpen = false)}>Cancel</Button>
-							<Button onclick={addField}>Add Field</Button>
+							<Button variant="default" onclick={addField}>Add Field</Button>
 						</Dialog.Footer>
 					</Dialog.Content>
 				</Dialog.Root>
