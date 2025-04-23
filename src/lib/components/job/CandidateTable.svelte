@@ -448,7 +448,7 @@
 					{/if}
 
 					<Table.Cell class="text-center">
-						{candidate.matchScore != null ? `${candidate.matchScore}/50` : 'N/A'}
+						{candidate.matchScore != null ? `${candidate.matchScore}/100` : 'N/A'}
 					</Table.Cell>
 
 					{#if reasoning !== 'N/A' && reasoning.length > 50}
