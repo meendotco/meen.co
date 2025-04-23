@@ -7,7 +7,8 @@ import { z } from 'zod';
 import { generateLinkedInProfileEmbeddingInput } from '@/server/ai/format/index.js';
 import { gpt4omini } from '@/server/ai/index';
 import { db } from '@/server/db';
-import { customField, customFieldValue, jobPost } from '@/server/db/schema';
+import { customField, customFieldValue, jobPost, organization } from '@/server/db/schema';
+import { broadcastToUsers } from '@/websocket/server.svelte.js';
 
 const schema = z.object({
 	name: z.string().min(1).max(50),
@@ -15,7 +16,7 @@ const schema = z.object({
 	type: z.enum(['boolean', 'date', 'number', 'text'])
 });
 
-export const POST = async ({ params, request }) => {
+export const POST = async ({ params, request, locals }) => {
 	console.log('POST /api/job/[jobId]/customfield - Started', { jobId: params.jobId });
 	const jobId = params.jobId;
 
@@ -42,6 +43,29 @@ export const POST = async ({ params, request }) => {
 			return new Response(JSON.stringify({ error: 'Job not found' }), { status: 404 });
 		}
 
+		// Ensure owner handle exists before querying organization
+		if (!job.ownerOrganizationHandle) {
+			console.error('Job is missing owner organization handle:', jobId);
+			return json({ error: 'Job configuration error' }, { status: 500 });
+		}
+
+		const org = await db.query.organization.findFirst({
+			where: eq(organization.handle, job.ownerOrganizationHandle), // Now safe
+			with: {
+				users: {
+					columns: {
+						id: true
+					}
+				}
+			}
+		});
+		const people = org?.users.map((user) => user.id);
+
+		if (!job) {
+			console.log('Job not found:', jobId);
+			return new Response(JSON.stringify({ error: 'Job not found' }), { status: 404 });
+		}
+
 		console.log(`Found job with ${job.candidates.length} candidates`);
 
 		const [newCustomField] = await db
@@ -54,6 +78,14 @@ export const POST = async ({ params, request }) => {
 				description
 			})
 			.returning();
+
+		broadcastToUsers(locals.wss, people ?? [], {
+			messageType: `${jobId}.customFieldCreated`, // Use job-specific channel
+			data: {
+				customField: newCustomField,
+				jobId: jobId
+			}
+		});
 
 		console.log('Created new custom field:', newCustomField);
 
@@ -77,12 +109,33 @@ export const POST = async ({ params, request }) => {
 
 			console.log(`Generated value for candidate ${candidate.id}:`, value.object.value);
 
-			await db.insert(customFieldValue).values({
-				id: uuidv4(),
-				customFieldId: newCustomField.id,
-				candidateId: candidate.id,
-				value: String(value.object.value)
+			const [newValRecord] = await db
+				.insert(customFieldValue)
+				.values({
+					id: uuidv4(),
+					customFieldId: newCustomField.id,
+					candidateId: candidate.id,
+					value: String(value.object.value)
+				})
+				.returning();
+
+			// Fetch the newly created value with its relation to send complete data
+			const valueToBroadcast = await db.query.customFieldValue.findFirst({
+				where: eq(customFieldValue.id, newValRecord.id),
+				with: {
+					customField: true // Ensure the nested customField is included
+				}
 			});
+
+			if (valueToBroadcast) {
+				broadcastToUsers(locals.wss, people ?? [], {
+					messageType: `${jobId}.customFieldValueCreated`, // Use job-specific channel
+					data: {
+						// Send the fetched record directly
+						customFieldValue: valueToBroadcast
+					}
+				});
+			}
 
 			console.log(`Saved custom field value for candidate ${candidate.id}`);
 		}
@@ -91,10 +144,9 @@ export const POST = async ({ params, request }) => {
 		return json({ message: 'Custom field created', data: newCustomField }, { status: 200 });
 	} catch (error) {
 		console.error('Error in POST /api/job/[jobId]/customfield:', error);
-		return json(
-			{ error: 'Failed to create custom field', details: error.message },
-			{ status: 500 }
-		);
+		// Handle unknown error type
+		const message = error instanceof Error ? error.message : 'An unknown error occurred';
+		return json({ error: 'Failed to create custom field', details: message }, { status: 500 });
 	}
 };
 export const DELETE = async ({ locals, params }) => {

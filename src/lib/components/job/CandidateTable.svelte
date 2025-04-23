@@ -2,7 +2,9 @@
 	import type { InferSelectModel } from 'drizzle-orm';
 	import { ArrowUpDown, PlusIcon, Trash2 } from 'lucide-svelte';
 	import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
+	import { onMount } from 'svelte'; // Import onMount
 
+	// import { $effect } from 'svelte'; // $effect is globally available in Svelte 5
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
@@ -14,6 +16,7 @@
 		customFieldValue as customFieldValueTable,
 		linkedInProfile as linkedInProfileTable
 	} from '$lib/server/db/schema';
+	import { socket } from '$lib/websocket/client.svelte.js'; // Import socket
 
 	type LinkedInProfileSelect = InferSelectModel<typeof linkedInProfileTable> & {
 		data?: PersonEndpointResponse | null;
@@ -28,8 +31,19 @@
 		customField: CustomFieldSelect;
 	};
 	type CustomFieldSelect = InferSelectModel<typeof customFieldTable>;
+
+	// Add type for the expected payload of customFieldValueCreated
+	type CustomFieldValueCreatedPayload = {
+		customFieldValue: CustomFieldValueSelect;
+	};
+	// Add type for the expected payload of customFieldCreated
+	type CustomFieldCreatedPayload = {
+		customField: CustomFieldSelect;
+		jobId: string; // Verify if needed, or remove if jobId check is sufficient
+	};
+
 	let {
-		candidates,
+		candidates: candidatesProp, // Rename prop to avoid conflict with state
 		jobId,
 		customFields: customFieldsProp
 	} = $props<{
@@ -38,30 +52,87 @@
 		customFields: CustomFieldSelect[];
 	}>();
 
-	// Updated SortKey to allow sorting by custom field names (strings)
 	type SortKey = string | 'matchScore' | 'name' | 'title';
 	type SortDirection = 'asc' | 'desc';
 
+	// Use props directly for initial state
+	let candidates = $state<CandidateSelect[]>(candidatesProp);
+	let customFields = $state<CustomFieldSelect[]>(customFieldsProp);
+
 	let sortKey = $state<SortKey>('matchScore');
 	let sortDirection = $state<SortDirection>('desc');
-
-	let customFields = $state<CustomFieldSelect[]>(customFieldsProp);
 	let newFieldName = $state('');
 	let newFieldDescription = $state('');
 	let newFieldType = $state<'boolean' | 'date' | 'number' | 'text'>('text');
 	let isAddDialogOpen = $state(false);
-	// State to track which delete dialog is open (using field ID as key)
 	let deleteDialogStates = $state<Record<string, boolean>>({});
-
-	// State for reusable cell content dialog
 	let isCellDialogOpen = $state(false);
 	let dialogContent = $state<string | null>(null);
+
+	// --- WebSocket Listener using onMount ---
+	onMount(() => {
+		// Ensure jobId is available before setting up listeners
+		if (!jobId) {
+			console.warn('Job ID not available on mount for WebSocket listeners.');
+			return; // Return undefined if jobId is not ready
+		}
+
+		const fieldCreatedChannel = `${jobId}.customFieldCreated`;
+		const valueCreatedChannel = `${jobId}.customFieldValueCreated`;
+
+		console.log(`[onMount] Listening on channels: ${fieldCreatedChannel}, ${valueCreatedChannel}`);
+
+		// Listener for new custom field definition (adds column header)
+		const handleFieldCreated = (payload: CustomFieldCreatedPayload) => {
+			console.log('Received customFieldCreated:', payload);
+			if (payload.customField && payload.customField.jobPostId === jobId) {
+				if (!customFields.some((f) => f.id === payload.customField.id)) {
+					customFields = [...customFields, payload.customField];
+					console.log('Added new custom field to state:', payload.customField.name);
+				}
+			}
+		};
+
+		// Listener for new custom field values (populates cells)
+		const handleValueCreated = (payload: CustomFieldValueCreatedPayload) => {
+			console.log('Received customFieldValueCreated:', payload);
+			if (payload.customFieldValue) {
+				const newValue = payload.customFieldValue;
+				const candidateIndex = candidates.findIndex((c) => c.id === newValue.candidateId);
+				if (candidateIndex !== -1) {
+					const updatedCandidates = [...candidates];
+					const targetCandidate = updatedCandidates[candidateIndex];
+					if (!targetCandidate.customFieldValues) {
+						targetCandidate.customFieldValues = [];
+					}
+					if (!targetCandidate.customFieldValues.some((v) => v.id === newValue.id)) {
+						targetCandidate.customFieldValues.push(newValue);
+						candidates = updatedCandidates;
+						console.log(
+							`Added value for field ${newValue.customField.name} to candidate ${newValue.candidateId}`
+						);
+					}
+				}
+			}
+		};
+
+		socket.on(fieldCreatedChannel, handleFieldCreated);
+		socket.on(valueCreatedChannel, handleValueCreated);
+
+		// Return cleanup function for onDestroy
+		return () => {
+			console.log(`[onDestroy] Cleaning up listeners for jobId: ${jobId}`);
+			socket.off(fieldCreatedChannel, handleFieldCreated);
+			socket.off(valueCreatedChannel, handleValueCreated);
+		};
+	});
 
 	const sortedCandidates: CandidateSelect[] = $derived.by(() => {
 		// Get local copies of state for the derivation
 		const currentSortKey = sortKey;
 		const currentSortDirection = sortDirection;
 
+		// Use the local reactive 'candidates' state for sorting
 		return [...candidates].sort((a: CandidateSelect, b: CandidateSelect) => {
 			let comparison = 0;
 
@@ -77,27 +148,21 @@
 				const bTitle = b.linkedInProfile?.data?.headline ?? '';
 				comparison = aTitle.localeCompare(bTitle);
 			} else if (currentSortKey === 'matchScore') {
-				// Handle null/undefined scores safely, treating them as lowest
 				const aScore = a.matchScore ?? -Infinity;
 				const bScore = b.matchScore ?? -Infinity;
 				comparison = aScore - bScore;
 			} else {
-				// --- Custom Field Sorting ---
 				const aValueData = a.customFieldValues?.find(
 					(cfv) => cfv.customField?.name === currentSortKey
 				);
 				const bValueData = b.customFieldValues?.find(
 					(cfv) => cfv.customField?.name === currentSortKey
 				);
-
 				const aValue = aValueData?.value;
 				const bValue = bValueData?.value;
-				const fieldType = aValueData?.customField?.type ?? bValueData?.customField?.type ?? 'text'; // Determine type
-
-				// Default values for comparison if one value is missing
+				const fieldType = aValueData?.customField?.type ?? bValueData?.customField?.type ?? 'text';
 				const valA = aValue ?? (fieldType === 'number' ? -Infinity : '');
 				const valB = bValue ?? (fieldType === 'number' ? -Infinity : '');
-
 				switch (fieldType) {
 					case 'number': {
 						const numA = valA === -Infinity ? -Infinity : parseFloat(String(valA));
@@ -108,14 +173,12 @@
 					case 'date': {
 						const dateA = new Date(String(valA));
 						const dateB = new Date(String(valB));
-						// Handle invalid dates by treating them as very early dates
 						const timeA = isNaN(dateA.getTime()) ? -Infinity : dateA.getTime();
 						const timeB = isNaN(dateB.getTime()) ? -Infinity : dateB.getTime();
 						comparison = timeA - timeB;
 						break;
 					}
 					case 'boolean': {
-						// Treat 'true' as 1, 'false' or others as 0 for comparison
 						const boolA = String(valA).toLowerCase() === 'true' ? 1 : 0;
 						const boolB = String(valB).toLowerCase() === 'true' ? 1 : 0;
 						comparison = boolA - boolB;
@@ -127,7 +190,6 @@
 						break;
 				}
 			}
-
 			return currentSortDirection === 'asc' ? comparison : -comparison;
 		});
 	});
@@ -150,8 +212,6 @@
 
 		if (!name || !description) return;
 
-		// REMOVED: customFields.push({ type, name, description }); // This caused type error
-
 		// const originalFieldName = newFieldName; // Keep track for potential revert if needed - Removed as revert logic is removed
 		newFieldName = '';
 		newFieldDescription = '';
@@ -168,14 +228,9 @@
 				console.error('Failed to add custom field:', await response.text());
 				// Consider adding UI feedback here
 			} else {
-				const data = await response.json();
-				console.log('Custom field added:', data);
-				// --- Trigger data refresh ---
-				// Option 1: Full page reload (simple but less smooth)
-				window.location.reload();
-				// Option 2: Invalidate specific data (needs SvelteKit knowledge)
-				// import { invalidate } from '$app/navigation';
-				// invalidate((url) => url.pathname === `/dashboard/job/${jobId}`); // Adjust predicate if needed
+				// const data = await response.json(); // Data isn't used, commented out
+				console.log('Custom field creation request successful (updates via WebSocket):' /*, data*/); // Commented out data log
+				// REMOVED: window.location.reload();
 			}
 		} catch (error) {
 			console.error('Error sending request:', error);
@@ -197,9 +252,21 @@
 			} else {
 				console.log('Custom field deleted successfully');
 				// Close the specific dialog
-				deleteDialogStates[fieldId] = false;
-				// Refresh data
-				window.location.reload(); // Or use invalidate
+				delete deleteDialogStates[fieldId]; // Remove key instead of setting to false
+				// Refresh data - Now handle via WebSocket or explicit removal
+				// Remove the field definition locally
+				customFields = customFields.filter((f) => f.id !== fieldId);
+				// Remove associated values from candidates locally
+				candidates = candidates.map((c) => {
+					if (c.customFieldValues) {
+						return {
+							...c,
+							customFieldValues: c.customFieldValues.filter((v) => v.customFieldId !== fieldId)
+						};
+					}
+					return c;
+				});
+				// REMOVED: window.location.reload(); // Or use invalidate
 			}
 		} catch (error) {
 			console.error('Error sending delete request:', error);
@@ -207,14 +274,14 @@
 		}
 	}
 
-	const totalColspan = $derived(4 + customFields.length);
-
 	function showFullContent(content: string | null | undefined) {
 		if (content) {
 			dialogContent = String(content); // Ensure it's a string
 			isCellDialogOpen = true;
 		}
 	}
+
+	const totalColspan = $derived(4 + customFields.length);
 </script>
 
 <Table.Root>
@@ -270,7 +337,7 @@
 									Are you sure you want to delete the field "{field.name}"? All associated data for
 									this field will be permanently removed. This action cannot be undone.
 								</p>
-								<Dialog.Footer>
+								<Dialog.Footer class="flex justify-end gap-2 pt-4">
 									<Button variant="outline" onclick={() => (deleteDialogStates[field.id] = false)}
 										>Cancel</Button
 									>
@@ -287,8 +354,8 @@
 				<Dialog.Root bind:open={isAddDialogOpen}>
 					<Dialog.Trigger asChild let:builder>
 						<Button
-							onclick={() => (isAddDialogOpen = true)}
 							builders={[builder]}
+							onclick={() => (isAddDialogOpen = true)}
 							variant="outline"
 							size="sm"
 							class="flex items-center gap-1"
@@ -442,5 +509,8 @@
 		<div class="mt-4 max-h-[60vh] overflow-y-auto whitespace-pre-wrap break-words">
 			{dialogContent}
 		</div>
+		<Dialog.Footer class="mt-4">
+			<Button variant="outline" onclick={() => (isCellDialogOpen = false)}>Close</Button>
+		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
