@@ -1,9 +1,11 @@
 <script lang="ts">
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { ArrowUpDown } from 'lucide-svelte';
+	import { ArrowUpDown, CheckIcon, PlusIcon } from 'lucide-svelte';
 	import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import * as Popover from '$lib/components/ui/popover';
 	import * as Table from '$lib/components/ui/table';
 	import type {
 		candidates as candidatesTable,
@@ -16,6 +18,7 @@
 	type CandidateSelect = InferSelectModel<typeof candidatesTable> & {
 		linkedInProfile: LinkedInProfileSelect | null;
 		matchScore?: number | null;
+		reasoning?: string | null;
 	};
 
 	let { candidates } = $props<{ candidates: CandidateSelect[] }>();
@@ -25,6 +28,10 @@
 
 	let sortKey = $state<SortKey>('matchScore');
 	let sortDirection = $state<SortDirection>('desc');
+
+	let customFields = $state<{ name: string; type: 'number' | 'text' }[]>([]);
+	let isPopoverOpen = $state(false);
+	let newFieldName = $state('');
 
 	const sortedCandidates: CandidateSelect[] = $derived.by(() => {
 		return [...candidates].sort((a: CandidateSelect, b: CandidateSelect) => {
@@ -59,6 +66,10 @@
 			sortDirection = 'asc';
 		}
 	}
+
+	function addField() {
+		customFields.push({ type: 'text', name: 'New Field' });
+	}
 </script>
 
 <Table.Root>
@@ -83,7 +94,18 @@
 				</Button>
 			</Table.Head>
 			<Table.Head>Reasoning</Table.Head>
-			<Table.Head>LinkedIn</Table.Head>
+
+			{#each customFields as field (field.name)}
+				<Table.Head>
+					{field.name}
+				</Table.Head>
+			{/each}
+
+			<Table.Head class="w-auto text-right">
+				<Button onclick={() => addField()} variant="outline" size="sm">
+					<PlusIcon class="mr-1 h-4 w-4" /> Add Field
+				</Button>
+			</Table.Head>
 		</Table.Row>
 	</Table.Header>
 	<Table.Body>
@@ -94,32 +116,33 @@
 					<Table.Cell class="font-medium">
 						{`${profileData?.first_name ?? ''} ${profileData?.last_name ?? ''}`.trim() || 'N/A'}
 					</Table.Cell>
-					<Table.Cell>{profileData?.headline ?? 'N/A'}</Table.Cell>
+					<Table.Cell>
+						{#if profileData?.headline}
+							{profileData.headline.length > 50
+								? `${profileData.headline.slice(0, 50)}...`
+								: profileData.headline}
+						{:else}
+							N/A
+						{/if}
+					</Table.Cell>
 					<Table.Cell class="text-center">
 						{candidate.matchScore != null ? candidate.matchScore : 'N/A'}/100
 					</Table.Cell>
 					<Table.Cell class="text-center">
 						{candidate.reasoning != null ? candidate.reasoning : 'N/A'}
 					</Table.Cell>
-					<Table.Cell>
-						{#if profileData?.public_identifier}
-							<a
-								href={`https://www.linkedin.com/in/${profileData.public_identifier}`}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="text-primary hover:underline"
-							>
-								View Profile
-							</a>
-						{:else}
-							N/A
+					{#each customFields as field (field.name)}
+						{#if field.type === 'number'}
+							<Table.Cell class="text-center">N/A</Table.Cell>
+						{:else if field.type === 'text'}
+							<Table.Cell>N/A</Table.Cell>
 						{/if}
-					</Table.Cell>
+					{/each}
 				</Table.Row>
 			{/each}
 		{:else}
 			<Table.Row>
-				<Table.Cell colspan={4} class="h-24 text-center text-muted-foreground">
+				<Table.Cell colspan={totalColspan + 1} class="h-24 text-center text-muted-foreground">
 					No candidates found for this job yet.
 				</Table.Cell>
 			</Table.Row>

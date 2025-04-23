@@ -7,7 +7,7 @@ export async function createSearchLinkedinTool() {
 	return createTool({
 		id: 'search-linkedin',
 		description:
-			'Search for LinkedIn profiles matching specific skills, job titles, or qualifications.',
+			'Search for LinkedIn profiles matching specific skills, job titles, or qualifications. Use semantic search, not keyword search.',
 		inputSchema: z.object({
 			query: z
 				.string()
