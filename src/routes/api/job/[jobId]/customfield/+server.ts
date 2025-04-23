@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
 import { generateLinkedInProfileEmbeddingInput } from '@/server/ai/format/index.js';
-import { gpt4omini } from '@/server/ai/index';
+import { gpt4omini, o3Mini } from '@/server/ai/index';
 import { db } from '@/server/db';
 import { customField, customFieldValue, jobPost, organization } from '@/server/db/schema';
 import { broadcastToUsers } from '@/websocket/server.svelte.js';
@@ -93,7 +93,7 @@ export const POST = async ({ params, request, locals }) => {
 			console.log(`Generating value for candidate: ${candidate.id}`);
 
 			const value = await generateObject({
-				model: gpt4omini,
+				model: o3Mini,
 				schema: z.object({
 					value:
 						type === 'boolean'

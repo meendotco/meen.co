@@ -2,6 +2,7 @@
 	import type { TextStreamPart } from 'ai';
 	import type { InferSelectModel } from 'drizzle-orm';
 
+	import CandidateList from '$lib/components/job/CandidateList.svelte';
 	import AIChat from '$lib/components/job/AIChat.svelte'; // Added import
 	import CandidateTable from '$lib/components/job/CandidateTable.svelte'; // Changed import
 	import JobDescriptionCard from '$lib/components/job/JobDescriptionCard.svelte';
@@ -10,6 +11,7 @@
 	import JobOverviewCard from '$lib/components/job/JobOverviewCard.svelte';
 	import JobRequirementsBenefitsCard from '$lib/components/job/JobRequirementsBenefitsCard.svelte';
 	import { Card, CardContent } from '$lib/components/ui/card/index.js';
+	import { Button } from '$lib/components/ui/button';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import type {
 		candidates as candidatesTable,
@@ -47,6 +49,7 @@
 	let candidates = $derived<CandidateSelect[]>(job?.candidates ?? []);
 	let initialMessages = $derived<MessageSelect[]>(data.job?.chat?.messages ?? []);
 	let chatId = $state(data.job?.chat?.id);
+	let view = $state<'list' | 'table'>('list');
 </script>
 
 <div class="flex h-screen flex-col overflow-hidden bg-background">
@@ -63,7 +66,15 @@
 						</div>
 						<JobDescriptionCard {job} />
 						<JobDetailsCard {job} />
-						<CandidateTable {candidates} jobId={job.id} customFields={job.customFields} />
+
+						<Button variant="outline" onclick={() => (view = 'list')}>List View</Button>
+						<Button variant="outline" onclick={() => (view = 'table')}>Table View</Button>
+
+						{#if view === 'list'}
+							<CandidateList {candidates} jobId={job.id} />
+						{:else}
+							<CandidateTable {candidates} jobId={job.id} customFields={job.customFields} />
+						{/if}
 					</div>
 				</div>
 			</Resizable.Pane>
