@@ -4,7 +4,10 @@ import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
-import { generateLinkedInProfileEmbeddingInput } from '@/server/ai/format/index.js';
+import {
+	generateLinkedInProfileEmbeddingInput,
+	generateJobPostEmbeddingInput
+} from '@/server/ai/format/index.js';
 import { gpt4omini, o3Mini } from '@/server/ai/index';
 import { db } from '@/server/db';
 import { customField, customFieldValue, jobPost, organization } from '@/server/db/schema';
@@ -92,6 +95,23 @@ export const POST = async ({ params, request, locals }) => {
 		for (const candidate of job.candidates) {
 			console.log(`Generating value for candidate: ${candidate.id}`);
 
+			const prompt = `
+<task>
+  Generate a human-readable value for the custom field "${newCustomField.name}" (${newCustomField.description}) for this candidate based on their LinkedIn profile.
+</task>
+
+<job_description>
+${generateJobPostEmbeddingInput(job)}
+</job_description>
+
+<candidate_profile>
+${generateLinkedInProfileEmbeddingInput(candidate.linkedInProfile.data)}
+</candidate_profile>
+
+<output_requirements>
+  Ensure the output is clear, concise, and easily understood by humans.
+</output_requirements>
+`;
 			const value = await generateObject({
 				model: o3Mini,
 				schema: z.object({
@@ -104,7 +124,7 @@ export const POST = async ({ params, request, locals }) => {
 									? z.string().datetime()
 									: z.string()
 				}),
-				prompt: `Generate a human-readable value for the custom field "${newCustomField.name}" (${newCustomField.description}) for this candidate based on their LinkedIn profile: \n\n${generateLinkedInProfileEmbeddingInput(candidate.linkedInProfile.data)}\n\nEnsure the output is clear, concise, and easily understood by humans.`
+				prompt: prompt
 			});
 
 			console.log(`Generated value for candidate ${candidate.id}:`, value.object.value);
