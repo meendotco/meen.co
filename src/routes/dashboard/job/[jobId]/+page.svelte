@@ -15,6 +15,7 @@
 	import * as Resizable from '$lib/components/ui/resizable';
 	import AddCandidateDialog from '$lib/components/job/AddCandidateDialog.svelte';
 	import { Download } from 'lucide-svelte';
+	import { toast } from 'svelte-sonner';
 	import type {
 		candidates as candidatesTable,
 		chat as chatTable,
@@ -105,6 +106,7 @@
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
+		toast.success('Candidates exported to CSV');
 	}
 
 	onMount(() => {
