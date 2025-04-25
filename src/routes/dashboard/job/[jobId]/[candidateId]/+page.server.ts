@@ -1,33 +1,44 @@
 import { error } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 
-import { candidates, jobPost } from '@/server/db/schema';
+import { candidates, jobPost, linkedInProfile } from '@/server/db/schema';
 import { db } from '$lib/server/db';
 
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ locals, params }) => {
-	const job = await db.query.jobPost.findFirst({
-		where: and(
-			eq(jobPost.id, params.jobId),
-			eq(jobPost.ownerOrganizationHandle, locals.user.organizationHandle)
-		),
-		with: {
-			candidates: {
-				with: {
-					linkedInProfile: true
+	const [job, linkedinProfile] = await Promise.all([
+		db.query.jobPost.findFirst({
+			where: and(
+				eq(jobPost.id, params.jobId),
+				eq(jobPost.ownerOrganizationHandle, locals.user.organizationHandle)
+			),
+			with: {
+				candidates: {
+					with: {
+						linkedInProfile: true
+					}
 				}
 			}
-		}
-	});
+		}),
+		db.query.linkedInProfile.findFirst({
+			where: eq(linkedInProfile.handle, params.candidateId)
+		})
+	]);
 
 	if (!job) {
 		throw error(404, 'Job not found');
 	}
 
-	// Fetch the specific candidate using candidateId
+	if (!linkedinProfile) {
+		throw error(404, 'LinkedIn profile not found');
+	}
+
 	const candidate = await db.query.candidates.findFirst({
-		where: and(eq(candidates.id, params.candidateId), eq(candidates.jobPostId, params.jobId)),
+		where: and(
+			eq(candidates.linkedInProfileId, linkedinProfile.id),
+			eq(candidates.jobPostId, params.jobId)
+		),
 		with: {
 			linkedInProfile: true
 		}
