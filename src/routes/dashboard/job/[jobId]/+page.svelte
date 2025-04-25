@@ -71,6 +71,7 @@
 			'Title',
 			'Assessment',
 			'Reasoning',
+			'LinkedIn URL',
 			...job.customFields.map((f: CustomFieldSelect) => f.name)
 		];
 		const rows = candidates.map((candidate) => {
@@ -80,13 +81,16 @@
 			const title = profileData?.headline ?? 'N/A';
 			const assessment = candidate.matchScore != null ? `${candidate.matchScore}/100` : 'N/A';
 			const reasoning = candidate.reasoning ?? 'N/A';
+			const linkedinUrl = profileData?.public_identifier
+				? `https://www.linkedin.com/in/${profileData.public_identifier}`
+				: 'N/A';
 			const customValues = job.customFields.map((field: CustomFieldSelect) => {
 				const value = candidate.customFieldValues?.find(
 					(cfv: CustomFieldValueSelect) => cfv.customFieldId === field.id
 				)?.value;
 				return value != null ? String(value) : 'N/A';
 			});
-			return [name, title, assessment, reasoning, ...customValues];
+			return [linkedinUrl, name, title, assessment, reasoning, ...customValues];
 		});
 
 		const csvContent = [
