@@ -90,7 +90,7 @@
 									id="subject"
 									type="text"
 									bind:value={subject}
-									class="w-full rounded-md border p-2"
+									class="focus-visible:ring-transparent w-full rounded-md border p-2"
 									placeholder="Meen"
 								/>
 							</div>
@@ -100,7 +100,7 @@
 									id="message"
 									rows="4"
 									bind:value={message}
-									class="w-full rounded-md border p-2"
+									class="focus-visible:ring-transparent w-full rounded-md border p-2"
 									placeholder="My name is Markus and I'm a recruiter at Meen."
 								/>
 							</div>

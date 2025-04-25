@@ -144,19 +144,6 @@
 							</span>
 						</span>
 					</div>
-
-					{#if job.priority === 'High'}
-						<div class="absolute right-2 top-2">
-							<span
-								class="rounded-full px-2 py-0.5 text-xs font-medium"
-								style={themeColor
-									? `color: ${themeColor}; background-color: ${themeColor}20;`
-									: 'background-color: #6D2EE020; color: #7E3AF2;'}
-							>
-								{job.priority}
-							</span>
-						</div>
-					{/if}
 				</div>
 			{/each}
 		{/if}

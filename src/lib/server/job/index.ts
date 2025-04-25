@@ -119,7 +119,8 @@ export async function addCandidate(
 	jobId: string,
 	matchScore?: number,
 	reasoning?: string,
-	eagerlyAdded: boolean = false
+	eagerlyAdded: boolean = false,
+	applied: boolean = false
 ) {
 	try {
 		const job = await db.query.jobPost.findFirst({
@@ -174,7 +175,8 @@ export async function addCandidate(
 					});
 					if (existingProfile) {
 						profileId = existingProfile.id;
-						return createOrReturnCandidate(jobId, profileId, matchScore, reasoning, eagerlyAdded);
+						profileData = existingProfile.data;
+						return createOrReturnCandidate(jobId, profileId, matchScore, reasoning, eagerlyAdded, applied);
 					} else {
 						return {
 							error: `Failed to retrieve LinkedIn profile after conflict: ${linkedinHandle}`
@@ -186,7 +188,25 @@ export async function addCandidate(
 			}
 		}
 
-		return createOrReturnCandidate(jobId, profileId, matchScore, reasoning, eagerlyAdded);
+		// First create or get the candidate record
+		const candidate = await createOrReturnCandidate(
+			jobId,
+			profileId,
+			matchScore,
+			reasoning,
+			eagerlyAdded,
+			applied
+		);
+
+		// After the candidate is created, calculate custom field values using the candidate ID
+		if (candidate && job.customFields.length > 0) {
+			// Check if candidate is not an error object
+			if (!('error' in candidate)) {
+				await calculateCustomFieldValues(jobId, candidate.id, profileData, userIds ?? []);
+			}
+		}
+
+		return candidate;
 	} catch (error) {
 		throw new Error(
 			`Failed to add candidate: ${error instanceof Error ? error.message : String(error)}`
@@ -199,7 +219,8 @@ async function createOrReturnCandidate(
 	profileId: string,
 	matchScore: number | undefined,
 	reasoning: string | undefined,
-	eagerlyAdded: boolean
+	eagerlyAdded: boolean,
+	applied: boolean
 ) {
 	const [existingCandidate, job, profileData] = await Promise.all([
 		db.query.candidates.findFirst({
@@ -237,7 +258,8 @@ async function createOrReturnCandidate(
 				linkedInProfileId: profileId,
 				matchScore: matchScore,
 				reasoning: reasoning,
-				eagerlyAdded: eagerlyAdded
+				eagerlyAdded: eagerlyAdded,
+				applied: applied
 			})
 			.returning(),
 		db.query.users.findMany({
