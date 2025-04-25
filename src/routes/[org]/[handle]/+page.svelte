@@ -298,7 +298,7 @@
 										placeholder="https://linkedin.com/in/your-profile"
 										bind:value={linkedinUrl}
 										disabled={isLoading}
-										class="flex-grow"
+										class="flex-grow focus-visible:ring-transparent"
 									/>
 									<Button
 										onclick={importProfile}
@@ -530,9 +530,6 @@
 									Your application for {post?.title} has been successfully submitted.
 								</p>
 							</div>
-							<Button onclick={() => (currentStep = 'input')} variant="outline" class="mt-2">
-								Apply to Another Position
-							</Button>
 						</div>
 					</div>
 				{/if}
