@@ -14,6 +14,7 @@ export const load = async ({ locals }) => {
 	const userAccounts = db.query.accounts.findMany({
 		where: eq(accounts.userId, locals.user.id)
 	});
+	console.log(userAccounts);
 
 	return { userOrganization, userAccounts };
 };

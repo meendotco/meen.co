@@ -202,6 +202,33 @@
 									</Badge>
 								</div>
 							{/if}
+
+							{#if account.provider === 'google'}
+								<div class="flex items-center justify-between rounded-lg border p-4">
+									<div class="flex items-center space-x-4">
+										<div
+											class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
+										>
+											<img src="/logos/google.png" alt="Google" class="h-8 w-8" />
+										</div>
+										<div>
+											<p class="font-medium">{account.provider}</p>
+											<p class="text-sm text-muted-foreground">
+												expires ({account.expires_at
+													? new Date(account.expires_at * 1000).toLocaleDateString()
+													: 'unknown'})
+											</p>
+										</div>
+									</div>
+									<Badge
+										variant="outline"
+										class="gap-1 border-green-500 text-green-600 dark:border-green-500 dark:text-green-400"
+									>
+										<Check class="mr-1" size={16} />
+										Connected
+									</Badge>
+								</div>
+							{/if}
 						{/each}
 					{:else}
 						<div
