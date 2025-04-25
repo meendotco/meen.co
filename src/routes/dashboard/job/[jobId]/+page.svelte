@@ -14,20 +14,30 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import AddCandidateDialog from '$lib/components/job/AddCandidateDialog.svelte';
+	import { Download } from 'lucide-svelte';
 	import type {
 		candidates as candidatesTable,
 		chat as chatTable,
 		chatMessage as chatMessageTable,
 		jobPost as jobPostTable,
 		linkedInProfile as linkedInProfileTable,
-		toolcall as toolcallTable
+		toolcall as toolcallTable,
+		customField as customFieldTable,
+		customFieldValue as customFieldValueTable
 	} from '$lib/server/db/schema';
 	import { socket } from '$lib/websocket/client.svelte';
 	import { onMount } from 'svelte';
 	type JobPostSelect = InferSelectModel<typeof jobPostTable>;
 	type LinkedInProfileSelect = InferSelectModel<typeof linkedInProfileTable>;
+	type CustomFieldSelect = InferSelectModel<typeof customFieldTable>;
+	type CustomFieldValueSelect = InferSelectModel<typeof customFieldValueTable> & {
+		customField: CustomFieldSelect;
+	};
 	type CandidateSelect = InferSelectModel<typeof candidatesTable> & {
 		linkedInProfile: LinkedInProfileSelect | null;
+		matchScore?: number | null;
+		reasoning?: string | null;
+		customFieldValues?: CustomFieldValueSelect[];
 	};
 	type MessageChunk = {
 		id: string;
@@ -53,6 +63,49 @@
 	let initialMessages = $derived<MessageSelect[]>(data.job?.chat?.messages ?? []);
 	let chatId = $state(data.job?.chat?.id);
 	let view = $state<'list' | 'table'>(data.job.view);
+
+	function exportToCsv() {
+		const headers = [
+			'Name',
+			'Title',
+			'Assessment',
+			'Reasoning',
+			...job.customFields.map((f: CustomFieldSelect) => f.name)
+		];
+		const rows = candidates.map((candidate) => {
+			const profileData = candidate.linkedInProfile?.data;
+			const name =
+				`${profileData?.first_name ?? ''} ${profileData?.last_name ?? ''}`.trim() || 'N/A';
+			const title = profileData?.headline ?? 'N/A';
+			const assessment = candidate.matchScore != null ? `${candidate.matchScore}/100` : 'N/A';
+			const reasoning = candidate.reasoning ?? 'N/A';
+			const customValues = job.customFields.map((field: CustomFieldSelect) => {
+				const value = candidate.customFieldValues?.find(
+					(cfv: CustomFieldValueSelect) => cfv.customFieldId === field.id
+				)?.value;
+				return value != null ? String(value) : 'N/A';
+			});
+			return [name, title, assessment, reasoning, ...customValues];
+		});
+
+		const csvContent = [
+			headers.join(','),
+			...rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
+		].join('\n');
+
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		link.setAttribute('href', url);
+		link.setAttribute(
+			'download',
+			`candidates-${job.title}-${new Date().toISOString().split('T')[0]}.csv`
+		);
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
 
 	onMount(() => {
 		socket.on(`${job.id}:candidate-added`, (candidate: CandidateSelect) => {
@@ -89,6 +142,10 @@
 						<div class="flex gap-2">
 							<Button variant="outline" onclick={() => changeView('list')}>List View</Button>
 							<Button variant="outline" onclick={() => changeView('table')}>Table View</Button>
+							<Button variant="outline" onclick={exportToCsv} class="flex items-center gap-2">
+								<Download class="h-4 w-4" />
+								Export CSV
+							</Button>
 							<AddCandidateDialog jobId={job.id} />
 						</div>
 
