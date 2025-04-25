@@ -201,35 +201,14 @@
 				<Card
 					class="group relative overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
 				>
-					<Dialog.Root bind:open={deleteJobDialogOpen}>
-						<Dialog.Trigger>
-							<Button
-								onclick={() => (deleteJobDialogOpen = true)}
-								variant="ghost"
-								class="absolute right-2 top-2 hover:bg-red-500/10"
-							>
-								<Trash2 class="h-4 w-4 text-red-500" />
-							</Button>
-						</Dialog.Trigger>
-						<Dialog.Content>
-							<h1 class="text-2xl font-bold">Delete Job</h1>
-							<p class="text-sm text-muted-foreground">
-								Are you sure you want to delete this job? This action cannot be undone.
-							</p>
-							<Dialog.Footer>
-								<Dialog.Close asChild>
-									<Button
-										onclick={() => (deleteJobDialogOpen = false)}
-										variant="outline"
-										class="border-border/40 hover:bg-background/80"
-									>
-										Cancel
-									</Button>
-								</Dialog.Close>
-								<Button onclick={() => deleteJob(job.id)} variant="destructive">Delete Job</Button>
-							</Dialog.Footer>
-						</Dialog.Content>
-					</Dialog.Root>
+					<Button
+						onclick={() => (deleteJobDialogOpen = true)}
+						variant="ghost"
+						class="absolute right-2 top-2 z-10 hover:bg-red-500/10"
+					>
+						<Trash2 class="h-4 w-4 text-red-500" />
+					</Button>
+
 					<a href={`/dashboard/job/${job.id}`} class="flex h-full flex-col justify-between p-6">
 						<div class="flex flex-col gap-4">
 							<div class="flex items-start gap-3">
@@ -305,3 +284,24 @@
 		{/if}
 	</div>
 </div>
+
+<Dialog.Root bind:open={deleteJobDialogOpen}>
+	<Dialog.Content>
+		<h1 class="text-2xl font-bold">Delete Job</h1>
+		<p class="text-sm text-muted-foreground">
+			Are you sure you want to delete this job? This action cannot be undone.
+		</p>
+		<Dialog.Footer>
+			<Dialog.Close asChild>
+				<Button
+					onclick={() => (deleteJobDialogOpen = false)}
+					variant="outline"
+					class="border-border/40 hover:bg-background/80"
+				>
+					Cancel
+				</Button>
+			</Dialog.Close>
+			<Button onclick={() => deleteJob(job.id)} variant="destructive">Delete Job</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
