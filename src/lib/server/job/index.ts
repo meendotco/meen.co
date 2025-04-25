@@ -131,7 +131,8 @@ export async function addCandidate(
 	jobId: string,
 	matchScore?: number,
 	reasoning?: string,
-	eagerlyAdded: boolean = false
+	eagerlyAdded: boolean = false,
+	applied: boolean = false
 ) {
 	try {
 		const job = await db.query.jobPost.findFirst({
@@ -202,7 +203,7 @@ export async function addCandidate(
 					if (existingProfile) {
 						profileId = existingProfile.id;
 						profileData = existingProfile.data;
-						return createOrReturnCandidate(jobId, profileId, matchScore, reasoning, eagerlyAdded);
+						return createOrReturnCandidate(jobId, profileId, matchScore, reasoning, eagerlyAdded, applied);
 					} else {
 						return {
 							error: `Failed to retrieve LinkedIn profile after conflict: ${linkedinHandle}`
@@ -220,7 +221,8 @@ export async function addCandidate(
 			profileId,
 			matchScore,
 			reasoning,
-			eagerlyAdded
+			eagerlyAdded,
+			applied
 		);
 
 		// After the candidate is created, calculate custom field values using the candidate ID
@@ -244,7 +246,8 @@ async function createOrReturnCandidate(
 	profileId: string,
 	matchScore: number | undefined,
 	reasoning: string | undefined,
-	eagerlyAdded: boolean
+	eagerlyAdded: boolean,
+	applied: boolean
 ) {
 	const [existingCandidate, job, profileData] = await Promise.all([
 		db.query.candidates.findFirst({
@@ -283,7 +286,8 @@ async function createOrReturnCandidate(
 				linkedInProfileId: profileId,
 				matchScore: matchScore,
 				reasoning: reasoning,
-				eagerlyAdded: eagerlyAdded
+				eagerlyAdded: eagerlyAdded,
+				applied: applied
 			})
 			.returning(),
 		db.query.users.findMany({
