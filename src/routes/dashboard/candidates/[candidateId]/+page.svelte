@@ -5,6 +5,7 @@
 		Calendar,
 		ExternalLink,
 		GraduationCap,
+		Linkedin,
 		Mail,
 		MapPin,
 		Phone,
@@ -45,10 +46,26 @@
 		</Button>
 
 		<div class="flex flex-col items-end gap-4">
-			<Button variant="outline" size="sm" class="gap-1" onclick={contactCandidate}>
-				<Mail class="h-4 w-4" />
-				<span class="hidden sm:inline">Contact Candidate</span>
-			</Button>
+			<div class="flex gap-2">
+				<a
+					href={`https://linkedin.com/in/${profile.handle}`}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<Button variant="outline" size="icon" aria-label="LinkedIn Profile">
+						<Linkedin class="h-4 w-4" />
+					</Button>
+				</a>
+				<Button
+					variant="outline"
+					size="md"
+					onclick={contactCandidate}
+					aria-label="Contact Candidate"
+				>
+					<Mail class="h-4 w-4" />
+					<span class="hidden sm:inline">Contact</span>
+				</Button>
+			</div>
 		</div>
 	</div>
 
