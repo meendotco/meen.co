@@ -2,12 +2,23 @@ import { generateObject } from 'ai';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
-import { embedText, gpt4o } from '$lib/server/ai';
-import { generateJobPostEmbeddingInput } from '$lib/server/ai/format';
+import { embedText, gpt4o, o3Mini } from '$lib/server/ai';
+import {
+	generateJobPostEmbeddingInput,
+	generateLinkedInProfileEmbeddingInput
+} from '$lib/server/ai/format';
 import { db } from '$lib/server/db';
-import { candidates, jobPost, linkedInProfile, users } from '$lib/server/db/schema';
+import {
+	candidates,
+	customFieldValue,
+	jobPost,
+	linkedInProfile,
+	users
+} from '$lib/server/db/schema';
 import { getFullLinkedinProfile } from '$lib/server/linkedin';
 import { broadcastToUsersWithoutLocals } from '$lib/websocket/server.svelte';
+import { v4 as uuidv4 } from 'uuid';
+import { calculateCustomFieldValues } from './customFields';
 
 export interface JobData {
 	title: string;
@@ -23,6 +34,7 @@ export interface JobData {
 	benefits?: string;
 	tech_stack?: string;
 }
+
 export async function insertJob(
 	jobData: string,
 	ownerOrganizationHandle: string,
@@ -124,9 +136,19 @@ export async function addCandidate(
 ) {
 	try {
 		const job = await db.query.jobPost.findFirst({
-			where: eq(jobPost.id, jobId)
+			where: eq(jobPost.id, jobId),
+			with: {
+				customFields: true,
+				ownerOrganization: {
+					with: {
+						users: true
+					}
+				}
+			}
 		});
+		let profileData: any;
 
+		const userIds = job?.ownerOrganization?.users.map((user) => user.id);
 		if (!job) {
 			throw new Error(`Job with ID ${jobId} not found`);
 		}
@@ -139,9 +161,10 @@ export async function addCandidate(
 
 		if (profileEntry) {
 			profileId = profileEntry.id;
+			profileData = profileEntry.data;
 		} else {
 			try {
-				const profileData = await getFullLinkedinProfile(linkedinHandle);
+				profileData = await getFullLinkedinProfile(linkedinHandle);
 
 				if (!profileData) {
 					throw new Error('Failed to fetch LinkedIn profile');
@@ -161,7 +184,11 @@ export async function addCandidate(
 							expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 						}
 					})
-					.returning({ id: linkedInProfile.id });
+					.returning();
+
+				if (!newProfile) {
+					throw new Error('Failed to create LinkedIn profile entry');
+				}
 
 				if (!newProfile || newProfile.length === 0) {
 					throw new Error('Failed to create LinkedIn profile entry');
@@ -227,7 +254,8 @@ async function createOrReturnCandidate(
 			where: (candidates, { and }) =>
 				and(eq(candidates.jobPostId, jobId), eq(candidates.linkedInProfileId, profileId)),
 			with: {
-				linkedInProfile: true
+				linkedInProfile: true,
+				customFieldValues: true
 			}
 		}),
 		db.query.jobPost.findFirst({

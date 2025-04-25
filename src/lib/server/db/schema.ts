@@ -277,6 +277,7 @@ export const jobPost = pgTable(
 		tech_stack: jsonb('tech_stack'),
 		remote_policy: text('remote_policy'),
 		vector: vector('vector', { dimensions: 1536 }),
+		view: text('view').notNull().default('table').$type<CandidateView>(),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
 	},
@@ -305,6 +306,7 @@ export const linkedInProfile = pgTable(
 	]
 );
 
+type CandidateView = 'list' | 'table';
 export const candidates = pgTable(
 	'candidate',
 	{

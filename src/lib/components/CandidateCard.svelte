@@ -26,7 +26,7 @@
 	const profile = $derived(candidate.linkedInProfile);
 </script>
 
-<a href={`/dashboard/job/${jobId}/${candidate.id}`}>
+<a href={`/dashboard/job/${jobId}/${candidate.linkedInProfile.handle}`}>
 	<Card
 		class="group relative overflow-hidden border border-muted/60 bg-card/90 transition-all hover:border-muted hover:bg-card"
 		tabindex="0"

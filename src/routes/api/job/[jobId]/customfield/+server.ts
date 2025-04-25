@@ -1,16 +1,11 @@
 import { json } from '@sveltejs/kit';
-import { generateObject } from 'ai';
 import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
-import {
-	generateLinkedInProfileEmbeddingInput,
-	generateJobPostEmbeddingInput
-} from '@/server/ai/format/index.js';
-import { gpt4omini, o3Mini } from '@/server/ai/index';
 import { db } from '@/server/db';
-import { customField, customFieldValue, jobPost, organization } from '@/server/db/schema';
+import { customField, jobPost, organization } from '@/server/db/schema';
+import { calculateCustomFieldValuesForBatch } from '@/server/job/customFields';
 import { broadcastToUsers } from '@/websocket/server.svelte.js';
 
 const schema = z.object({
@@ -92,85 +87,14 @@ export const POST = async ({ params, request, locals }) => {
 
 		console.log('Created new custom field:', newCustomField);
 
-		// Process candidates in batches of 10
-		const batchSize = 10;
-		for (let i = 0; i < job.candidates.length; i += batchSize) {
-			const batch = job.candidates.slice(i, i + batchSize);
+		// Prepare candidates data for batch processing
+		const candidates = job.candidates.map((candidate) => ({
+			id: candidate.id,
+			profileData: candidate.linkedInProfile.data
+		}));
 
-			// Process each candidate in the current batch
-			for (const candidate of batch) {
-				console.log(`Generating value for candidate: ${candidate.id}`);
-
-				const prompt = `
-<task>
-  Generate a human-readable value for the custom field "${newCustomField.name}" (${newCustomField.description}) for this candidate based on their LinkedIn profile.
-</task>
-
-<job_description>
-${generateJobPostEmbeddingInput(job)}
-</job_description>
-
-<candidate_profile>
-${generateLinkedInProfileEmbeddingInput(candidate.linkedInProfile.data)}
-</candidate_profile>
-
-<output_requirements>
-  Ensure the output is clear, concise, and easily understood by humans.
-</output_requirements>
-`;
-				const value = await generateObject({
-					model: o3Mini,
-					schema: z.object({
-						value:
-							type === 'boolean'
-								? z.boolean()
-								: type === 'number'
-									? z.number()
-									: type === 'date'
-										? z.string().datetime()
-										: z.string()
-					}),
-					prompt: prompt
-				});
-
-				console.log(`Generated value for candidate ${candidate.id}:`, value.object.value);
-
-				const [newValRecord] = await db
-					.insert(customFieldValue)
-					.values({
-						id: uuidv4(),
-						customFieldId: newCustomField.id,
-						candidateId: candidate.id,
-						value: String(value.object.value)
-					})
-					.returning();
-
-				// Fetch the newly created value with its relation to send complete data
-				const valueToBroadcast = await db.query.customFieldValue.findFirst({
-					where: eq(customFieldValue.id, newValRecord.id),
-					with: {
-						customField: true // Ensure the nested customField is included
-					}
-				});
-
-				if (valueToBroadcast) {
-					broadcastToUsers(locals.wss, people ?? [], {
-						messageType: `${jobId}.customFieldValueCreated`, // Use job-specific channel
-						data: {
-							// Send the fetched record directly
-							customFieldValue: valueToBroadcast
-						}
-					});
-				}
-
-				console.log(`Saved custom field value for candidate ${candidate.id}`);
-			}
-
-			// Log batch completion
-			console.log(
-				`Completed batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(job.candidates.length / batchSize)}`
-			);
-		}
+		// Process all candidates in batches
+		await calculateCustomFieldValuesForBatch(jobId, candidates, people ?? []);
 
 		console.log('POST /api/job/[jobId]/customfield - Completed successfully');
 		return json({ message: 'Custom field created', data: newCustomField }, { status: 200 });
@@ -180,20 +104,4 @@ ${generateLinkedInProfileEmbeddingInput(candidate.linkedInProfile.data)}
 		const message = error instanceof Error ? error.message : 'An unknown error occurred';
 		return json({ error: 'Failed to create custom field', details: message }, { status: 500 });
 	}
-};
-export const DELETE = async ({ locals, params }) => {
-	const jobId = params.jobId;
-	const user = locals.user;
-
-	const userHasAccess = await db.query.jobPost.findFirst({
-		where: and(eq(jobPost.id, jobId), eq(jobPost.ownerOrganizationHandle, user.organizationHandle))
-	});
-	if (!userHasAccess) {
-		return json({ error: 'You do not have access to this job' }, { status: 403 });
-	}
-
-	// Delete the custom field for this job
-	await db.delete(customField).where(eq(customField.jobPostId, jobId));
-
-	return json({ message: 'Custom fields deleted' }, { status: 200 });
 };

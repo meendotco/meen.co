@@ -287,7 +287,7 @@
 <Table.Root>
 	<Table.Header>
 		<Table.Row>
-			<Table.Head class="w-[250px]">
+			<Table.Head class="w-[225px]">
 				<Button variant="ghost" onclick={() => sortBy('name')}>
 					Name
 					<ArrowUpDown class="ml-2 h-4 w-4" />
@@ -324,7 +324,7 @@
 									builders={[builder]}
 									variant="ghost"
 									size="icon"
-									class="ml-1 h-6 w-6 shrink-0 hover:bg-red-300 dark:hover:bg-red-500"
+									class="dark:hover:bg-red-250 ml-1 h-6 w-6 shrink-0 hover:bg-red-300"
 									aria-label={`Delete field ${field.name}`}
 									onclick={() => (deleteDialogStates[field.id] = true)}
 								>
@@ -428,20 +428,42 @@
 				{@const reasoning = candidate.reasoning != null ? String(candidate.reasoning) : 'N/A'}
 
 				<Table.Row>
-					{#if fullName !== 'N/A' && fullName.length > 50}
+					{#if fullName !== 'N/A' && fullName.length > 25}
 						<Table.Cell
 							class="cursor-pointer font-medium"
 							onclick={() => showFullContent(fullName)}
 						>
-							{fullName.slice(0, 50)}...
+							{#if profileData?.public_identifier}
+								<a
+									href="https://www.linkedin.com/in/{profileData.public_identifier}"
+									target="_blank"
+									class="hover:underline"
+								>
+									{fullName.slice(0, 25)}...
+								</a>
+							{:else}
+								{fullName.slice(0, 25)}...
+							{/if}
 						</Table.Cell>
 					{:else}
-						<Table.Cell class="font-medium">{fullName}</Table.Cell>
+						<Table.Cell class="font-medium">
+							{#if profileData?.public_identifier}
+								<a
+									href="https://www.linkedin.com/in/{profileData.public_identifier}"
+									target="_blank"
+									class="hover:underline"
+								>
+									{fullName}
+								</a>
+							{:else}
+								{fullName}
+							{/if}
+						</Table.Cell>
 					{/if}
 
-					{#if headline !== 'N/A' && headline.length > 50}
+					{#if headline !== 'N/A' && headline.length > 25}
 						<Table.Cell class="cursor-pointer" onclick={() => showFullContent(headline)}>
-							{headline.slice(0, 50)}...
+							{headline.slice(0, 25)}...
 						</Table.Cell>
 					{:else}
 						<Table.Cell>{headline}</Table.Cell>
@@ -451,12 +473,12 @@
 						{candidate.matchScore != null ? `${candidate.matchScore}/100` : 'N/A'}
 					</Table.Cell>
 
-					{#if reasoning !== 'N/A' && reasoning.length > 50}
+					{#if reasoning !== 'N/A' && reasoning.length > 25}
 						<Table.Cell
 							class="cursor-pointer text-center"
 							onclick={() => showFullContent(reasoning)}
 						>
-							{reasoning.slice(0, 50)}...
+							{reasoning.slice(0, 25)}...
 						</Table.Cell>
 					{:else}
 						<Table.Cell class="text-center">{reasoning}</Table.Cell>
@@ -466,24 +488,31 @@
 						{@const fieldValue = candidate.customFieldValues?.find(
 							(cfv) => cfv.customFieldId === field.id
 						)?.value}
-						{@const displayValue = fieldValue != null ? String(fieldValue) : 'N/A'}
-						{@const isLong = displayValue !== 'N/A' && displayValue.length > 50}
+						{@const displayValue = fieldValue != null ? String(fieldValue) : ''}
+						{@const isLong = displayValue !== 'N/A' && displayValue.length > 25}
+						{@const isLoading = fieldValue == null || fieldValue === ''}
 
 						{#if field.type === 'boolean'}
-							<Table.Cell class="text-center">{displayValue}</Table.Cell>
+							<Table.Cell isUpdating={isLoading} class="text-center">
+								{displayValue}
+							</Table.Cell>
 						{:else if field.type === 'date'}
-							<Table.Cell class="text-center"
-								>{fieldValue ? new Date(fieldValue).toLocaleDateString() : 'N/A'}</Table.Cell
-							>
+							<Table.Cell isUpdating={isLoading} class="text-center">
+								{fieldValue ? new Date(fieldValue).toLocaleDateString() : 'N/A'}
+							</Table.Cell>
 						{:else if isLong}
 							<Table.Cell
+								isUpdating={isLoading}
 								class="cursor-pointer {field.type === 'number' ? 'text-center' : ''}"
 								onclick={() => showFullContent(fieldValue)}
 							>
-								{displayValue.slice(0, 50)}...
+								{displayValue.slice(0, 25)}...
 							</Table.Cell>
 						{:else}
-							<Table.Cell class={field.type === 'number' ? 'text-center' : ''}>
+							<Table.Cell
+								isUpdating={isLoading}
+								class={field.type === 'number' ? 'text-center' : ''}
+							>
 								{displayValue}
 							</Table.Cell>
 						{/if}
