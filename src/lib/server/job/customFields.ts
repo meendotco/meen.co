@@ -85,6 +85,22 @@ async function calculateCustomFieldValuesForCandidate(
 
 	for (const customField of job.customFields) {
 		try {
+			// Check if a value already exists for this candidate and custom field
+			const existingValue = await db.query.customFieldValue.findFirst({
+				where: and(
+					eq(customFieldValue.candidateId, candidateId),
+					eq(customFieldValue.customFieldId, customField.id)
+				)
+			});
+
+			// Skip if value already exists
+			if (existingValue) {
+				console.log(
+					`Skipping existing custom field value for candidate ${candidateId} and field ${customField.id}`
+				);
+				continue;
+			}
+
 			const prompt = `
 <task>
   Generate a human-readable value for the custom field "${customField.name}" (${customField.description}) for this candidate based on their LinkedIn profile.
@@ -130,43 +146,19 @@ ${generateLinkedInProfileEmbeddingInput(profileData)}
 				prompt: prompt
 			});
 
-			// Check if a value already exists for this candidate and custom field
-			const existingValue = await db.query.customFieldValue.findFirst({
-				where: and(
-					eq(customFieldValue.candidateId, candidateId),
-					eq(customFieldValue.customFieldId, customField.id)
-				)
-			});
-
-			let valueToBroadcast;
-			if (existingValue) {
-				// Update existing value
-				console.log(
-					`Updating existing custom field value for candidate ${candidateId} and field ${customField.id}`
-				);
-				[valueToBroadcast] = await db
-					.update(customFieldValue)
-					.set({
-						value: String(value.object.value),
-						updatedAt: new Date()
-					})
-					.where(eq(customFieldValue.id, existingValue.id))
-					.returning();
-			} else {
-				// Insert new value
-				console.log(
-					`Creating new custom field value for candidate ${candidateId} and field ${customField.id}`
-				);
-				[valueToBroadcast] = await db
-					.insert(customFieldValue)
-					.values({
-						id: uuidv4(),
-						customFieldId: customField.id,
-						candidateId: candidateId,
-						value: String(value.object.value)
-					})
-					.returning();
-			}
+			// Insert new value
+			console.log(
+				`Creating new custom field value for candidate ${candidateId} and field ${customField.id}`
+			);
+			const [valueToBroadcast] = await db
+				.insert(customFieldValue)
+				.values({
+					id: uuidv4(),
+					customFieldId: customField.id,
+					candidateId: candidateId,
+					value: String(value.object.value)
+				})
+				.returning();
 
 			// Fetch the value with its relation to send complete data
 			if (valueToBroadcast) {
