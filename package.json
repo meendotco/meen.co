@@ -89,6 +89,8 @@
 		"dlx": "^0.2.1",
 		"drizzle-orm": "^0.40.1",
 		"events": "^3.3.0",
+		"google-auth-library": "^9.15.1",
+		"googleapis": "^148.0.0",
 		"highlight.js": "^11.11.1",
 		"json5": "^2.2.3",
 		"katex": "^0.16.22",

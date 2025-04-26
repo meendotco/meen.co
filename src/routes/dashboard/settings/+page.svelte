@@ -49,6 +49,12 @@
 			toast.error(error instanceof Error ? error.message : 'Failed to update organization');
 		}
 	}
+
+	async function handleGoogleSync() {
+		const response = await fetch('/api/settings/google/sync');
+		const data = await response.json();
+		console.log(data);
+	}
 </script>
 
 <div class="container mx-auto max-w-5xl py-8">
@@ -227,6 +233,7 @@
 										<Check class="mr-1" size={16} />
 										Connected
 									</Badge>
+									<Button variant="outline" size="sm" onclick={handleGoogleSync}>Sync</Button>
 								</div>
 							{/if}
 						{/each}

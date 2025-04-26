@@ -190,6 +190,13 @@
       "when": 1745414682745,
       "tag": "0026_cuddly_kitty_pryde",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1745603832791,
+      "tag": "0027_groovy_rattler",
+      "breakpoints": true
     }
   ]
 }
