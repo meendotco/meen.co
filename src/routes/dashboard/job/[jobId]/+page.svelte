@@ -67,11 +67,11 @@
 
 	function exportToCsv() {
 		const headers = [
+			'LinkedIn URL',
 			'Name',
 			'Title',
 			'Assessment',
 			'Reasoning',
-			'LinkedIn URL',
 			...job.customFields.map((f: CustomFieldSelect) => f.name)
 		];
 		const rows = candidates.map((candidate) => {

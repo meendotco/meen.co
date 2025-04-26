@@ -199,7 +199,7 @@
 		{:else if jobsList.length > 0}
 			{#each jobsList as job (job.id)}
 				<Card
-					class="group relative overflow-hidden border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+					class="group relative overflow-hidden border border-border/40 bg-card/50 p-2 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
 				>
 					<Button
 						onclick={() => (deleteJobDialogOpen = true)}
@@ -213,7 +213,7 @@
 						<div class="flex flex-col gap-4">
 							<div class="flex items-start gap-3">
 								<div
-									class="rounded-full bg-primary/10 p-2 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground"
+									class="rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground"
 								>
 									<Briefcase class="h-5 w-5" />
 								</div>

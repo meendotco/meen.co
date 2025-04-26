@@ -18,11 +18,6 @@
 			title: 'Jobs'
 		},
 		{
-			href: '/dashboard/candidates',
-			icon: Search,
-			title: 'Candidates'
-		},
-		{
 			href: '/dashboard/settings',
 			icon: Settings,
 			title: 'Settings'
