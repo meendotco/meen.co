@@ -27,7 +27,7 @@ export const POST = async ({ request }) => {
 		.from(linkedInProfile)
 		.where(gt(similarity, 0.0))
 		.orderBy((t) => desc(t.similarity))
-		.limit(2);
+		.limit(5);
 
 	return new Response(JSON.stringify(candidates), { status: 200 });
 };

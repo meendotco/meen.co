@@ -1,29 +1,61 @@
 <script lang="ts">
 	import { Search } from '@lucide/svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 
 	import { Button } from '@/components/ui/button';
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 	import { Input } from '@/components/ui/input';
 	import { Skeleton } from '@/components/ui/skeleton';
 	import CandidateCard from '$lib/components/dashboard/CandidateCard.svelte';
+	import CustomPagination from '$lib/components/CustomPagination.svelte';
 	import type { Candidate, SearchResultItem } from '$lib/types/candidate';
 
-	let { data }: { data: { candidates: Candidate[] } } = $props();
+	let { data } = $props<{
+		data: {
+			candidates: Candidate[];
+			pagination: {
+				page: number;
+				pageSize: number;
+				total: number;
+				totalPages: number;
+			};
+		};
+	}>();
+
+	const pagination = $derived(data.pagination);
+	const currentPage = $derived(pagination.page);
+	const totalPages = $derived(pagination.totalPages);
 
 	let addUrlQuery = $state('');
 	let searchQuery = $state('');
 	let searchResults = $state<SearchResultItem[]>([]);
 	let isSearching = $state(false);
+	let isAdding = $state(false);
+	function goToPage(pageNum: number) {
+		goto(`?page=${pageNum}&pageSize=${pagination.pageSize}`);
+	}
+
+	function handlePageChange(event: CustomEvent<number>) {
+		goToPage(event.detail);
+	}
 
 	async function manuallyAddCandidate(query: string) {
-		await fetch(`/api/candidate/add`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ linkedinUrl: query })
-		});
-		window.location.reload();
+		isAdding = true;
+		try {
+			const response = await fetch(`/api/candidate/add`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ linkedinUrl: query })
+			});
+			const data = await response.json();
+			console.log('data', data);
+			window.location.reload();
+		} finally {
+			isAdding = false;
+		}
 	}
 
 	async function searchCandidates(query: string) {
@@ -31,7 +63,7 @@
 
 		isSearching = true;
 		try {
-			const response = await fetch(`/api/candidate/scan`, {
+			const response = await fetch(`/api/candidate/search`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -55,7 +87,7 @@
 		<Card class="border-none shadow-md transition-all duration-200 hover:shadow-lg">
 			<CardHeader class="pb-3">
 				<CardTitle class="text-xl font-semibold">Start a candidate scan</CardTitle>
-				<CardDescription>Let an agent scan candidates for you based on your needs</CardDescription>
+				<CardDescription>Let an agent scan candidates based on your needs</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<div class="flex space-x-2">
@@ -67,7 +99,9 @@
 							bind:value={searchQuery}
 							type="search"
 							placeholder="Search candidates..."
-							class="border-primary/20 pl-10 focus:border-primary focus-visible:ring-transparent"
+							disabled={isSearching}
+							class="pl-10 focus-visible:ring-transparent"
+							onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && searchCandidates(searchQuery)}
 						/>
 					</div>
 					<Button
@@ -95,11 +129,15 @@
 						<Input
 							bind:value={addUrlQuery}
 							type="url"
+							disabled={isAdding}
 							placeholder="Enter LinkedIn URL"
-							class="border-primary/20 pl-3 focus:border-primary focus-visible:ring-transparent"
+							class="pl-3 focus-visible:ring-transparent"
+							onkeydown={(e: KeyboardEvent) =>
+								e.key === 'Enter' && manuallyAddCandidate(addUrlQuery)}
 						/>
 					</div>
 					<Button
+						disabled={isAdding}
 						onclick={() => manuallyAddCandidate(addUrlQuery)}
 						class="group relative overflow-hidden"
 					>
@@ -214,4 +252,10 @@
 			{/each}
 		{/await}
 	</div>
+
+	{#if pagination.totalPages > 1}
+		<div class="mt-8">
+			<CustomPagination {currentPage} {totalPages} on:pageChange={handlePageChange} />
+		</div>
+	{/if}
 </div>
