@@ -27,7 +27,7 @@
 					{#if b64}
 						<img
 							src={`data:image/png;base64,${b64}`}
-							alt={candidateData.full_name ?? 'Profile'}
+							alt={getInitials(candidateData.first_name, candidateData.last_name) ?? 'Profile'}
 							class="border-3 h-12 w-12 rounded-full border-background object-cover shadow-sm"
 						/>
 					{:else}

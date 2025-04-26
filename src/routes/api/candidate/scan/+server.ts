@@ -9,7 +9,6 @@ const schema = z.object({
 export const POST = async ({ request }) => {
 	const body = await request.json();
 	const { query } = schema.parse(body);
-
 	const result = await runWorkFlow(query);
 
 	return new Response(JSON.stringify(result), { status: 200 });
