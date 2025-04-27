@@ -282,6 +282,11 @@
 	}
 
 	const totalColspan = $derived(4 + customFields.length);
+
+	// Add check for non-empty emails
+	const hasAnyEmails = $derived(() =>
+		candidates.some((candidate) => candidate?.linkedInProfile?.data?.personal_emails?.length > 0)
+	);
 </script>
 
 <Table.Root>
@@ -306,7 +311,9 @@
 				</Button>
 			</Table.Head>
 			<Table.Head>Reasoning</Table.Head>
-
+			{#if hasAnyEmails()}
+				<Table.Head>Emails</Table.Head>
+			{/if}
 			{#each customFields as field (field.id)}
 				<Table.Head>
 					<div class="flex items-center justify-between">
@@ -482,6 +489,19 @@
 						</Table.Cell>
 					{:else}
 						<Table.Cell class="text-center">{reasoning}</Table.Cell>
+					{/if}
+
+					{#if hasAnyEmails()}
+						{#if profileData?.personal_emails != null && profileData.personal_emails.length > 0}
+							<Table.Cell
+								class="cursor-pointer text-center"
+								onclick={() => showFullContent(profileData.personal_emails.join(', '))}
+							>
+								{profileData.personal_emails.join(', ').slice(0, 25)}...
+							</Table.Cell>
+						{:else}
+							<Table.Cell class="text-center">N/A</Table.Cell>
+						{/if}
 					{/if}
 
 					{#each customFields as field (field.id)}

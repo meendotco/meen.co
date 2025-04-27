@@ -1,0 +1,238 @@
+{
+	"city": "Stockholm",
+	"extra": null,
+	"state": "Stockholm County",
+	"gender": null,
+	"groups": [],
+	"skills": [],
+	"country": "SE",
+	"summary": null,
+	"articles": [],
+	"headline": "Senior Software Engineer at Spotify",
+	"industry": null,
+	"education": [
+		{
+			"grade": null,
+			"school": "Bauman Moscow State Technical University",
+			"ends_at": {
+				"day": 31,
+				"year": 2011,
+				"month": 1
+			},
+			"logo_url": "https://media.licdn.com/dms/image/C510BAQGMVnaUaN9ACQ/company-logo_400_400/0/1631315078765?e=1717027200&v=beta&t=vllEZffHXfCMN4oiSYh2aEJkYmtnVEVgYyarBYQk3uI",
+			"starts_at": {
+				"day": 1,
+				"year": 2005,
+				"month": 1
+			},
+			"degree_name": "Master's degree",
+			"description": null,
+			"field_of_study": "Information Technology",
+			"activities_and_societies": null,
+			"school_facebook_profile_url": null,
+			"school_linkedin_profile_url": null
+		}
+	],
+	"full_name": "Aleksei Petrov",
+	"interests": [],
+	"languages": [],
+	"last_name": "Petrov",
+	"activities": [],
+	"birth_date": null,
+	"first_name": "Aleksei",
+	"occupation": "Senior Software Engineer at Spotify",
+	"connections": 371,
+	"experiences": [
+		{
+			"title": "Senior Software Engineer",
+			"company": "Spotify",
+			"ends_at": null,
+			"location": "Stockholm, Stockholm County, Sweden",
+			"logo_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/spotify/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20240624%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20240624T135723Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=8114c6be804db4007906a83621617051bf0d3b65679a6ec6d222f028db42ca20",
+			"starts_at": {
+				"day": 1,
+				"year": 2022,
+				"month": 9
+			},
+			"description": "I'm currently working on the enhancement of Spotify's search infrastructure helping Spotify to expand its content variety while carefully executing plans to enhance cost efficiency.\n\nKey Achievements:\n- Engineered and enhanced the search infrastructure, particularly the serving part ranking ML model, to improve the relevance and efficiency of search results for users.\n- Successfully implemented performance optimizations in the search infrastructure, resulting in reduced operational costs and improved user satisfaction.\n- Developed strategies to scale the search infrastructure effectively, ensuring it could handle increased loads while simultaneously identifying and implementing cost-saving measures.\n- Actively participated in feature development and deployment to enhance the overall search experience, balancing user satisfaction with cost-effectiveness.",
+			"company_facebook_profile_url": null,
+			"company_linkedin_profile_url": "https://www.linkedin.com/company/spotify/"
+		},
+		{
+			"title": "Senior Software Engineer",
+			"company": "Spotify",
+			"ends_at": {
+				"day": 31,
+				"year": 2022,
+				"month": 8
+			},
+			"location": "Stockholm, Stockholm County, Sweden",
+			"logo_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/spotify/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20240624%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20240624T135723Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=8114c6be804db4007906a83621617051bf0d3b65679a6ec6d222f028db42ca20",
+			"starts_at": {
+				"day": 1,
+				"year": 2018,
+				"month": 8
+			},
+			"description": "I was deeply involved in designing and implementing robust authentication and authorization infrastructure at Spotify, specializing in OAuth 2.0 and OpenID Connect and led efforts to enhance security and user access control across various platforms, including iOS, Android, Desktop, and web applications.\n\n-Lead the development of a scalable authentication system, ensuring seamless and secure user experiences for Spotify's owned clients.\n- Implemented OAuth 2.0 and OpenID Connect standards to establish a unified and standardized authentication process.\n- Collaborated with cross-functional teams to integrate authentication solutions into both native and web applications, ensuring a consistent user experience across platforms.\n- Successfully extended authentication capabilities to third-party applications, enhancing Spotify's ecosystem and partnerships.\n- Conducted thorough security assessments and implemented best practices, contributing to the overall security posture of the authentication and authorization infrastructure.\n- Resolved complex technical challenges, optimizing performance and ensuring the reliability of the authentication systems.",
+			"company_facebook_profile_url": null,
+			"company_linkedin_profile_url": "https://www.linkedin.com/company/spotify/"
+		},
+		{
+			"title": "Software Engineer",
+			"company": "Spotify",
+			"ends_at": {
+				"day": 31,
+				"year": 2018,
+				"month": 8
+			},
+			"location": "Stockholm, Stockholm County, Sweden",
+			"logo_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/spotify/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20240624%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20240624T135723Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=8114c6be804db4007906a83621617051bf0d3b65679a6ec6d222f028db42ca20",
+			"starts_at": {
+				"day": 1,
+				"year": 2017,
+				"month": 4
+			},
+			"description": "Design, architecture and development of backend systems/data pipelines to process Spotify partners transactions.",
+			"company_facebook_profile_url": null,
+			"company_linkedin_profile_url": "https://www.linkedin.com/company/spotify/"
+		},
+		{
+			"title": "Information Technology Consultant",
+			"company": "tretton37",
+			"ends_at": {
+				"day": 31,
+				"year": 2017,
+				"month": 8
+			},
+			"location": "Stockholm, Stockholm County, Sweden",
+			"logo_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/tretton37ab/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20240624%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20240624T135723Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=e2ea02b2718024af134bd562a2b046174bd2cb708c87d8640589b93437daa71f",
+			"starts_at": {
+				"day": 1,
+				"year": 2017,
+				"month": 1
+			},
+			"description": null,
+			"company_facebook_profile_url": null,
+			"company_linkedin_profile_url": "https://www.linkedin.com/company/tretton37ab/"
+		},
+		{
+			"title": "Information Technology Team Lead",
+			"company": "FlippingBook",
+			"ends_at": {
+				"day": 31,
+				"year": 2017,
+				"month": 1
+			},
+			"location": "Moscow, Moscow City, Russia",
+			"logo_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/flippingbook/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20240624%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20240624T135723Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=0e78c89ca2185b28da771e25bb3c61dd586d2b9c7959d5e36ca00e4732e43d2a",
+			"starts_at": {
+				"day": 1,
+				"year": 2013,
+				"month": 1
+			},
+			"description": null,
+			"company_facebook_profile_url": null,
+			"company_linkedin_profile_url": "https://www.linkedin.com/company/flippingbook/"
+		},
+		{
+			"title": "Software Engineer",
+			"company": "FlippingBook",
+			"ends_at": {
+				"day": 31,
+				"year": 2013,
+				"month": 1
+			},
+			"location": "Moscow, Moscow City, Russia",
+			"logo_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/flippingbook/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20240624%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20240624T135723Z&X-Amz-Expires=1800&X-Amz-SignedHeaders=host&X-Amz-Signature=0e78c89ca2185b28da771e25bb3c61dd586d2b9c7959d5e36ca00e4732e43d2a",
+			"starts_at": {
+				"day": 1,
+				"year": 2010,
+				"month": 1
+			},
+			"description": null,
+			"company_facebook_profile_url": null,
+			"company_linkedin_profile_url": "https://www.linkedin.com/company/flippingbook/"
+		}
+	],
+	"certifications": [],
+	"follower_count": 374,
+	"volunteer_work": [],
+	"inferred_salary": null,
+	"personal_emails": [],
+	"profile_pic_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/person/aleksei-petrov-4090a7257/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20240624%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20240624T135723Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=2a96bb9151292e6f69387fcc681cfca14bbe10496fb0caad4b1fed837da46ac8",
+	"recommendations": [],
+	"personal_numbers": [],
+	"country_full_name": "Sweden",
+	"public_identifier": "aleksei-petrov-4090a7257",
+	"people_also_viewed": [
+		{
+			"link": "https://www.linkedin.com/in/egorovcharenko",
+			"name": "Egor O.",
+			"summary": "Software Engineering Manager",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/dmitriiabramov",
+			"name": "Dmitrii Abramov",
+			"summary": "Backend developer - Spotify",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/andersromin",
+			"name": "Anders Romin",
+			"summary": "Senior Software Engineer på Spotify",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/iyahimovitz",
+			"name": "Itay Yahimovitz",
+			"summary": "Staff Engineer at Spotify",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/shervinshoravi",
+			"name": "Shervin S.",
+			"summary": "Senior Engineering Manager at Spotify",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/paxpacheco",
+			"name": "Pedro Pacheco",
+			"summary": "Staff Software Engineer at Spotify",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/danny-kiefner-61899b11b",
+			"name": "Danny Kiefner",
+			"summary": "Staff Engineer at Spotify",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/lukastegendal",
+			"name": "Lukas Tegendal",
+			"summary": "Software Engineer",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/darya-karotchanka-907512167",
+			"name": "Darya Karotchanka",
+			"summary": "Web engineer",
+			"location": null
+		},
+		{
+			"link": "https://www.linkedin.com/in/timur-islamgulov-470b5581",
+			"name": "Timur Islamgulov",
+			"summary": "Staff Engineer at Spotify",
+			"location": null
+		}
+	],
+	"accomplishment_courses": [],
+	"accomplishment_patents": [],
+	"accomplishment_projects": [],
+	"similarly_named_profiles": [],
+	"accomplishment_test_scores": [],
+	"background_cover_image_url": null,
+	"accomplishment_publications": [],
+	"accomplishment_honors_awards": [],
+	"accomplishment_organisations": []
+}
