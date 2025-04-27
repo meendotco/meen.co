@@ -53,3 +53,25 @@ export async function waitListEmail(
 	);
 	return data;
 }
+
+export async function sendApplicationEmail(
+	email: string,
+	name: string,
+	company: string,
+	role: string
+) {
+	const { data } = await resend.emails.send({
+		from: `${company} <${company.toLowerCase()}@meen.co>`,
+		to: [email],
+		subject: company + ' - Application Received',
+		html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+			<h2 style="color: #2563eb;">Application Confirmation</h2>
+			<p>Dear ${name},</p>
+			<p>Thank you for submitting your application for the <strong>${role}</strong> position at <strong>${company}</strong>.</p>
+			<p>Your application has been successfully received and is now under review by our hiring team. We appreciate your interest in joining our organization.</p>
+			<p>If your qualifications match our requirements, we will contact you to discuss the next steps in the hiring process.</p>
+			<p>Best regards,</p>
+			<p>The ${company} Recruitment Team</p>
+		</div>`
+	});
+}
