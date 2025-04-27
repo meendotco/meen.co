@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { jobPost, linkedInProfile } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { jobPost, linkedInProfile, candidates } from '$lib/server/db/schema';
+import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
 import { generateObject } from 'ai';
 import {
@@ -26,6 +26,8 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			return json({ error: 'LinkedIn URL and job ID are required' }, { status: 400 });
 		}
 
+		const linkedinHandle = linkedinUrl.split('/in/')[1].replace('/', '');
+
 		const job = await db.query.jobPost.findFirst({
 			where: eq(jobPost.id, jobId)
 		});
@@ -35,12 +37,25 @@ export const POST: RequestHandler = async ({ request, params }) => {
 		}
 
 		const linkedinExists = await db.query.linkedInProfile.findFirst({
-			where: eq(linkedInProfile.handle, linkedinUrl.split('/in/')[1].replace('/', ''))
+			where: eq(linkedInProfile.handle, linkedinHandle)
 		});
 
-		const linkedinProfile = linkedinExists
-			? linkedinExists.data
-			: await getFullLinkedinProfile(linkedinUrl.split('/in/')[1].replace('/', ''));
+		let linkedinProfile: Record<string, any>;
+
+		if (linkedinExists) {
+			linkedinProfile = linkedinExists.data;
+			const candidateExists = await db.query.candidates.findFirst({
+				where: and(
+					eq(candidates.linkedInProfileId, linkedinExists.id),
+					eq(candidates.jobPostId, jobId),
+					eq(candidates.applied, true)
+				)
+			});
+
+			if (candidateExists) return json({ error: 'Already applied' }, { status: 400 });
+		} else {
+			linkedinProfile = await getFullLinkedinProfile(linkedinHandle);
+		}
 
 		const llmAssessment = await generateObject({
 			model: gemini2dot5pro,
@@ -69,7 +84,7 @@ ${generateLinkedInProfileEmbeddingInput(linkedinProfile)}
 			assessment: {
 				matchScore: llmAssessment.object.matchScore,
 				reasoning: llmAssessment.object.reasoning,
-				handle: linkedinUrl.split('/in/')[1].replace('/', ''),
+				handle: linkedinHandle,
 				linkedinProfile: linkedinProfile
 			}
 		});
