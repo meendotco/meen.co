@@ -65,12 +65,19 @@
 				const errorData = await response
 					.json()
 					.catch(() => ({ message: 'Failed to fetch profile details.' }));
-				const errorMessage = errorData.message || 'Server error during profile import.';
+
+				if (errorData.error === 'Already applied') {
+					toast.error('You have already applied for this position.', { id: importToastId });
+					throw new Error('You have already applied for this position.');
+				}
+
+				const errorMessage =
+					errorData.error || errorData.message || 'Server error during profile import.';
 				toast.error(errorMessage, { id: importToastId });
 				throw new Error(errorMessage);
 			}
-
 			const result = await response.json();
+
 			assessmentData = result.assessment;
 			profileData = result?.assessment?.linkedinProfile;
 			toast.success('Profile imported successfully!', { id: importToastId });
