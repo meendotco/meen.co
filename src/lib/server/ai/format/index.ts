@@ -1,7 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
+import type { InferSelectModel } from 'drizzle-orm';
 
+import type {
+	candidates as candidatesTable,
+	customField as customFieldTable,
+	customFieldValue as customFieldValueTable,
+	linkedInProfile as linkedInProfileTable
+} from '$lib/server/db/schema';
 import type { JobData } from '@/server/job';
+
+type LinkedInProfileSelect = InferSelectModel<typeof linkedInProfileTable> & {
+	data?: PersonEndpointResponse | null;
+};
+type CustomFieldSelect = InferSelectModel<typeof customFieldTable>;
+type CustomFieldValueSelect = InferSelectModel<typeof customFieldValueTable> & {
+	customField: CustomFieldSelect;
+};
+
+// Use a type similar to the one in CandidateTable.svelte for richer data
+export type CandidateForTable = InferSelectModel<typeof candidatesTable> & {
+	linkedInProfile: LinkedInProfileSelect | null;
+	matchScore?: number | null;
+	reasoning?: string | null;
+	customFieldValues?: CustomFieldValueSelect[] | null;
+};
 
 /**
  * Safely retrieves a nested property from an object using dot notation
@@ -157,6 +180,75 @@ export function generateJobPostEmbeddingInputFull(jobPost: JobData): string {
 
 	const jobPostInputStringTagged = parts.filter((part) => part && part.trim() !== '').join('\n');
 	return jobPostInputStringTagged.replace(/\n\s*\n/g, '\n').trim();
+}
+
+/**
+ * Generates a Markdown table representation of candidates.
+ */
+export function generateCandidateTable(candidates: CandidateForTable[]): string {
+	if (!candidates || candidates.length === 0) {
+		return 'No candidates to display.';
+	}
+
+	// --- Determine Headers ---
+	const baseHeaders = ['Name', 'Title', 'Score', 'Reasoning'];
+	const customFieldHeaders: string[] = [];
+	const customFieldMap = new Map<string, CustomFieldSelect>();
+
+	// Collect all unique custom field names and their definitions from the first candidate
+	// Assuming custom fields are consistent across candidates for the same job
+	if (candidates[0]?.customFieldValues) {
+		for (const cfv of candidates[0].customFieldValues) {
+			if (cfv.customField && !customFieldMap.has(cfv.customField.name)) {
+				customFieldMap.set(cfv.customField.name, cfv.customField);
+				customFieldHeaders.push(cfv.customField.name);
+			}
+		}
+	}
+
+	const allHeaders = [...baseHeaders, ...customFieldHeaders];
+
+	// --- Build Header Row ---
+	const headerRow = `| ${allHeaders.join(' | ')} |`;
+	const separatorRow = `| ${allHeaders.map(() => '---').join(' | ')} |`;
+
+	// --- Build Data Rows ---
+	const dataRows = candidates.map((candidate) => {
+		const profileData = candidate.linkedInProfile?.data;
+		const name = `${profileData?.first_name ?? ''} ${profileData?.last_name ?? ''}`.trim() || 'N/A';
+		const title = profileData?.headline ?? 'N/A';
+		const score = candidate.matchScore != null ? `${candidate.matchScore}/100` : 'N/A';
+		const reasoning = candidate.reasoning ?? 'N/A';
+
+		// Sanitize potential markdown characters in string data (like '|')
+		const sanitize = (str: string | null | undefined): string =>
+			str ? String(str).replace(/\|/g, '\\|') : 'N/A';
+
+		const baseData = [sanitize(name), sanitize(title), score, sanitize(reasoning)];
+
+		const customFieldValues: string[] = [];
+		for (const headerName of customFieldHeaders) {
+			const fieldDef = customFieldMap.get(headerName);
+			const cfv = candidate.customFieldValues?.find((v) => v.customFieldId === fieldDef?.id);
+			let value = cfv?.value ?? 'N/A';
+
+			// Format value based on type if needed (e.g., date)
+			if (fieldDef?.type === 'date' && value !== 'N/A') {
+				try {
+					value = new Date(value).toLocaleDateString();
+				} catch {
+					// Ignore invalid date format
+				}
+			}
+			customFieldValues.push(sanitize(value));
+		}
+
+		const rowData = [...baseData, ...customFieldValues];
+		return `| ${rowData.join(' | ')} |`;
+	});
+	console.log([headerRow, separatorRow, ...dataRows].join('\n'));
+
+	return [headerRow, separatorRow, ...dataRows].join('\n');
 }
 
 /**

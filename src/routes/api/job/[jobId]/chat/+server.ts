@@ -24,7 +24,16 @@ export const POST = async ({ locals, params, request }) => {
 	const job = await db.query.jobPost.findFirst({
 		where: eq(jobPost.id, jobId),
 		with: {
-			candidates: true,
+			candidates: {
+				with: {
+					linkedInProfile: true,
+					customFieldValues: {
+						with: {
+							customField: true
+						}
+					}
+				}
+			},
 			chat: {
 				with: {
 					messages: {

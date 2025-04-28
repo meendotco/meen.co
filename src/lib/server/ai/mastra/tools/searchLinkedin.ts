@@ -7,17 +7,17 @@ export async function createSearchLinkedinTool() {
 	return createTool({
 		id: 'search-linkedin',
 		description:
-			'Search for LinkedIn profiles matching specific skills, job titles, or qualifications. Use semantic search, not keyword search.',
+			'Perform semantic vector search on LinkedIn profiles to find candidates matching specific skills, job titles, or qualifications. This uses embedding similarity, not keyword matching.',
 		inputSchema: z.object({
 			query: z
 				.string()
 				.describe(
-					'Specific search terms related to skills, experience, or job titles. Focus on professional attributes rather than company names.'
+					'Natural language description of the ideal candidate profile. Include relevant skills, experience levels, or job titles. The vector search will find semantic matches beyond exact keywords.'
 				),
 			k: z
 				.number()
 				.describe(
-					'Maximum number of results to return (recommend 10-20 for quality results). Use smaller, targeted searches for better precision.'
+					'Number of semantically similar profiles to return (recommend 5-15 for high relevance). Higher values increase recall but may reduce precision in vector space.'
 				)
 		}),
 		outputSchema: z.object({
