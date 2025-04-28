@@ -5,14 +5,14 @@ import { jobPost, linkedInProfile } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { addCandidate } from '@/server/job';
 import { z } from 'zod';
-
+import { sendApplicationEmail } from '$lib/server/mail';
 const linkedinUrlSchema = z.object({
 	linkedinHandle: z.string().min(1).max(1000),
 	matchScore: z.number().describe('The score of the candidate for the job from 0 to 100'),
 	reasoning: z.string().describe('The reasoning for the match score')
 });
 
-export const POST: RequestHandler = async ({ request, params }) => {
+export const POST: RequestHandler = async ({ request, params, locals }) => {
 	try {
 		const body = await request.json();
 		const { linkedinHandle, matchScore, reasoning } = linkedinUrlSchema.parse(body);
@@ -34,6 +34,8 @@ export const POST: RequestHandler = async ({ request, params }) => {
 		if (!linkedinExists) return json({ error: 'LinkedIn profile not found' }, { status: 404 });
 
 		const candidate = await addCandidate(linkedinHandle, jobId, matchScore, reasoning, false, true);
+
+		sendApplicationEmail(locals.user.email, candidate.linkedInProfile?.data?.full_name, job.ownerOrganizationHandle, job.title);
 
 		return json({ success: true, candidate });
 	} catch (error) {
