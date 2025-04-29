@@ -425,3 +425,9 @@ export const waitlist = pgTable('waitlist', {
 	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
 });
+
+export const calendarEvent = pgTable('calendarEvent', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID())
+});

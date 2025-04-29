@@ -1,0 +1,1 @@
+ALTER TABLE "jobPost" ADD COLUMN "view" text DEFAULT 'table' NOT NULL;
