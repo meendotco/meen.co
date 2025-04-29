@@ -29,3 +29,6 @@ src/lib/paraglide
 
 .infisical.json
 pnpm-lock.yaml
+
+# Cursor
+.cursor
