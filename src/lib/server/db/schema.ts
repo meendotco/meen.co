@@ -39,7 +39,9 @@ export const users = pgTable('user', {
 	image: text('image'),
 	organizationHandle: text('organizationHandle').references(() => organization.handle, {
 		onDelete: 'cascade'
-	})
+	}),
+	lastUpdatedMeetings: timestamp('lastUpdatedMeetings', { mode: 'date' }),
+	lastUpdatedEmails: timestamp('lastUpdatedEmails', { mode: 'date' })
 });
 
 export const accessRequest = pgTable('accessRequest', {
@@ -95,11 +97,13 @@ export const orgUserRelations = relations(organization, ({ many }) => ({
 	users: many(users)
 }));
 
-export const userRelations = relations(users, ({ one }) => ({
+export const userRelations = relations(users, ({ one, many }) => ({
 	organization: one(organization, {
 		fields: [users.organizationHandle],
 		references: [organization.handle]
-	})
+	}),
+	googleMeetings: many(googleMeeting),
+	googleEmails: many(googleEmail)
 }));
 
 export const accounts = pgTable(
@@ -263,6 +267,7 @@ export const jobPost = pgTable(
 		ownerOrganizationHandle: text('ownerOrganizationHandle').references(() => organization.handle, {
 			onDelete: 'cascade'
 		}),
+		isDeleted: boolean('isDeleted').notNull().default(false),
 		title: text('title').notNull(),
 		description: text('description').notNull(),
 		department: text('department'),
@@ -331,6 +336,41 @@ export const candidates = pgTable(
 		index('candidate_linkedInProfileId_idx').on(table.linkedInProfileId)
 	]
 );
+
+export const googleMeeting = pgTable('googleMeeting', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text('userId')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	jobPostId: text('jobPostId').references(() => jobPost.id, { onDelete: 'cascade' }),
+	googleMeetingId: text('googleMeetingId').notNull(),
+	summary: text('summary'),
+	description: text('description'),
+	htmlLink: text('htmlLink'),
+	hangoutLink: text('hangoutLink'),
+	startTime: timestamp('startTime', { mode: 'date' }),
+	endTime: timestamp('endTime', { mode: 'date' }),
+	attendees: jsonb('attendees'),
+	organizerEmail: text('organizerEmail'),
+	status: text('status'),
+	conferenceData: jsonb('conferenceData'),
+	rawData: jsonb('rawData'),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+});
+
+export const googleMeetingRelations = relations(googleMeeting, ({ one }) => ({
+	user: one(users, {
+		fields: [googleMeeting.userId],
+		references: [users.id]
+	}),
+	jobPost: one(jobPost, {
+		fields: [googleMeeting.jobPostId],
+		references: [jobPost.id]
+	})
+}));
 
 export const linkedInProfileRelations = relations(linkedInProfile, ({ many }) => ({
 	candidates: many(candidates)
@@ -431,3 +471,23 @@ export const calendarEvent = pgTable('calendarEvent', {
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID())
 });
+
+export const googleEmail = pgTable('googleEmail', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	userId: text('userId')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	googleEmailId: text('googleEmailId').notNull(),
+	googleThreadId: text('googleThreadId').notNull(),
+	createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+});
+
+export const googleEmailRelations = relations(googleEmail, ({ one }) => ({
+	user: one(users, {
+		fields: [googleEmail.userId],
+		references: [users.id]
+	})
+}));
