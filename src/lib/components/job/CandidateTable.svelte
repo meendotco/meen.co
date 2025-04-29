@@ -1,13 +1,14 @@
 <script lang="ts">
 	import type { InferSelectModel } from 'drizzle-orm';
-	import { ArrowUpDown, PlusIcon, Trash2 } from 'lucide-svelte';
+	import { ArrowUpDown, PlusIcon, Trash2, MoreHorizontal } from 'lucide-svelte';
 	import type { PersonEndpointResponse } from 'proxycurl-js-linkedin-profile-scraper';
 	import { onMount } from 'svelte'; // Import onMount
-
-	// import { $effect } from 'svelte'; // $effect is globally available in Svelte 5
+	import * as Popover from '$lib/components/ui/popover';
+	import { buttonVariants } from '$lib/components/ui/button';
 	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import * as Table from '$lib/components/ui/table';
 	import type {
@@ -16,7 +17,7 @@
 		customFieldValue as customFieldValueTable,
 		linkedInProfile as linkedInProfileTable
 	} from '$lib/server/db/schema';
-	import { socket } from '$lib/websocket/client.svelte.js'; // Import socket
+	import { socket } from '$lib/websocket/client.svelte'; // Import socket
 
 	type LinkedInProfileSelect = InferSelectModel<typeof linkedInProfileTable> & {
 		data?: PersonEndpointResponse | null;
@@ -281,17 +282,22 @@
 		}
 	}
 
-	const totalColspan = $derived(4 + customFields.length);
+	const totalColspan = $derived(5 + customFields.length);
 
 	// Add check for non-empty emails
 	const hasAnyEmails = $derived(() =>
-		candidates.some((candidate) => candidate?.linkedInProfile?.data?.personal_emails?.length > 0)
+		candidates.some(
+			(candidate) =>
+				candidate?.linkedInProfile?.data?.personal_emails &&
+				candidate.linkedInProfile.data.personal_emails.length > 0 // Added null check
+		)
 	);
 </script>
 
 <Table.Root>
 	<Table.Header>
 		<Table.Row>
+			<Table.Head class="w-[30px] text-center">Actions</Table.Head>
 			<Table.Head class="w-[225px]">
 				<Button variant="ghost" onclick={() => sortBy('name')}>
 					Name
@@ -325,10 +331,9 @@
 							{field.name}
 							<ArrowUpDown class="ml-2 h-4 w-4" />
 						</Button>
-						<Dialog.Root bind:open={deleteDialogStates[field.id]}>
-							<Dialog.Trigger asChild let:builder>
+						<Dialog.Root>
+							<Dialog.Trigger>
 								<Button
-									builders={[builder]}
 									variant="ghost"
 									size="icon"
 									class="dark:hover:bg-red-250 ml-1 h-6 w-6 shrink-0 hover:bg-red-300"
@@ -356,12 +361,13 @@
 					</div>
 				</Table.Head>
 			{/each}
+			<!-- Empty Header for Actions column -->
+			<Table.Head class="w-[80px] text-right"></Table.Head>
 
 			<Table.Head class="w-auto text-right">
-				<Dialog.Root bind:open={isAddDialogOpen}>
-					<Dialog.Trigger asChild let:builder>
+				<Dialog.Root>
+					<Dialog.Trigger>
 						<Button
-							builders={[builder]}
 							onclick={() => (isAddDialogOpen = true)}
 							variant="outline"
 							size="sm"
@@ -435,6 +441,38 @@
 				{@const reasoning = candidate.reasoning != null ? String(candidate.reasoning) : 'N/A'}
 
 				<Table.Row>
+					<!-- Actions Cell -->
+					<Table.Cell class="text-center">
+						<Popover.Root>
+							<Popover.Trigger>
+								<Button variant="ghost" size="icon" class="h-8 w-8 p-0">
+									<MoreHorizontal class="h-4 w-4" />
+									<span class="sr-only">Open Actions</span>
+								</Button>
+							</Popover.Trigger>
+							<Popover.Content class="w-48 p-1">
+								<div class="grid gap-1 p-1">
+									{#if profileData?.public_identifier}
+										<a
+											href="https://www.linkedin.com/in/{profileData.public_identifier}"
+											target="_blank"
+											rel="noopener noreferrer"
+											class={buttonVariants({ variant: 'ghost', size: 'sm' }) +
+												' w-full justify-start'}
+										>
+											View Profile
+										</a>
+									{/if}
+									<Button variant="ghost" size="sm" class="w-full justify-start"
+										>View Details</Button
+									>
+									<Button variant="destructive" size="sm" class="w-full justify-start"
+										>Delete</Button
+									>
+								</div>
+							</Popover.Content>
+						</Popover.Root>
+					</Table.Cell>
 					{#if fullName !== 'N/A' && fullName.length > 25}
 						<Table.Cell
 							class="cursor-pointer font-medium"
@@ -550,7 +588,7 @@
 </Table.Root>
 
 <!-- Reusable Dialog for Full Cell Content -->
-<Dialog.Root bind:open={isCellDialogOpen}>
+<Dialog.Root>
 	<Dialog.Content class="max-w-xl">
 		<Dialog.Header>
 			<Dialog.Title>Full Value</Dialog.Title>
@@ -559,7 +597,9 @@
 			{dialogContent}
 		</div>
 		<Dialog.Footer class="mt-4">
-			<Button variant="outline" onclick={() => (isCellDialogOpen = false)}>Close</Button>
+			<Dialog.Close>
+				<Button variant="outline">Close</Button>
+			</Dialog.Close>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
