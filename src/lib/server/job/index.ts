@@ -38,7 +38,7 @@ export interface JobData {
 export async function insertJob(
 	jobData: string,
 	ownerOrganizationHandle: string,
-	status?: 'archived' | 'draft' | 'published'
+	status?: 'Active' | 'Closed'
 ) {
 	const { object } = await generateObject({
 		model: gpt4o,
