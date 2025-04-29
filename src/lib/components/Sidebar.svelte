@@ -11,15 +11,25 @@
 	let { isCollapsed = $bindable(false), user } = $props();
 	const dispatch = createEventDispatcher();
 
+	type RouteIcon =
+		| { type: 'component'; component: typeof BriefcaseBusiness | typeof Settings }
+		| { type: 'svg'; src: string }
+		| { type: 'png'; src: string };
+
 	const routes = [
 		{
 			href: '/dashboard/job',
-			icon: BriefcaseBusiness,
+			icon: { type: 'component', component: BriefcaseBusiness } as RouteIcon,
 			title: 'Jobs'
 		},
 		{
+			href: '/dashboard/google',
+			icon: { type: 'png', src: '/logos/google.png' } as RouteIcon,
+			title: 'Google'
+		},
+		{
 			href: '/dashboard/settings',
-			icon: Settings,
+			icon: { type: 'component', component: Settings } as RouteIcon,
 			title: 'Settings'
 		}
 	];
@@ -70,7 +80,13 @@
 							: 'text-foreground/70 hover:text-primary dark:text-white/70 dark:hover:text-primary'
 					)}
 				>
-					<svelte:component this={route.icon} class="h-5 w-5" />
+					{#if route.icon.type === 'component'}
+						<svelte:component this={route.icon.component} class="h-5 w-5" />
+					{:else if route.icon.type === 'svg'}
+						<img src={route.icon.src} alt={route.title} class="h-5 w-5" />
+					{:else if route.icon.type === 'png'}
+						<img src={route.icon.src} alt={route.title} class="h-6 w-6" />
+					{/if}
 					{#if !isCollapsed}
 						<span>{route.title}</span>
 					{/if}

@@ -8,7 +8,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
 	import * as Table from '$lib/components/ui/table';
 	import type {
@@ -451,24 +450,25 @@
 								</Button>
 							</Popover.Trigger>
 							<Popover.Content class="w-48 p-1">
-								<div class="grid gap-1 p-1">
-									{#if profileData?.public_identifier}
-										<a
-											href="https://www.linkedin.com/in/{profileData.public_identifier}"
-											target="_blank"
-											rel="noopener noreferrer"
-											class={buttonVariants({ variant: 'ghost', size: 'sm' }) +
-												' w-full justify-start'}
+								<div class="flex flex-col gap-1 p-1">
+									<div class="flex cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-muted">
+										<img
+											src="/logos/google-meet-svgrepo-com.svg"
+											alt="Google Meet"
+											class="h-4 w-4"
+										/>
+										<span class="text-sm">Schedule Meeting</span>
+									</div>
+									<div class="flex cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-muted">
+										<Button variant="ghost" size="sm" class="w-full justify-start"
+											>View Details</Button
 										>
-											View Profile
-										</a>
-									{/if}
-									<Button variant="ghost" size="sm" class="w-full justify-start"
-										>View Details</Button
-									>
-									<Button variant="destructive" size="sm" class="w-full justify-start"
-										>Delete</Button
-									>
+									</div>
+									<div class="flex cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-muted">
+										<Button variant="destructive" size="sm" class="w-full justify-start"
+											>Delete</Button
+										>
+									</div>
 								</div>
 							</Popover.Content>
 						</Popover.Root>
