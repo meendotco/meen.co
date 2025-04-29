@@ -51,7 +51,7 @@
 	}
 
 	async function handleGoogleSync() {
-		const response = await fetch('/api/settings/google/sync');
+		const response = await fetch('/api/meet');
 		const data = await response.json();
 		console.log(data);
 	}
