@@ -8,6 +8,7 @@
 	import { Skeleton } from '@/components/ui/skeleton';
 	import OrganizationManageDialog from '$lib/components/dashboard/OrganizationManageDialog.svelte';
 	import type { Organization, OrganizationUpdatePayload } from '$lib/types/organization';
+	import type { Account } from '@auth/core/types';
 
 	let { data } = $props();
 
@@ -54,6 +55,40 @@
 		const response = await fetch('/api/meet');
 		const data = await response.json();
 		console.log(data);
+	}
+
+	function formatTimeRemaining(expiresAtSeconds: number | null | undefined): string {
+		if (!expiresAtSeconds) {
+			return 'unknown expiry';
+		}
+		const nowMs = Date.now();
+		const expiresAtMs = expiresAtSeconds * 1000;
+		const remainingMs = expiresAtMs - nowMs;
+
+		if (remainingMs <= 0) {
+			return 'expired'; // Should not be displayed if !googleIsExpired
+		}
+
+		const seconds = Math.floor(remainingMs / 1000);
+		const minutes = Math.floor(seconds / 60);
+		const hours = Math.floor(minutes / 60);
+		const days = Math.floor(hours / 24);
+
+		if (days > 1) {
+			return `in ${days} days`;
+		} else if (days === 1) {
+			return 'in 1 day';
+		} else if (hours > 1) {
+			return `in ${hours} hours`;
+		} else if (hours === 1) {
+			return 'in 1 hour';
+		} else if (minutes > 1) {
+			return `in ${minutes} minutes`;
+		} else if (minutes === 1) {
+			return 'in 1 minute';
+		} else {
+			return 'expires soon';
+		}
 	}
 </script>
 
@@ -179,65 +214,99 @@
 						</div>
 						<Skeleton class="h-6 w-24" />
 					</div>
-				{:then connectedAccounts}
-					{#if connectedAccounts && connectedAccounts.length > 0}
-						{#each connectedAccounts as account, index (index)}
-							{#if account.provider === 'linkedin'}
-								<div class="flex items-center justify-between rounded-lg border p-4">
-									<div class="flex items-center space-x-4">
-										<div
-											class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
-										>
-											<Linkedin />
-										</div>
-										<div>
-											<p class="font-medium">{account.provider}</p>
-											<p class="text-sm text-muted-foreground">
-												expires ({account.expires_at
-													? new Date(account.expires_at * 1000).toLocaleDateString()
-													: 'unknown'})
-											</p>
-										</div>
-									</div>
-									<Badge
-										variant="outline"
-										class="gap-1 border-green-500 text-green-600 dark:border-green-500 dark:text-green-400"
-									>
-										<Check class="mr-1" size={16} />
-										Connected
-									</Badge>
-								</div>
-							{/if}
+				{:then connectedAccountsResolved}
+					<!-- Calculate google account details after promise resolves -->
+					{@const googleAcc = (connectedAccountsResolved ?? []).find(
+						(acc) => acc.provider === 'google'
+					)}
+					{@const googleIsExpired = (() => {
+						if (!googleAcc) return true;
+						if (!googleAcc.expires_at) return true; // Treat missing expiry as needing connection
+						return googleAcc.expires_at * 1000 < Date.now();
+					})()}
 
-							{#if account.provider === 'google'}
-								<div class="flex items-center justify-between rounded-lg border p-4">
-									<div class="flex items-center space-x-4">
-										<div
-											class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
-										>
-											<img src="/logos/google.png" alt="Google" class="h-8 w-8" />
-										</div>
-										<div>
-											<p class="font-medium">{account.provider}</p>
-											<p class="text-sm text-muted-foreground">
-												expires ({account.expires_at
-													? new Date(account.expires_at * 1000).toLocaleDateString()
-													: 'unknown'})
-											</p>
-										</div>
-									</div>
-									<Badge
-										variant="outline"
-										class="gap-1 border-green-500 text-green-600 dark:border-green-500 dark:text-green-400"
+					{#each connectedAccountsResolved ?? [] as account, index (index)}
+						{#if account.provider === 'linkedin'}
+							<div class="flex items-center justify-between rounded-lg border p-4">
+								<div class="flex items-center space-x-4">
+									<div
+										class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
 									>
-										<Check class="mr-1" size={16} />
-										Connected
-									</Badge>
-									<Button variant="outline" size="sm" onclick={handleGoogleSync}>Sync</Button>
+										<Linkedin />
+									</div>
+									<div>
+										<p class="font-medium">{account.provider}</p>
+										<p class="text-sm text-muted-foreground">
+											expires ({account.expires_at
+												? new Date(account.expires_at * 1000).toLocaleDateString()
+												: 'unknown'})
+										</p>
+									</div>
 								</div>
-							{/if}
-						{/each}
+								<Badge
+									variant="outline"
+									class="gap-1 border-green-500 text-green-600 dark:border-green-500 dark:text-green-400"
+								>
+									<Check class="mr-1" size={16} />
+									Connected
+								</Badge>
+							</div>
+						{/if}
+					{/each}
+
+					<!-- Google Account Section -->
+					{#if googleAcc && !googleIsExpired}
+						<!-- Google Connected State -->
+						<div class="flex items-center justify-between rounded-lg border p-4">
+							<div class="flex items-center space-x-4">
+								<div
+									class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
+								>
+									<img src="/logos/google.png" alt="Google" class="h-8 w-8" />
+								</div>
+								<div>
+									<p class="font-medium">Google</p>
+									<p class="text-sm text-muted-foreground">
+										Expires {formatTimeRemaining(googleAcc.expires_at)}
+									</p>
+								</div>
+							</div>
+							<div class="flex items-center space-x-2">
+								<Badge
+									variant="outline"
+									class="gap-1 border-green-500 text-green-600 dark:border-green-500 dark:text-green-400"
+								>
+									<Check class="mr-1" size={16} />
+									Connected
+								</Badge>
+							</div>
+						</div>
 					{:else}
+						<!-- Google Disconnected/Expired State -->
+						<div class="flex items-center justify-between rounded-lg border p-4">
+							<div class="flex items-center space-x-4">
+								<div
+									class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
+								>
+									<img src="/logos/google.png" alt="Google" class="h-8 w-8" />
+								</div>
+								<div>
+									<p class="font-medium">Google</p>
+									{#if googleAcc && googleIsExpired}
+										<p class="text-sm text-destructive">
+											Connection expired. Please sign in again.
+										</p>
+									{:else}
+										<p class="text-sm text-muted-foreground">Connect your Google account</p>
+									{/if}
+								</div>
+							</div>
+							<Button variant="outline" href="/signin/google">Sign in with Google</Button>
+						</div>
+					{/if}
+
+					<!-- No Accounts Placeholder -->
+					{#if !(connectedAccountsResolved ?? []).some((acc) => acc.provider === 'linkedin') && !googleAcc}
 						<div
 							class="flex flex-col items-center justify-center space-y-2 rounded-lg border border-dashed p-4"
 						>
