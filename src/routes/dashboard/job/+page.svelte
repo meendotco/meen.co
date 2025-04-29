@@ -35,6 +35,7 @@
 	let jobIsCreating = $state(false);
 	let jobURL = $state('');
 	let dialogOpen = $state(false);
+	let currentJobID = $state('');
 
 	onMount(() => {
 		async function loadJobs() {
@@ -202,7 +203,10 @@
 					class="group relative overflow-hidden border border-border/40 bg-card/50 p-2 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
 				>
 					<Button
-						onclick={() => (deleteJobDialogOpen = true)}
+						onclick={() => {
+							deleteJobDialogOpen = true;
+							currentJobID = job.id;
+						}}
 						variant="ghost"
 						class="absolute right-2 top-2 z-10 hover:bg-red-500/10"
 					>
@@ -213,7 +217,7 @@
 						<div class="flex flex-col gap-4">
 							<div class="flex items-start gap-3">
 								<div
-									class="rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground"
+									class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground"
 								>
 									<Briefcase class="h-5 w-5" />
 								</div>
@@ -250,10 +254,17 @@
 								>Created {new Date(job.createdAt).toLocaleDateString()}</span
 							>
 							<span
-								class="flex items-center gap-2 rounded-full bg-green-500/10 px-2 py-1 font-medium text-green-500"
+								class="flex items-center gap-2 rounded-full px-2 py-1 font-medium {job.status ===
+									'Active' || job.status === null
+									? 'bg-green-500/10 text-green-500'
+									: 'bg-red-500/10 text-red-500'}"
 							>
-								<div class="h-2 w-2 rounded-full bg-green-500"></div>
-								Active
+								<div
+									class="h-2 w-2 rounded-full {job.status === 'Active' || job.status === null
+										? 'bg-green-500'
+										: 'bg-red-500'}"
+								></div>
+								{job.status || 'Active'}
 							</span>
 						</div>
 					</a>
@@ -294,14 +305,17 @@
 		<Dialog.Footer>
 			<Dialog.Close asChild>
 				<Button
-					onclick={() => (deleteJobDialogOpen = false)}
+					onclick={() => {
+						deleteJobDialogOpen = false;
+						currentJobID = '';
+					}}
 					variant="outline"
 					class="border-border/40 hover:bg-background/80"
 				>
 					Cancel
 				</Button>
 			</Dialog.Close>
-			<Button onclick={() => deleteJob(job.id)} variant="destructive">Delete Job</Button>
+			<Button onclick={() => deleteJob(currentJobID)} variant="destructive">Delete Job</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

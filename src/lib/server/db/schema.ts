@@ -279,7 +279,8 @@ export const jobPost = pgTable(
 		vector: vector('vector', { dimensions: 1536 }),
 		view: text('view').notNull().default('table').$type<CandidateView>(),
 		createdAt: timestamp('createdAt', { mode: 'date' }).notNull().defaultNow(),
-		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow()
+		updatedAt: timestamp('updatedAt', { mode: 'date' }).notNull().defaultNow(),
+		isDeleted: boolean('isDeleted').notNull().default(false)
 	},
 	(table) => [
 		index('jobPost_embedding_idx').using('hnsw', table.vector.op('vector_cosine_ops')),
