@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Building2, Check, Linkedin, User } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
+	import { signIn } from '@auth/sveltekit/client';
 
 	import { Badge } from '@/components/ui/badge';
 	import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@
 
 	let showOrgDialog = $state(false);
 	let currentOrganization = $state<Organization | null>(null);
+	let isLinkedinLoading = $state(false);
 
 	function openManageOrg(org: Organization) {
 		currentOrganization = org;
@@ -48,6 +50,28 @@
 			}
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : 'Failed to update organization');
+		}
+	}
+
+	async function handleLinkedInSignIn() {
+		isLinkedinLoading = true;
+		try {
+			await signIn('linkedin', { callbackUrl: '/dashboard/settings' });
+		} catch (error) {
+			console.error('LinkedIn sign-in failed:', error);
+			toast.error('Failed to connect LinkedIn account.');
+		} finally {
+			isLinkedinLoading = false;
+		}
+	}
+
+	async function handleGoogleSignIn() {
+		try {
+			await signIn('google', { callbackUrl: '/dashboard/settings' });
+		} catch (error) {
+			console.error('Google sign-in failed:', error);
+			toast.error('Failed to connect Google account.');
+		} finally {
 		}
 	}
 
@@ -224,6 +248,9 @@
 						if (!googleAcc.expires_at) return true; // Treat missing expiry as needing connection
 						return googleAcc.expires_at * 1000 < Date.now();
 					})()}
+					{@const linkedinAcc = (connectedAccountsResolved ?? []).find(
+						(acc) => acc.provider === 'linkedin'
+					)}
 
 					{#each connectedAccountsResolved ?? [] as account, index (index)}
 						{#if account.provider === 'linkedin'}
@@ -254,6 +281,50 @@
 						{/if}
 					{/each}
 
+					<!-- Show connect button if LinkedIn is not connected, This will probably never happen but who knows... -->
+					{#if !linkedinAcc}
+						<div class="flex items-center justify-between rounded-lg border p-4">
+							<div class="flex items-center space-x-4">
+								<div
+									class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
+								>
+									<Linkedin />
+								</div>
+								<div>
+									<p class="font-medium">LinkedIn</p>
+									<p class="text-sm text-muted-foreground">Connect your LinkedIn account</p>
+								</div>
+							</div>
+							<Button variant="outline" onclick={handleLinkedInSignIn} disabled={isLinkedinLoading}>
+								{#if isLinkedinLoading}
+									<svg
+										class="mr-2 h-4 w-4 animate-spin"
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+									>
+										<circle
+											class="opacity-25"
+											cx="12"
+											cy="12"
+											r="10"
+											stroke="currentColor"
+											stroke-width="4"
+										></circle>
+										<path
+											class="opacity-75"
+											fill="currentColor"
+											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+										></path>
+									</svg>
+									Connecting...
+								{:else}
+									Connect with LinkedIn
+								{/if}
+							</Button>
+						</div>
+					{/if}
+
 					<!-- Google Account Section -->
 					{#if googleAcc && !googleIsExpired}
 						<!-- Google Connected State -->
@@ -271,7 +342,9 @@
 									</p>
 								</div>
 							</div>
+
 							<div class="flex items-center space-x-2">
+								<Button variant="outline" onclick={handleGoogleSignIn}>Refresh</Button>
 								<Badge
 									variant="outline"
 									class="gap-1 border-green-500 text-green-600 dark:border-green-500 dark:text-green-400"
@@ -301,7 +374,7 @@
 									{/if}
 								</div>
 							</div>
-							<Button variant="outline" href="/signin/google">Sign in with Google</Button>
+							<Button variant="outline" onclick={handleGoogleSignIn}>Sign in with Google</Button>
 						</div>
 					{/if}
 
