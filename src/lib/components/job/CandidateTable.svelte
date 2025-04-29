@@ -474,20 +474,17 @@
 						</Popover.Root>
 					</Table.Cell>
 					{#if fullName !== 'N/A' && fullName.length > 25}
-						<Table.Cell
-							class="cursor-pointer font-medium"
-							onclick={() => showFullContent(fullName)}
-						>
+						<Table.Cell class="cursor-pointer font-medium">
 							{#if profileData?.public_identifier}
 								<a
 									href="https://www.linkedin.com/in/{profileData.public_identifier}"
 									target="_blank"
 									class="hover:underline"
 								>
-									{fullName.slice(0, 25)}...
+									{fullName}
 								</a>
 							{:else}
-								{fullName.slice(0, 25)}...
+								{fullName}
 							{/if}
 						</Table.Cell>
 					{:else}
@@ -507,8 +504,8 @@
 					{/if}
 
 					{#if headline !== 'N/A' && headline.length > 25}
-						<Table.Cell class="cursor-pointer" onclick={() => showFullContent(headline)}>
-							{headline.slice(0, 25)}...
+						<Table.Cell class="cursor-pointer">
+							{headline}
 						</Table.Cell>
 					{:else}
 						<Table.Cell>{headline}</Table.Cell>
@@ -519,11 +516,8 @@
 					</Table.Cell>
 
 					{#if reasoning !== 'N/A' && reasoning.length > 25}
-						<Table.Cell
-							class="cursor-pointer text-center"
-							onclick={() => showFullContent(reasoning)}
-						>
-							{reasoning.slice(0, 25)}...
+						<Table.Cell class="cursor-pointer text-center">
+							{reasoning}
 						</Table.Cell>
 					{:else}
 						<Table.Cell class="text-center">{reasoning}</Table.Cell>
@@ -531,11 +525,8 @@
 
 					{#if hasAnyEmails()}
 						{#if profileData?.personal_emails != null && profileData.personal_emails.length > 0}
-							<Table.Cell
-								class="cursor-pointer text-center"
-								onclick={() => showFullContent(profileData.personal_emails.join(', '))}
-							>
-								{profileData.personal_emails.join(', ').slice(0, 25)}...
+							<Table.Cell class="cursor-pointer text-center">
+								{profileData.personal_emails.join(', ')}
 							</Table.Cell>
 						{:else}
 							<Table.Cell class="text-center">N/A</Table.Cell>
@@ -562,9 +553,8 @@
 							<Table.Cell
 								isUpdating={isLoading}
 								class="cursor-pointer {field.type === 'number' ? 'text-center' : ''}"
-								onclick={() => showFullContent(fieldValue)}
 							>
-								{displayValue.slice(0, 25)}...
+								{displayValue}
 							</Table.Cell>
 						{:else}
 							<Table.Cell
