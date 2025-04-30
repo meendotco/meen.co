@@ -166,7 +166,7 @@
 
 			<Resizable.Handle withHandle />
 
-			<Resizable.Pane defaultSize={30} minSize={20} maxSize={35} class="flex h-full flex-col">
+			<Resizable.Pane defaultSize={30} minSize={0} maxSize={35} class="flex h-full flex-col">
 				<AIChat jobId={job.id} {chatId} {initialMessages} />
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
