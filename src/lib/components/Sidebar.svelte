@@ -38,7 +38,7 @@
 		class:w-[80px]={isCollapsed}
 	>
 		<!-- Logo and Header -->
-		<div class="flex h-16 items-center justify-between border-b border-border px-4">
+		<div class="flex h-16 items-center justify-between border-b border-border {isCollapsed ? "px-3" : "px-4"}">
 			<div class="flex items-center gap-2">
 				<Logo className={isCollapsed ? 'transition-all duration-200 ml-2' : ''} />
 				{#if !isCollapsed}
