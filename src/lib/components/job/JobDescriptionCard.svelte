@@ -12,7 +12,7 @@
 
 	let { job } = $props<{ job: JobPostSelect }>();
 	let isEditing = $state(false);
-	let editedDescription = $state(job.description);
+	let editedDescription = $state(job.description ?? '');
 
 	function handleEdit() {
 		isEditing = true;
@@ -23,7 +23,7 @@
 			const loadingToast = toast.loading('Saving job description...', {
 				duration: Infinity
 			});
-			const response = await fetch(`/api/job/${job.id}/description`, {
+			const response = await fetch(`/api/job/${job.id}/edit`, {
 				method: 'PATCH',
 				body: JSON.stringify({ description: editedDescription })
 			});
