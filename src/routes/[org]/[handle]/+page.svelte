@@ -144,144 +144,128 @@
 	}
 </script>
 
-<div class="mx-auto flex w-full max-w-5xl flex-col space-y-8 px-4 py-6 sm:px-6 md:px-8 lg:py-8">
-	<!-- Header -->
-	<div class="flex flex-col space-y-4">
-		<div>
+<div class="mx-auto w-full max-w-3xl px-4 py-8">
+	<Button
+		variant="link"
+		size="sm"
+		class="flex items-center gap-1.5"
+		onclick={() => window.history.back()}
+	>
+		<ChevronLeft class="h-4 w-4" />
+		<span>Back</span>
+	</Button>
+	<div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+		<h1 class="text-2xl font-bold">{post?.title}</h1>
+		{#if !data.user || data.user.organizationHandle !== post?.ownerOrganizationHandle}
 			<Button
-				variant="outline"
-				size="sm"
-				class="flex items-center gap-2 text-sm transition-colors hover:text-accent-foreground/80"
-				onclick={() => history.back()}
+				variant="default"
+				size="lg"
+				class="w-full rounded-full transition-opacity hover:opacity-90 sm:w-auto"
+				onclick={() => {
+					const el = document.getElementById('application-section');
+					if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}}
 			>
-				<ChevronLeft class="h-4 w-4" />
-				<span>Back</span>
+				Apply
 			</Button>
-		</div>
-		<h1 class="text-2xl font-bold tracking-tight sm:text-3xl">{post?.title}</h1>
-		<p class="text-muted-foreground">{post?.department || 'Job Details'}</p>
+		{/if}
+	</div>
+	<p class="mb-4 text-muted-foreground">{post?.department || 'Job Details'}</p>
+	<div class="mb-4 flex flex-wrap gap-2 text-xs">
+		{#if post?.location}
+			<span class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70">
+				<MapPin class="h-3 w-3" />
+				<span>{post.location}</span>
+			</span>
+		{/if}
+		{#if post?.type}
+			<span class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70">
+				<Briefcase class="h-3 w-3" />
+				<span>{post.type}</span>
+			</span>
+		{/if}
+		{#if post?.remote_policy}
+			<span class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70">
+				<Globe class="h-3 w-3" />
+				<span>{post.remote_policy}</span>
+			</span>
+		{/if}
+		{#if post?.salary}
+			<span class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70">
+				<DollarSign class="h-3 w-3" />
+				<span>{post.salary}</span>
+			</span>
+		{/if}
+	</div>
+	<div class="mb-6 flex items-center gap-1.5 text-xs text-muted-foreground">
+		<Calendar class="h-3 w-3" />
+		<span>Posted {formatDate(post?.createdAt)}</span>
 	</div>
 
-	<!-- Main Content -->
-	<div
-		class="relative flex flex-col rounded-xl border bg-card p-6 shadow-sm dark:bg-card/95 sm:p-8"
-	>
-		<!-- Job Metadata -->
-		<div class="mb-6">
-			<div class="mb-4 flex flex-wrap gap-2 text-xs">
-				{#if post?.location}
-					<span
-						class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70"
-					>
-						<MapPin class="h-3 w-3" />
-						<span>{post.location}</span>
-					</span>
-				{/if}
-				{#if post?.type}
-					<span
-						class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70"
-					>
-						<Briefcase class="h-3 w-3" />
-						<span>{post.type}</span>
-					</span>
-				{/if}
-				{#if post?.remote_policy}
-					<span
-						class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70"
-					>
-						<Globe class="h-3 w-3" />
-						<span>{post.remote_policy}</span>
-					</span>
-				{/if}
-				{#if post?.salary}
-					<span
-						class="flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 dark:bg-muted/70"
-					>
-						<DollarSign class="h-3 w-3" />
-						<span>{post.salary}</span>
-					</span>
-				{/if}
-			</div>
+	<!-- Job Description Sections -->
+	{#if post?.description}
+		<section class="mb-6">
+			<h2 class="mb-2 text-base font-medium">Description</h2>
+			<p class="text-sm text-muted-foreground">{post.description}</p>
+		</section>
+	{/if}
+	{#if post?.responsibilities}
+		<section class="mb-6">
+			<h2 class="mb-2 text-base font-medium">Responsibilities</h2>
+			<p class="text-sm text-muted-foreground">{post.responsibilities}</p>
+		</section>
+	{/if}
+	{#if post?.requirements}
+		<section class="mb-6">
+			<h2 class="mb-2 text-base font-medium">Requirements</h2>
+			<p class="text-sm text-muted-foreground">{post.requirements}</p>
+		</section>
+	{/if}
+	{#if post?.benefits}
+		<section class="mb-6">
+			<h2 class="mb-2 text-base font-medium">Benefits</h2>
+			<p class="text-sm text-muted-foreground">{post.benefits}</p>
+		</section>
+	{/if}
+	{#if post?.tech_stack && typeof post.tech_stack === 'string'}
+		<section class="mb-6">
+			<h2 class="mb-2 text-base font-medium">Tech Stack</h2>
+			<p class="text-sm text-muted-foreground">{post.tech_stack}</p>
+		</section>
+	{/if}
 
-			<div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-				<Calendar class="h-3 w-3" />
-				<span>Posted {formatDate(post?.createdAt)}</span>
-			</div>
-		</div>
-
-		<!-- Job Description Sections -->
+	<!-- Application Section -->
+	<div id="application-section">
 		<hr class="mb-6 border-border/40 dark:border-border/20" />
-
-		{#if post?.description}
-			<section class="mb-6">
-				<h2 class="mb-3 text-base font-medium sm:text-lg">Description</h2>
-				<p class="text-sm text-muted-foreground">{post.description}</p>
-			</section>
-		{/if}
-
-		{#if post?.responsibilities}
-			<section class="mb-6">
-				<h2 class="mb-3 text-base font-medium sm:text-lg">Responsibilities</h2>
-				<p class="text-sm text-muted-foreground">{post.responsibilities}</p>
-			</section>
-		{/if}
-
-		{#if post?.requirements}
-			<section class="mb-6">
-				<h2 class="mb-3 text-base font-medium sm:text-lg">Requirements</h2>
-				<p class="text-sm text-muted-foreground">{post.requirements}</p>
-			</section>
-		{/if}
-
-		{#if post?.benefits}
-			<section class="mb-6">
-				<h2 class="mb-3 text-base font-medium sm:text-lg">Benefits</h2>
-				<p class="text-sm text-muted-foreground">{post.benefits}</p>
-			</section>
-		{/if}
-
-		{#if post?.tech_stack && typeof post.tech_stack === 'string'}
-			<section class="mb-6">
-				<h2 class="mb-3 text-base font-medium sm:text-lg">Tech Stack</h2>
-				<p class="text-sm text-muted-foreground">{post.tech_stack}</p>
-			</section>
-		{/if}
-
-		<hr class="mb-6 border-border/40 dark:border-border/20" />
-
-		<!-- Application Section -->
-		<div class="mt-auto">
-			{#if data.user && data.user.organizationHandle === post?.ownerOrganizationHandle}
-				<!-- Owner View -->
-				<div class="rounded-lg bg-muted/60 p-4 dark:bg-muted/20">
-					<div class="mb-3 flex items-center gap-2">
-						<svg
-							class="h-5 w-5 text-muted-foreground"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
+		<div class="flex flex-col gap-4">
+			<div class="mt-auto">
+				{#if data.user && data.user.organizationHandle === post?.ownerOrganizationHandle}
+					<div class="rounded-lg bg-muted/60 p-4 dark:bg-muted/20">
+						<div class="mb-3 flex items-center gap-2">
+							<svg
+								class="h-5 w-5 text-muted-foreground"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+							</svg>
+							<p class="text-sm font-medium">You're the owner of this job post</p>
+						</div>
+						<Button
+							href={`/dashboard/job/${post?.id}`}
+							style={themeColor ? `background-color: ${themeColor}` : ''}
+							variant="default"
+							size="sm"
+							class="transition-all hover:opacity-90"
 						>
-							<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-						</svg>
-						<p class="text-sm font-medium">You're the owner of this job post</p>
+							See Applicants
+						</Button>
 					</div>
-					<Button
-						href={`/dashboard/job/${post?.id}`}
-						style={themeColor ? `background-color: ${themeColor}` : ''}
-						variant="default"
-						size="sm"
-						class="transition-all hover:opacity-90"
-					>
-						See Applicants
-					</Button>
-				</div>
-			{:else}
-				<!-- Application Process -->
-				{#if currentStep === 'input'}
-					<!-- Step 1: Enter LinkedIn URL -->
+				{:else if currentStep === 'input'}
 					<div
 						class="rounded-lg border border-border/50 bg-card/95 p-5 shadow-sm dark:bg-card/30"
 						in:fade={{ duration: 300 }}
@@ -328,7 +312,6 @@
 						</div>
 					</div>
 				{:else if currentStep === 'preview' && profileData}
-					<!-- Step 2: Review Profile -->
 					<div
 						class="rounded-lg border border-border/50 bg-card/95 p-5 shadow-sm dark:bg-card/30"
 						in:fly={{ y: 20, duration: 300 }}
@@ -338,7 +321,6 @@
 							<h3 class="text-base font-medium">Profile Details</h3>
 						</div>
 
-						<!-- Basic Info -->
 						<div class="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
 							<div>
 								<label for="preview-name" class="text-xs font-medium text-muted-foreground"
@@ -496,7 +478,7 @@
 						<!-- Actions -->
 						<div class="mt-6 flex flex-col gap-3 sm:flex-row">
 							<Button onclick={() => (currentStep = 'input')} variant="outline" class="flex-1">
-								Change Profile
+								Cancel
 							</Button>
 							<Button
 								onclick={submitApplication}
@@ -540,7 +522,7 @@
 						</div>
 					</div>
 				{/if}
-			{/if}
+			</div>
 		</div>
 	</div>
 </div>

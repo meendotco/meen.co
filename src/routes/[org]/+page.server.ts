@@ -21,5 +21,17 @@ export const load: PageServerLoad = async ({ params }) => {
 		where: eq(jobPost.ownerOrganizationHandle, org)
 	});
 
-	return { jobs, orgData: currentOrgData };
+	const jobsByDepartment = jobs.reduce(
+		(acc, job) => {
+			const department = job.department || 'Other';
+			if (!acc[department]) {
+				acc[department] = [];
+			}
+			acc[department].push(job);
+			return acc;
+		},
+		{} as Record<string, typeof jobs>
+	);
+
+	return { jobs: jobsByDepartment, orgData: currentOrgData };
 };
