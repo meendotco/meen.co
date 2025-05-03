@@ -12,7 +12,7 @@ import {
 	googleMeeting
 } from '$lib/server/db/schema';
 import { google } from 'googleapis';
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, and } from 'drizzle-orm';
 
 export const { handle, signIn, signOut } = SvelteKitAuth({
 	adapter: DrizzleAdapter(db, {
@@ -42,122 +42,168 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 	],
 
 	callbacks: {
-		async signIn({ account }) {
+		async signIn({ account, user }) {
 			// quick live test of the brand-new token
 			if (!account) {
 				return false;
 			}
 			console.log('account', account);
 
-			// Only attempt Gmail and Calendar validation if we have a Google account with access token
-			if (account.provider === 'google' && account.access_token) {
-				try {
-					const auth = new google.auth.OAuth2();
-					auth.setCredentials({ access_token: account.access_token });
+			// Check if this is a Google account
+			if (account.provider === 'google') {
+				// Find existing user
+				const existingAccount = await db
+					.select()
+					.from(accounts)
+					.where(
+						and(
+							eq(accounts.provider, 'google'),
+							eq(accounts.providerAccountId, account.providerAccountId)
+						)
+					)
+					.limit(1);
 
-					await db
-						.update(accounts)
-						.set({
-							access_token: account.access_token,
-							refresh_token: account.refresh_token,
-							expires_at: account.expires_at
-						})
-						.where(eq(accounts.providerAccountId, account.providerAccountId));
+				// If we found an existing account
+				if (existingAccount.length > 0) {
+					const userId = existingAccount[0].userId;
 
-					// Note: Gmail API needs to be enabled in Google Cloud Console
-					// If this fails with a 403 SERVICE_DISABLED error, visit:
-					// https://console.developers.google.com/apis/api/gmail.googleapis.com/overview
-					const mails = await google
-						.gmail({ version: 'v1', auth })
-						.users.getProfile({ userId: 'me' });
-					console.log('Google account is valid with Gmail access');
-					console.log('mails', mails);
+					// Check if the user has a LinkedIn account
+					const linkedInAccount = await db
+						.select()
+						.from(accounts)
+						.where(and(eq(accounts.provider, 'linkedin'), eq(accounts.userId, userId)))
+						.limit(1);
 
-					// Also validate Calendar access
-					// Calendar API also needs to be enabled in Google Cloud Console
-					// https://console.developers.google.com/apis/api/calendar-json.googleapis.com/overview
-					const calendar = await google.calendar({ version: 'v3', auth }).calendarList.list();
-					console.log('Google account is valid with Calendar access');
-					console.log('calendar', calendar);
+					// If no LinkedIn account found, reject sign-in
+					if (linkedInAccount.length === 0) {
+						console.log('Google sign-in rejected: No linked LinkedIn account found');
+						return false;
+					}
+				} else if (user?.id) {
+					// For new users, check if they already have a LinkedIn account in the system
+					const linkedInAccount = await db
+						.select()
+						.from(accounts)
+						.where(and(eq(accounts.provider, 'linkedin'), eq(accounts.userId, user.id)))
+						.limit(1);
 
-					// Fetch upcoming meetings for the next 30 days
+					// If no LinkedIn account found, reject sign-in
+					if (linkedInAccount.length === 0) {
+						console.log('Google sign-in rejected: No linked LinkedIn account found for new user');
+						return false;
+					}
+				}
+
+				// Only attempt Gmail and Calendar validation if we have a Google account with access token
+				if (account.access_token) {
 					try {
-						// Get the user ID
-						const userAccount = await db
-							.select()
-							.from(accounts)
-							.where(sql`${accounts.providerAccountId} = ${account.providerAccountId}`);
+						const auth = new google.auth.OAuth2();
+						auth.setCredentials({ access_token: account.access_token });
 
-						if (userAccount && userAccount.length > 0) {
-							const userId = userAccount[0].userId;
+						await db
+							.update(accounts)
+							.set({
+								access_token: account.access_token,
+								refresh_token: account.refresh_token,
+								expires_at: account.expires_at
+							})
+							.where(eq(accounts.providerAccountId, account.providerAccountId));
 
-							// Fetch calendar events
-							const now = new Date();
-							const timeMin = now.toISOString();
-							const thirtyDaysLater = new Date(now);
-							thirtyDaysLater.setDate(now.getDate() + 30);
-							const timeMax = thirtyDaysLater.toISOString();
+						// Note: Gmail API needs to be enabled in Google Cloud Console
+						// If this fails with a 403 SERVICE_DISABLED error, visit:
+						// https://console.developers.google.com/apis/api/gmail.googleapis.com/overview
+						const mails = await google
+							.gmail({ version: 'v1', auth })
+							.users.getProfile({ userId: 'me' });
+						console.log('Google account is valid with Gmail access');
+						console.log('mails', mails);
 
-							const response = await google.calendar({ version: 'v3', auth }).events.list({
-								calendarId: 'primary',
-								timeMin,
-								timeMax,
-								singleEvents: true,
-								orderBy: 'startTime'
-							});
+						// Also validate Calendar access
+						// Calendar API also needs to be enabled in Google Cloud Console
+						// https://console.developers.google.com/apis/api/calendar-json.googleapis.com/overview
+						const calendar = await google.calendar({ version: 'v3', auth }).calendarList.list();
+						console.log('Google account is valid with Calendar access');
+						console.log('calendar', calendar);
 
-							const events = response.data.items || [];
+						// Fetch upcoming meetings for the next 30 days
+						try {
+							// Get the user ID
+							const userAccount = await db
+								.select()
+								.from(accounts)
+								.where(sql`${accounts.providerAccountId} = ${account.providerAccountId}`);
 
-							// Clear existing meetings first
-							await db.delete(googleMeeting).where(sql`${googleMeeting.userId} = ${userId}`);
+							if (userAccount && userAccount.length > 0) {
+								const userId = userAccount[0].userId;
 
-							// Insert new meetings
-							const meetingsToInsert = events
-								.filter((event) => !!event.id)
-								.map((event) => ({
-									userId,
-									googleMeetingId: event.id || '',
-									summary: event.summary || null,
-									description: event.description || null,
-									htmlLink: event.htmlLink || null,
-									hangoutLink: event.hangoutLink || null,
-									startTime: event.start?.dateTime
-										? new Date(event.start.dateTime)
-										: event.start?.date
-											? new Date(event.start.date)
-											: null,
-									endTime: event.end?.dateTime
-										? new Date(event.end.dateTime)
-										: event.end?.date
-											? new Date(event.end.date)
-											: null,
-									attendees: event.attendees || null,
-									organizerEmail: event.organizer?.email || null,
-									status: event.status || null,
-									conferenceData: event.conferenceData || null,
-									rawData: event
-								}));
+								// Fetch calendar events
+								const now = new Date();
+								const timeMin = now.toISOString();
+								const thirtyDaysLater = new Date(now);
+								thirtyDaysLater.setDate(now.getDate() + 30);
+								const timeMax = thirtyDaysLater.toISOString();
 
-							if (meetingsToInsert.length > 0) {
-								await db.insert(googleMeeting).values(meetingsToInsert);
+								const response = await google.calendar({ version: 'v3', auth }).events.list({
+									calendarId: 'primary',
+									timeMin,
+									timeMax,
+									singleEvents: true,
+									orderBy: 'startTime'
+								});
+
+								const events = response.data.items || [];
+
+								// Clear existing meetings first
+								await db.delete(googleMeeting).where(sql`${googleMeeting.userId} = ${userId}`);
+
+								// Insert new meetings
+								const meetingsToInsert = events
+									.filter((event) => !!event.id)
+									.map((event) => ({
+										userId,
+										googleMeetingId: event.id || '',
+										summary: event.summary || null,
+										description: event.description || null,
+										htmlLink: event.htmlLink || null,
+										hangoutLink: event.hangoutLink || null,
+										startTime: event.start?.dateTime
+											? new Date(event.start.dateTime)
+											: event.start?.date
+												? new Date(event.start.date)
+												: null,
+										endTime: event.end?.dateTime
+											? new Date(event.end.dateTime)
+											: event.end?.date
+												? new Date(event.end.date)
+												: null,
+										attendees: event.attendees || null,
+										organizerEmail: event.organizer?.email || null,
+										status: event.status || null,
+										conferenceData: event.conferenceData || null,
+										rawData: event
+									}));
+
+								if (meetingsToInsert.length > 0) {
+									await db.insert(googleMeeting).values(meetingsToInsert);
+								}
+
+								// Update last fetched timestamp
+								await db
+									.update(users)
+									.set({ lastUpdatedMeetings: now })
+									.where(sql`${users.id} = ${userId}`);
+
+								console.log(`Stored ${meetingsToInsert.length} Google calendar events for user`);
 							}
-
-							// Update last fetched timestamp
-							await db
-								.update(users)
-								.set({ lastUpdatedMeetings: now })
-								.where(sql`${users.id} = ${userId}`);
-
-							console.log(`Stored ${meetingsToInsert.length} Google calendar events for user`);
+						} catch (error) {
+							console.error('Error fetching or storing Google Calendar events:', error);
+							// Continue sign in even if we can't fetch calendar events
 						}
 					} catch (error) {
-						console.error('Error fetching or storing Google Calendar events:', error);
-						// Continue sign in even if we can't fetch calendar events
+						console.error('Google API validation failed:', error);
+						// Continue sign-in even if API validation fails
+						// The user may not have enabled Gmail or Calendar API yet
 					}
-				} catch (error) {
-					console.error('Google API validation failed:', error);
-					// Continue sign-in even if API validation fails
-					// The user may not have enabled Gmail or Calendar API yet
 				}
 			}
 

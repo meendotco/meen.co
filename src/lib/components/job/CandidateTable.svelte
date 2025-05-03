@@ -291,6 +291,34 @@
 				candidate.linkedInProfile.data.personal_emails.length > 0 // Added null check
 		)
 	);
+
+	async function scheduleGoogleMeetWithCandidate(candidate: CandidateSelect) {
+		try {
+			const response = await fetch(`/api/job/${jobId}/${candidate.id}/schedule`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				console.error('Failed to schedule meeting:', response.status, errorData);
+				// Could add error notification here
+				return;
+			}
+
+			const data = await response.json();
+			console.log('Meeting scheduled successfully');
+
+			// If the API returns a URL, open it
+			if (data.calendarUrl) {
+				window.open(data.calendarUrl, '_blank');
+			}
+		} catch (error) {
+			console.error('Error scheduling meeting:', error);
+		}
+	}
 </script>
 
 <Table.Root>
@@ -451,7 +479,10 @@
 							</Popover.Trigger>
 							<Popover.Content class="w-48 p-1">
 								<div class="flex flex-col gap-1 p-1">
-									<div class="flex cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-muted">
+									<div
+										class="flex cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-muted"
+										on:click={() => scheduleGoogleMeetWithCandidate(candidate)}
+									>
 										<img
 											src="/logos/google-meet-svgrepo-com.svg"
 											alt="Google Meet"
