@@ -52,7 +52,7 @@
 		customFields: CustomFieldSelect[];
 	}>();
 
-	type SortKey = string | 'matchScore' | 'name' | 'title';
+	type SortKey = string | 'matchScore' | 'name' | 'title' | 'applied';
 	type SortDirection = 'asc' | 'desc';
 
 	// Use props directly for initial state
@@ -151,6 +151,10 @@
 				const aScore = a.matchScore ?? -Infinity;
 				const bScore = b.matchScore ?? -Infinity;
 				comparison = aScore - bScore;
+			} else if (currentSortKey === 'applied') {
+				const aApplied = a.applied ?? false;
+				const bApplied = b.applied ?? false;
+				comparison = aApplied ? 1 : bApplied ? -1 : 0;
 			} else {
 				const aValueData = a.customFieldValues?.find(
 					(cfv) => cfv.customField?.name === currentSortKey
@@ -311,6 +315,12 @@
 				</Button>
 			</Table.Head>
 			<Table.Head>Reasoning</Table.Head>
+			<Table.Head>
+				<Button variant="ghost" onclick={() => sortBy('applied')}>
+					Applied
+					<ArrowUpDown class="ml-2 h-4 w-4" />
+				</Button>
+			</Table.Head>
 			{#if hasAnyEmails()}
 				<Table.Head>Emails</Table.Head>
 			{/if}
@@ -433,6 +443,7 @@
 					`${profileData?.first_name ?? ''} ${profileData?.last_name ?? ''}`.trim() || 'N/A'}
 				{@const headline = profileData?.headline ?? 'N/A'}
 				{@const reasoning = candidate.reasoning != null ? String(candidate.reasoning) : 'N/A'}
+				{@const applied = candidate.applied ?? false}
 
 				<Table.Row>
 					{#if fullName !== 'N/A' && fullName.length > 25}
@@ -491,6 +502,8 @@
 						<Table.Cell class="text-center">{reasoning}</Table.Cell>
 					{/if}
 
+					<Table.Cell class="text-center">{candidate.applied ? 'Yes' : 'No'}</Table.Cell>
+
 					{#if hasAnyEmails()}
 						{#if profileData?.personal_emails != null && profileData.personal_emails.length > 0}
 							<Table.Cell
@@ -511,20 +524,31 @@
 						{@const displayValue = fieldValue != null ? String(fieldValue) : ''}
 						{@const isLong = displayValue !== 'N/A' && displayValue.length > 25}
 						{@const isLoading = fieldValue == null || fieldValue === ''}
+						{@const fieldReasoning = candidate.customFieldValues?.find(
+							(cfv) => cfv.customFieldId === field.id
+						)?.reasoning}
 
 						{#if field.type === 'boolean'}
-							<Table.Cell isUpdating={isLoading} class="text-center">
+							<Table.Cell
+								isUpdating={isLoading}
+								class="text-center"
+								onclick={() => fieldReasoning && showFullContent(fieldReasoning)}
+							>
 								{displayValue}
 							</Table.Cell>
 						{:else if field.type === 'date'}
-							<Table.Cell isUpdating={isLoading} class="text-center">
+							<Table.Cell
+								isUpdating={isLoading}
+								class="text-center"
+								onclick={() => fieldReasoning && showFullContent(fieldReasoning)}
+							>
 								{fieldValue ? new Date(fieldValue).toLocaleDateString() : 'N/A'}
 							</Table.Cell>
 						{:else if isLong}
 							<Table.Cell
 								isUpdating={isLoading}
 								class="cursor-pointer {field.type === 'number' ? 'text-center' : ''}"
-								onclick={() => showFullContent(fieldValue)}
+								onclick={() => fieldReasoning ? showFullContent(`${fieldValue}\n\n\nReasoning: ${fieldReasoning}`) : showFullContent(fieldValue)}
 							>
 								{displayValue.slice(0, 25)}...
 							</Table.Cell>
@@ -532,6 +556,7 @@
 							<Table.Cell
 								isUpdating={isLoading}
 								class={field.type === 'number' ? 'text-center' : ''}
+								onclick={() => fieldReasoning && showFullContent(fieldReasoning)}
 							>
 								{displayValue}
 							</Table.Cell>

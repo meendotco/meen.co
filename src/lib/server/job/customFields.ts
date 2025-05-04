@@ -104,6 +104,7 @@ async function calculateCustomFieldValuesForCandidate(
 			const prompt = `
 <task>
   Generate a human-readable value for the custom field "${customField.name}" (${customField.description}) for this candidate based on their LinkedIn profile.
+  Ensure the output includes both the value and a clear, human-readable reasoning for how that value was determined.
 </task>
 
 <job_description>
@@ -141,7 +142,8 @@ ${generateLinkedInProfileEmbeddingInput(profileData)}
 								? z.number()
 								: customField.type === 'date'
 									? z.string().datetime()
-									: z.string()
+									: z.string(),
+					reasoning: z.string()
 				}),
 				prompt: prompt
 			});
@@ -156,7 +158,8 @@ ${generateLinkedInProfileEmbeddingInput(profileData)}
 					id: uuidv4(),
 					customFieldId: customField.id,
 					candidateId: candidateId,
-					value: String(value.object.value)
+					value: String(value.object.value),
+					reasoning: value.object.reasoning
 				})
 				.returning();
 
