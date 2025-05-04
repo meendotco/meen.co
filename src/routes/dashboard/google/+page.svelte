@@ -188,34 +188,6 @@
 					</Card>
 				{/if}
 			</div>
-
-			<!-- Emails Section -->
-			<div>
-				<h2 class="mb-4 text-2xl font-semibold">Recent Emails (IDs)</h2>
-				{#if emails.length > 0}
-					<Card>
-						<CardContent class="p-4">
-							<ul class="space-y-2">
-								{#each emails as email (email.id)}
-									<li class="flex items-center justify-between rounded-md bg-muted/50 p-2 text-sm">
-										<span class="truncate font-mono">{email.googleEmailId}</span>
-										<span class="ml-4 text-xs text-muted-foreground"
-											>Thread: {email.googleThreadId}</span
-										>
-									</li>
-								{/each}
-							</ul>
-						</CardContent>
-					</Card>
-				{:else if !isLoading}
-					<Card>
-						<CardContent class="flex flex-col items-center justify-center p-10">
-							<Mail class="mb-4 h-16 w-16 text-muted-foreground" />
-							<p class="text-center text-xl font-medium">No recent emails found</p>
-						</CardContent>
-					</Card>
-				{/if}
-			</div>
 		</div>
 	{/if}
 
