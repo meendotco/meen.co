@@ -502,7 +502,7 @@
 						<Table.Cell class="text-center">{reasoning}</Table.Cell>
 					{/if}
 
-					<Table.Cell class="text-center">{candidate.applied ? 'Yes' : 'No'}</Table.Cell>
+					<Table.Cell class="text-center">{applied ? 'Yes' : 'No'}</Table.Cell>
 
 					{#if hasAnyEmails()}
 						{#if profileData?.personal_emails != null && profileData.personal_emails.length > 0}
@@ -534,7 +534,7 @@
 								class="text-center"
 								onclick={() => fieldReasoning && showFullContent(fieldReasoning)}
 							>
-								{displayValue}
+								{Boolean(displayValue) ? 'Yes' : 'No'}
 							</Table.Cell>
 						{:else if field.type === 'date'}
 							<Table.Cell
@@ -548,7 +548,10 @@
 							<Table.Cell
 								isUpdating={isLoading}
 								class="cursor-pointer {field.type === 'number' ? 'text-center' : ''}"
-								onclick={() => fieldReasoning ? showFullContent(`${fieldValue}\n\n\nReasoning: ${fieldReasoning}`) : showFullContent(fieldValue)}
+								onclick={() =>
+									fieldReasoning
+										? showFullContent(`${fieldValue}\n\n\nReasoning: ${fieldReasoning}`)
+										: showFullContent(fieldValue)}
 							>
 								{displayValue.slice(0, 25)}...
 							</Table.Cell>
